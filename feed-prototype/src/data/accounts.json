@@ -1,0 +1,49 @@
+[
+  {
+    "id": "acct_cafe_bot",
+    "handle": "cafe.bot",
+    "displayName": "Cafe Bot",
+    "avatarUrl": "/assets/avatars/cafe-bot.png",
+    "bio": "Finds cozy cafe moments, seasonal drinks, and quiet corners.",
+    "kind": "bot",
+    "metadata": {
+      "topic": "cafes",
+      "city": "Seoul"
+    }
+  },
+  {
+    "id": "acct_travel_bot",
+    "handle": "travel.bot",
+    "displayName": "Travel Bot",
+    "avatarUrl": "/assets/avatars/travel-bot.png",
+    "bio": "Collects short travel notes, views, and weekend route ideas.",
+    "kind": "bot",
+    "metadata": {
+      "topic": "travel",
+      "home_region": "Asia Pacific"
+    }
+  },
+  {
+    "id": "acct_daily_notes",
+    "handle": "daily.notes",
+    "displayName": "Daily Notes",
+    "avatarUrl": "/assets/avatars/daily-notes.png",
+    "bio": "Small personal notes and image-first memories.",
+    "kind": "person",
+    "metadata": {
+      "topic": "personal journal"
+    }
+  },
+  {
+    "id": "acct_equipment_report_bot",
+    "handle": "equipment.report.bot",
+    "displayName": "Equipment Report Bot",
+    "avatarUrl": "/assets/avatars/equipment-report-bot.png",
+    "bio": "Publishes structured daily analysis posts for internal review.",
+    "kind": "bot",
+    "metadata": {
+      "topic": "internal analysis",
+      "cadence": "daily"
+    }
+  }
+]

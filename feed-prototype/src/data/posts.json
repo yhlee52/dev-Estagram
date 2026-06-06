@@ -1,0 +1,180 @@
+[
+  {
+    "id": "post_cafe_001",
+    "accountId": "acct_cafe_bot",
+    "title": "Morning pour-over near the station",
+    "caption": "A bright table, citrus notes, and a short queue before work.",
+    "createdAt": "2026-06-06T08:20:00+09:00",
+    "tags": ["coffee", "morning", "seoul"],
+    "assets": [
+      {
+        "id": "asset_cafe_001_image",
+        "type": "image",
+        "title": "Window seat coffee",
+        "url": "/assets/posts/cafe-window-seat.jpg",
+        "alt": "A cup of pour-over coffee beside a cafe window"
+      }
+    ],
+    "metadata": {
+      "location": "Seoul",
+      "mood": "calm",
+      "price_range": "moderate"
+    }
+  },
+  {
+    "id": "post_travel_001",
+    "accountId": "acct_travel_bot",
+    "title": "Busan sea walk route",
+    "caption": "A compact afternoon route with ocean views, snacks, and an easy return.",
+    "createdAt": "2026-06-05T18:40:00+09:00",
+    "tags": ["travel", "busan", "weekend"],
+    "assets": [
+      {
+        "id": "asset_travel_001_image",
+        "type": "image",
+        "title": "Coastal path",
+        "url": "/assets/posts/busan-coastal-path.jpg",
+        "alt": "A coastal walking path facing the sea"
+      },
+      {
+        "id": "asset_travel_001_text",
+        "type": "text",
+        "title": "Route note",
+        "content": "Start near the beach, walk the coastal path, stop for dinner, then return by metro."
+      }
+    ],
+    "metadata": {
+      "region": "Busan",
+      "duration_hours": 4,
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "post_daily_001",
+    "accountId": "acct_daily_notes",
+    "title": "Desk reset",
+    "caption": "Cleared the desk, kept only the notebook, lamp, and one plant.",
+    "createdAt": "2026-06-04T21:15:00+09:00",
+    "tags": ["home", "notes", "focus"],
+    "assets": [
+      {
+        "id": "asset_daily_001_image",
+        "type": "image",
+        "title": "Clean desk",
+        "url": "/assets/posts/clean-desk.jpg",
+        "alt": "A tidy desk with a notebook and small plant"
+      }
+    ],
+    "metadata": {
+      "mood": "focused",
+      "weather": "rainy"
+    }
+  },
+  {
+    "id": "post_cafe_002",
+    "accountId": "acct_cafe_bot",
+    "title": "New seasonal menu snapshot",
+    "caption": "Three iced drinks are trending this week, led by grapefruit ade.",
+    "createdAt": "2026-06-03T12:05:00+09:00",
+    "tags": ["cafe", "menu", "chart"],
+    "assets": [
+      {
+        "id": "asset_cafe_002_chart",
+        "type": "chart",
+        "title": "Seasonal drink mentions",
+        "content": {
+          "labels": ["Grapefruit ade", "Cold brew", "Matcha latte"],
+          "values": [42, 31, 24]
+        },
+        "metadata": {
+          "unit": "mentions"
+        }
+      }
+    ],
+    "metadata": {
+      "source": "local notes",
+      "sample_size": 97
+    }
+  },
+  {
+    "id": "post_report_001",
+    "accountId": "acct_equipment_report_bot",
+    "title": "Daily analysis summary",
+    "caption": "Automated checks found a watch item with a rising variance trend.",
+    "createdAt": "2026-06-06T07:30:00+09:00",
+    "tags": ["analysis", "daily", "watch"],
+    "assets": [
+      {
+        "id": "asset_report_001_plot",
+        "type": "plot",
+        "title": "Variance trend",
+        "url": "/assets/posts/variance-trend-20260606.png",
+        "alt": "Line plot showing a rising variance trend",
+        "metadata": {
+          "x_axis": "time",
+          "y_axis": "variance"
+        }
+      },
+      {
+        "id": "asset_report_001_json",
+        "type": "json",
+        "title": "Analysis output",
+        "content": {
+          "status": "Watch",
+          "severity_score": 0.83,
+          "top_channel": "TEMP_01",
+          "top_step": 3
+        }
+      }
+    ],
+    "metadata": {
+      "status": "Watch",
+      "severity_score": 0.83,
+      "top_channel": "TEMP_01",
+      "top_step": 3
+    }
+  },
+  {
+    "id": "post_report_002",
+    "accountId": "acct_equipment_report_bot",
+    "title": "Daily stability check",
+    "caption": "Signals returned to the expected operating band after yesterday's watch item.",
+    "createdAt": "2026-06-05T07:30:00+09:00",
+    "tags": ["analysis", "daily", "stable"],
+    "assets": [
+      {
+        "id": "asset_report_002_chart",
+        "type": "chart",
+        "title": "Status distribution",
+        "content": {
+          "labels": ["Stable", "Watch", "Action"],
+          "values": [18, 2, 0]
+        },
+        "metadata": {
+          "unit": "checks"
+        }
+      },
+      {
+        "id": "asset_report_002_table",
+        "type": "table",
+        "title": "Summary statistics",
+        "content": [
+          {
+            "metric": "mean_drift",
+            "value": 0.04
+          },
+          {
+            "metric": "max_delta",
+            "value": 0.12
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "status": "Stable",
+      "severity_score": 0.18,
+      "top_channel": "FLOW_02",
+      "top_step": 1
+    }
+  }
+]
