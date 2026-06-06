@@ -3,6 +3,7 @@ import type { PostAsset } from '../types/feed';
 
 type PostAssetPreviewProps = {
   asset?: PostAsset;
+  variant?: 'preview' | 'full';
 };
 
 function AssetPlaceholder({ label = 'Asset preview' }: { label?: string }) {
@@ -13,7 +14,10 @@ function AssetPlaceholder({ label = 'Asset preview' }: { label?: string }) {
   );
 }
 
-export default function PostAssetPreview({ asset }: PostAssetPreviewProps) {
+export default function PostAssetPreview({
+  asset,
+  variant = 'preview',
+}: PostAssetPreviewProps) {
   const [hasImageError, setHasImageError] = useState(false);
 
   if (!asset) {
@@ -41,6 +45,11 @@ export default function PostAssetPreview({ asset }: PostAssetPreviewProps) {
         <p className="mt-2 text-sm font-medium text-neutral-800">
           {asset.title ?? 'Structured asset'}
         </p>
+        {variant === 'full' && asset.content !== undefined ? (
+          <pre className="mt-3 overflow-x-auto whitespace-pre-wrap rounded-md bg-white p-3 text-xs leading-5 text-neutral-700">
+            {JSON.stringify(asset.content, null, 2)}
+          </pre>
+        ) : null}
       </div>
     );
   }
@@ -48,7 +57,12 @@ export default function PostAssetPreview({ asset }: PostAssetPreviewProps) {
   if (asset.type === 'text') {
     return (
       <div className="rounded-md bg-neutral-100 p-4">
-        <p className="line-clamp-3 text-sm leading-6 text-neutral-700">
+        <p
+          className={[
+            'text-sm leading-6 text-neutral-700',
+            variant === 'preview' ? 'line-clamp-3' : '',
+          ].join(' ')}
+        >
           {typeof asset.content === 'string' ? asset.content : asset.title ?? 'Text asset'}
         </p>
       </div>
