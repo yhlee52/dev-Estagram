@@ -2,7 +2,7 @@ import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router';
 import type { FeedItem } from '../types/feed';
 import { formatDateTime } from '../utils/format';
-import PostAssetPreview from './PostAssetPreview';
+import AssetRenderer from './AssetRenderer';
 import TagList from './TagList';
 
 type FeedCardProps = {
@@ -77,7 +77,7 @@ export default function FeedCard({ item }: FeedCardProps) {
       </button>
 
       <div className="px-4 pb-4">
-        <PostAssetPreview asset={post.assets[0]} />
+        <AssetRenderer asset={post.assets[0]} />
 
         <div className="mt-4 space-y-3">
           <div>

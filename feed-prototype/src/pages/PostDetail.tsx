@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router';
+import AssetRenderer from '../components/AssetRenderer';
 import EmptyState from '../components/EmptyState';
 import MetadataTable from '../components/MetadataTable';
-import PostAssetPreview from '../components/PostAssetPreview';
 import TagList from '../components/TagList';
 import accountsData from '../data/accounts.json';
 import postsData from '../data/posts.json';
@@ -87,7 +87,7 @@ export default function PostDetail() {
               {asset.title ? (
                 <h2 className="text-sm font-semibold text-neutral-950">{asset.title}</h2>
               ) : null}
-              <PostAssetPreview asset={asset} variant="full" />
+              <AssetRenderer asset={asset} variant="full" />
             </div>
           ))}
         </section>

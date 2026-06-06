@@ -1,73 +1,14 @@
-import { useState } from 'react';
 import type { PostAsset } from '../types/feed';
+import AssetRenderer from './AssetRenderer';
 
 type PostAssetPreviewProps = {
   asset?: PostAsset;
   variant?: 'preview' | 'full';
 };
 
-function AssetPlaceholder({ label = 'Asset preview' }: { label?: string }) {
-  return (
-    <div className="flex aspect-[4/3] w-full items-center justify-center rounded-md bg-neutral-100 px-4 text-center text-sm font-medium text-neutral-400">
-      {label}
-    </div>
-  );
-}
-
 export default function PostAssetPreview({
   asset,
   variant = 'preview',
 }: PostAssetPreviewProps) {
-  const [hasImageError, setHasImageError] = useState(false);
-
-  if (!asset) {
-    return <AssetPlaceholder />;
-  }
-
-  if ((asset.type === 'image' || asset.type === 'plot') && asset.url && !hasImageError) {
-    return (
-      <img
-        src={asset.url}
-        alt={asset.alt ?? asset.title ?? 'Post asset'}
-        className="aspect-[4/3] w-full rounded-md bg-neutral-100 object-cover"
-        loading="lazy"
-        onError={() => setHasImageError(true)}
-      />
-    );
-  }
-
-  if (asset.type === 'chart' || asset.type === 'table' || asset.type === 'json') {
-    return (
-      <div className="rounded-md bg-neutral-100 p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-          {asset.type}
-        </p>
-        <p className="mt-2 text-sm font-medium text-neutral-800">
-          {asset.title ?? 'Structured asset'}
-        </p>
-        {variant === 'full' && asset.content !== undefined ? (
-          <pre className="mt-3 overflow-x-auto whitespace-pre-wrap rounded-md bg-white p-3 text-xs leading-5 text-neutral-700">
-            {JSON.stringify(asset.content, null, 2)}
-          </pre>
-        ) : null}
-      </div>
-    );
-  }
-
-  if (asset.type === 'text') {
-    return (
-      <div className="rounded-md bg-neutral-100 p-4">
-        <p
-          className={[
-            'text-sm leading-6 text-neutral-700',
-            variant === 'preview' ? 'line-clamp-3' : '',
-          ].join(' ')}
-        >
-          {typeof asset.content === 'string' ? asset.content : asset.title ?? 'Text asset'}
-        </p>
-      </div>
-    );
-  }
-
-  return <AssetPlaceholder label={asset.title ?? 'Asset preview unavailable'} />;
+  return <AssetRenderer asset={asset} variant={variant} />;
 }
