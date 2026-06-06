@@ -6,6 +6,7 @@ type AccountCardProps = {
   account: Account;
   postCount: number;
   isFollowing: boolean;
+  onToggleFollow: (accountId: string) => void;
 };
 
 function Avatar({ src, name }: { src?: string; name: string }) {
@@ -35,6 +36,7 @@ export default function AccountCard({
   account,
   postCount,
   isFollowing,
+  onToggleFollow,
 }: AccountCardProps) {
   const navigate = useNavigate();
 
@@ -51,6 +53,7 @@ export default function AccountCard({
 
   const handleFollowClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+    onToggleFollow(account.id);
   };
 
   return (
