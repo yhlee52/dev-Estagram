@@ -20,14 +20,14 @@ export default function HomeFeed() {
   if (feedItems.length === 0) {
     return (
       <EmptyState
-        title="No posts yet"
-        description="Followed account posts will appear here."
+        title="Your feed is empty"
+        description="Follow an account from Explore to see its latest posts here."
       />
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3.5">
       {feedItems.map((item) => (
         <FeedCard key={item.post.id} item={item} />
       ))}

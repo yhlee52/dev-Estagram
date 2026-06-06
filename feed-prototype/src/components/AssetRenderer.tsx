@@ -21,8 +21,8 @@ function AssetShell({
   return (
     <div
       className={[
-        'rounded-md border border-neutral-200',
-        muted ? 'bg-neutral-100' : 'bg-white',
+        'overflow-hidden rounded-md border border-neutral-200',
+        muted ? 'bg-neutral-50' : 'bg-white',
       ].join(' ')}
     >
       {children}
@@ -32,7 +32,7 @@ function AssetShell({
 
 function AssetBadge({ label }: { label: string }) {
   return (
-    <span className="absolute left-3 top-3 rounded-md bg-neutral-950/80 px-2 py-1 text-xs font-semibold uppercase text-white">
+    <span className="absolute left-3 top-3 rounded-full bg-neutral-950/80 px-2.5 py-1 text-xs font-bold uppercase text-white">
       {label}
     </span>
   );
@@ -40,7 +40,7 @@ function AssetBadge({ label }: { label: string }) {
 
 function MissingAsset({ label = 'Asset preview unavailable' }: { label?: string }) {
   return (
-    <div className="flex aspect-[4/3] w-full items-center justify-center rounded-md bg-neutral-100 px-4 text-center text-sm font-medium text-neutral-400">
+    <div className="flex aspect-[4/3] w-full items-center justify-center rounded-md border border-dashed border-neutral-300 bg-neutral-100 px-4 text-center text-sm font-semibold text-neutral-400">
       {label}
     </div>
   );
@@ -48,7 +48,7 @@ function MissingAsset({ label = 'Asset preview unavailable' }: { label?: string 
 
 function JsonBlock({ value }: { value: MetadataValue }) {
   return (
-    <pre className="overflow-x-auto whitespace-pre-wrap rounded-md bg-neutral-100 p-3 text-xs leading-5 text-neutral-700">
+    <pre className="overflow-x-auto whitespace-pre-wrap rounded-md bg-neutral-50 p-3 text-xs leading-5 text-neutral-700">
       {JSON.stringify(value, null, 2)}
     </pre>
   );
@@ -103,16 +103,16 @@ export default function AssetRenderer({
     return (
       <AssetShell>
         <div className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          <p className="text-xs font-bold uppercase text-neutral-400">
             table
           </p>
-          <p className="mt-2 text-sm font-medium text-neutral-950">{title}</p>
+          <p className="mt-2 text-sm font-bold text-neutral-950">{title}</p>
           {shouldShowFull && asset.content !== undefined ? (
             <div className="mt-3">
               <JsonBlock value={asset.content} />
             </div>
           ) : (
-            <p className="mt-2 text-sm text-neutral-500">
+            <p className="mt-2 text-sm leading-6 text-neutral-500">
               {asset.url ? 'Open the linked table asset.' : 'Table data preview'}
             </p>
           )}
@@ -125,16 +125,16 @@ export default function AssetRenderer({
     return (
       <AssetShell>
         <div className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          <p className="text-xs font-bold uppercase text-neutral-400">
             json
           </p>
-          <p className="mt-2 text-sm font-medium text-neutral-950">{title}</p>
+          <p className="mt-2 text-sm font-bold text-neutral-950">{title}</p>
           {shouldShowFull && asset.content !== undefined ? (
             <div className="mt-3">
               <JsonBlock value={asset.content} />
             </div>
           ) : (
-            <p className="mt-2 line-clamp-2 text-sm text-neutral-500">
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-neutral-500">
               {renderContentSummary(asset.content)}
             </p>
           )}
@@ -147,13 +147,13 @@ export default function AssetRenderer({
     return (
       <AssetShell>
         <div className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          <p className="text-xs font-bold uppercase text-neutral-400">
             html
           </p>
-          <p className="mt-2 text-sm font-medium text-neutral-950">{title}</p>
+          <p className="mt-2 text-sm font-bold text-neutral-950">{title}</p>
           {asset.url ? (
             <a
-              className="mt-3 inline-flex rounded-md bg-neutral-950 px-3 py-2 text-xs font-semibold text-white"
+              className="mt-3 inline-flex rounded-md bg-neutral-950 px-3 py-2 text-xs font-bold text-white"
               href={asset.url}
               rel="noreferrer"
               target="_blank"
@@ -161,7 +161,9 @@ export default function AssetRenderer({
               Open link
             </a>
           ) : (
-            <p className="mt-2 text-sm text-neutral-500">No link is available.</p>
+            <p className="mt-2 text-sm leading-6 text-neutral-500">
+              No link is available.
+            </p>
           )}
         </div>
       </AssetShell>
@@ -173,7 +175,7 @@ export default function AssetRenderer({
       <AssetShell muted>
         <div className="p-4">
           {asset.title ? (
-            <p className="mb-2 text-sm font-semibold text-neutral-950">{asset.title}</p>
+            <p className="mb-2 text-sm font-bold text-neutral-950">{asset.title}</p>
           ) : null}
           <p
             className={[
@@ -193,11 +195,11 @@ export default function AssetRenderer({
   return (
     <AssetShell muted>
       <div className="p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+        <p className="text-xs font-bold uppercase text-neutral-400">
           {type}
         </p>
-        <p className="mt-2 text-sm font-medium text-neutral-950">{title}</p>
-        <p className="mt-2 text-sm text-neutral-500">
+        <p className="mt-2 text-sm font-bold text-neutral-950">{title}</p>
+        <p className="mt-2 text-sm leading-6 text-neutral-500">
           This asset type is not supported yet.
         </p>
       </div>

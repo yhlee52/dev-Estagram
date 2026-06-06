@@ -24,14 +24,18 @@ export default function PostDetail() {
       <div className="space-y-4">
         <button
           type="button"
-          className="rounded-md border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700"
+          className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
           onClick={() => navigate(-1)}
         >
           Back
         </button>
         <EmptyState
           title="Post not found"
-          description={postId ? `No post exists for ${postId}.` : 'No post was selected.'}
+          description={
+            postId
+              ? `We could not find a post for ${postId}.`
+              : 'Choose a post from the home feed.'
+          }
         />
         <Link className="block text-sm font-semibold text-neutral-950" to="/">
           Go Home
@@ -41,25 +45,25 @@ export default function PostDetail() {
   }
 
   return (
-    <article className="space-y-5">
+    <article className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <button
           type="button"
-          className="rounded-md border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700"
+          className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
           onClick={() => navigate(-1)}
         >
           Back
         </button>
-        <Link className="text-sm font-semibold text-neutral-950" to="/">
+        <Link className="text-sm font-bold text-neutral-950" to="/">
           Home
         </Link>
       </div>
 
       <Link
         to={`/accounts/${account.id}`}
-        className="flex items-center gap-3 rounded-md border border-neutral-200 bg-white p-4"
+        className="flex items-center gap-3 rounded-md border border-neutral-200 bg-white p-4 shadow-sm"
       >
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-sm font-semibold text-neutral-600">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-sm font-bold text-neutral-600 ring-1 ring-neutral-200">
           {account.displayName.trim().charAt(0).toUpperCase() || 'A'}
         </div>
         <div className="min-w-0">
@@ -70,22 +74,22 @@ export default function PostDetail() {
         </div>
       </Link>
 
-      <header className="space-y-3">
-        <h1 className="text-2xl font-bold leading-8 text-neutral-950">{post.title}</h1>
+      <header className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+        <h1 className="text-xl font-bold leading-7 text-neutral-950">{post.title}</h1>
         {post.caption ? (
-          <p className="text-sm leading-6 text-neutral-700">{post.caption}</p>
+          <p className="mt-2 text-sm leading-6 text-neutral-700">{post.caption}</p>
         ) : null}
-        <time className="block text-xs text-neutral-400" dateTime={post.createdAt}>
+        <time className="mt-3 block text-xs font-medium text-neutral-400" dateTime={post.createdAt}>
           {formatDateTime(post.createdAt)}
         </time>
       </header>
 
       {post.assets.length > 0 ? (
-        <section className="space-y-4">
+        <section className="space-y-3.5">
           {post.assets.map((asset) => (
             <div key={asset.id} className="space-y-2">
               {asset.title ? (
-                <h2 className="text-sm font-semibold text-neutral-950">{asset.title}</h2>
+                <h2 className="px-1 text-sm font-bold text-neutral-950">{asset.title}</h2>
               ) : null}
               <AssetRenderer asset={asset} variant="full" />
             </div>

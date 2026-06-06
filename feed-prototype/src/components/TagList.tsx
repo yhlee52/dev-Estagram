@@ -8,11 +8,11 @@ export default function TagList({ tags }: TagListProps) {
   }
 
   return (
-    <ul className="flex flex-wrap gap-2">
+    <ul className="flex flex-wrap gap-1.5">
       {tags.map((tag) => (
         <li
           key={tag}
-          className="rounded-md bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-600"
+          className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-xs font-semibold text-neutral-600"
         >
           #{tag}
         </li>

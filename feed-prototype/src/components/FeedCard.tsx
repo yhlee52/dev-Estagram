@@ -15,7 +15,7 @@ function Avatar({ src, name }: { src?: string; name: string }) {
 
   if (!src || hasImageError) {
     return (
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-sm font-semibold text-neutral-600">
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-sm font-bold text-neutral-600">
         {initial}
       </div>
     );
@@ -25,7 +25,7 @@ function Avatar({ src, name }: { src?: string; name: string }) {
     <img
       src={src}
       alt={`${name} avatar`}
-      className="size-10 shrink-0 rounded-full bg-neutral-200 object-cover"
+      className="size-10 shrink-0 rounded-full bg-neutral-200 object-cover ring-1 ring-neutral-200"
       onError={() => setHasImageError(true)}
     />
   );
@@ -56,13 +56,13 @@ export default function FeedCard({ item }: FeedCardProps) {
       tabIndex={0}
       role="link"
       aria-label={`Open ${post.title}`}
-      className="cursor-pointer rounded-md border border-neutral-200 bg-white shadow-sm transition hover:border-neutral-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+      className="cursor-pointer overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm transition hover:border-neutral-300 hover:shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
       onClick={goToPost}
       onKeyDown={handleKeyDown}
     >
       <button
         type="button"
-        className="flex w-full items-center gap-3 px-4 py-3 text-left"
+        className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
         onClick={goToAccount}
       >
         <Avatar src={account.avatarUrl} name={account.displayName} />
@@ -76,16 +76,16 @@ export default function FeedCard({ item }: FeedCardProps) {
         </span>
       </button>
 
-      <div className="px-4 pb-4">
+      <div className="space-y-4 px-4 pb-4">
         <AssetRenderer asset={post.assets[0]} />
 
-        <div className="mt-4 space-y-3">
-          <div>
-            <h2 className="text-base font-semibold leading-6 text-neutral-950">
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <h2 className="text-base font-bold leading-6 text-neutral-950">
               {post.title}
             </h2>
             {post.caption ? (
-              <p className="mt-1 text-sm leading-6 text-neutral-600">
+              <p className="text-sm leading-6 text-neutral-600">
                 {post.caption}
               </p>
             ) : null}
@@ -93,7 +93,7 @@ export default function FeedCard({ item }: FeedCardProps) {
 
           <TagList tags={post.tags} />
 
-          <time className="block text-xs text-neutral-400" dateTime={post.createdAt}>
+          <time className="block text-xs font-medium text-neutral-400" dateTime={post.createdAt}>
             {formatDateTime(post.createdAt)}
           </time>
         </div>

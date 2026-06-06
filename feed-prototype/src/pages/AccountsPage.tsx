@@ -19,14 +19,14 @@ export default function AccountsPage() {
   if (accounts.length === 0) {
     return (
       <EmptyState
-        title="No accounts yet"
-        description="Accounts will appear here when static data is available."
+        title="No accounts available"
+        description="Static account data will appear here once it is added."
       />
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {accounts.map((account) => (
         <AccountCard
           key={account.id}
