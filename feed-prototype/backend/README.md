@@ -7,7 +7,7 @@ This stage only provides a runnable app and `GET /health`. It does not add datab
 ## Setup
 
 ```bash
-cd backend
+cd feed-prototype/backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt

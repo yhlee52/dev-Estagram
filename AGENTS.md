@@ -38,7 +38,7 @@ MVP1-MVP4 are intentionally local and static. MVP5 begins preparing a future bac
 - Do not implement authentication, likes, comments, bookmarks, search, tag pages, notifications, upload flows, frontend file write logic, deployment, or real-time updates.
 - MVP3 introduces a local `User` model only for selecting an active local user and separating local state. It is not a login, authentication, authorization, password, token, or account-management system.
 - MVP4 introduces a local user entry and local registration flow. It is still not authentication, signup, authorization, password handling, token handling, or a secure session.
-- MVP5 introduces the direction for a FastAPI + PostgreSQL + SQLModel + Alembic backend skeleton under `backend/`. It does not convert the frontend to API-backed data.
+- MVP5 introduces the direction for a FastAPI + PostgreSQL + SQLModel + Alembic backend skeleton under `feed-prototype/backend/`. It does not convert the frontend to API-backed data.
 - A `User` represents the local viewer of the app. An `Account` represents an entity that publishes Posts.
 - During the MVP stage, each local `User` should have exactly one corresponding `Account`.
 - Active user state should be stored in `localStorage` under `local-feed-active-user-id`.
@@ -55,11 +55,11 @@ MVP5 prepares for a future API/DB-backed version while preserving the completed 
 
 Planned backend stack:
 
-- FastAPI backend under `backend/`
+- FastAPI backend under `feed-prototype/backend/`
 - PostgreSQL database
 - SQLModel ORM / DB layer
 - Alembic migrations
-- Local file storage under `backend/uploads/` for this MVP stage
+- Local file storage under `feed-prototype/backend/uploads/` for this MVP stage
 
 Planned tables:
 

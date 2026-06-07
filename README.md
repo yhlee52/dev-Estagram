@@ -11,8 +11,8 @@ Backend: FastAPI
 Database: PostgreSQL
 ORM / DB layer: SQLModel
 Migration: Alembic
-File storage: backend/uploads/ local folder
-Backend path: backend/
+File storage: feed-prototype/backend/uploads/ local folder
+Backend path: feed-prototype/backend/
 ```
 
 MVP5 is a skeleton-introduction stage. It should make the project ready to move from static JSON and localStorage toward API/DB-backed data later, but it does not switch the frontend to API data yet.

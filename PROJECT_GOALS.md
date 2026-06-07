@@ -11,8 +11,8 @@ Backend: FastAPI
 Database: PostgreSQL
 ORM / DB layer: SQLModel
 Migration: Alembic
-File storage: backend/uploads/ local folder only
-Backend location: backend/
+File storage: feed-prototype/backend/uploads/ local folder only
+Backend location: feed-prototype/backend/
 ```
 
 MVP5 should keep the core domain generic: `User`, `Account`, `Post`, `Feed`, `Follow`, `Asset`, and `Metadata`. Company-internal equipment reports remain one possible data scenario only. Do not rename core types, shared components, routes, or data flow around equipment/report-specific terms such as Equipment, Chamber, Sensor, Recipe, Severity, or Report.
