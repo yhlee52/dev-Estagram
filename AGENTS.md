@@ -44,11 +44,13 @@ This stage is intentionally local and static.
 - Follow state should be lightweight, local, separated by active user, and stored in `localStorage` under `local-feed-following-by-user`.
 - New locally registered users, their corresponding accounts, and their initialized follow state should be stored in `localStorage`, not written back to `src/data/*.json`.
 - Runtime data should be treated as effective data composed from static JSON data plus localStorage overlays.
+- Local users should be stored under `local-feed-local-users`; local accounts should be stored under `local-feed-local-accounts`.
+- Clearing browser localStorage can remove locally registered users, accounts, and follow changes.
 - The `/me` route should show the active user's local personal area, including connected Accounts and their Posts.
 
 ## MVP4 Scope: Local User Entry & Registration Flow
 
-MVP4 should support a natural local entry flow before the feed is shown:
+MVP4 supports a natural local entry flow before the feed is shown:
 
 - If there is no active user, show a User Entry screen.
 - Let the user enter an id or handle.
@@ -60,7 +62,7 @@ MVP4 should support a natural local entry flow before the feed is shown:
 - The active user remains stored in `localStorage` after refresh.
 - Provide logout and switch user flows. In this prototype, logout only clears the active local user.
 
-Prefer terms such as local user entry, local registration, active user, switch user, and logout. Avoid naming code or documentation as if real auth/security exists.
+Prefer terms such as local user entry, local registration, active user, switch user, and logout. Avoid naming code or documentation as if real auth/security exists. `Logout` is allowed as a UI action, but it must be documented and implemented as clearing `local-feed-active-user-id`, not ending an authenticated session.
 
 ## Development Guidelines
 

@@ -1,12 +1,12 @@
 # Instagram-like Local Feed Prototype
 
-## MVP4 Goal: Local User Entry & Registration Flow
+## MVP4: Local User Entry & Registration Flow
 
 MVP4 adds a local user entry flow so the app can feel like it starts from "my id" without adding a backend, database, or authentication system.
 
-In MVP4, users should be able to enter an id or handle. If it matches an existing effective `User`, that user becomes the active user. If it does not match, the app should guide the user into local registration.
+Users can enter a local user id or handle. If it matches an existing effective `User`, that user becomes the active user and the app opens the feed shell. If it does not match, the app offers local registration.
 
-Local registration creates a new `User` and a 1:1 corresponding `Account`. These local records are stored in `localStorage`; the app must not write to `src/data/*.json` at runtime. The new user's follow state is initialized in `localStorage`, and the active user remains stored under `local-feed-active-user-id` after refresh.
+Local registration creates a new `User` and a 1:1 corresponding `Account`. These local records are stored in `localStorage`; the app does not write to `src/data/*.json` at runtime. The new user's follow state is initialized in `localStorage`, and the active user remains stored under `local-feed-active-user-id` after refresh.
 
 The runtime data model for MVP4 should be effective data:
 
@@ -16,7 +16,18 @@ effective accounts = static accounts.json + localStorage account overlay
 effective follow state = static follows.json + localStorage follow overlay
 ```
 
-MVP4 still does not implement real login, signup, passwords, auth tokens, secure sessions, authorization, backend APIs, databases, JSON file writes, post creation/editing/deletion, comments, likes, bookmarks, search, tag aggregation, or tag pages. UI may expose a `Logout` action, but in this prototype logout only clears the active local user.
+MVP4 localStorage keys:
+
+```text
+active user id = local-feed-active-user-id
+local users = local-feed-local-users
+local accounts = local-feed-local-accounts
+user follow state = local-feed-following-by-user
+```
+
+`Logout` and `Switch user` are local prototype actions. They clear the active user id and return to the local user entry screen; they do not end a secure session. If browser localStorage is cleared, locally registered users, accounts, and follow changes can disappear.
+
+MVP4 still does not implement real login, signup, passwords, auth tokens, secure sessions, authorization, backend APIs, databases, JSON file writes, post creation/editing/deletion, comments, likes, bookmarks, search, tag aggregation, or tag pages.
 
 Vite, React, TypeScript로 만든 범용 로컬 feed 프로토타입입니다.
 
