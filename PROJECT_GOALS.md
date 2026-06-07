@@ -23,14 +23,17 @@ Account
 
 MVP3의 목표는 **Multi-user Local Feed Base**다. 여러 로컬 User 중 현재 active user를 선택하고, active user별로 follow 상태와 Home Feed를 분리하는 기반을 만든다. 이 User는 실제 로그인 계정이 아니라 정적 JSON과 `localStorage`로 동작하는 로컬 프로필이다.
 
+MVP3는 실제 인증/보안 기능이 아니다. active user selector는 로컬 프로토타입에서 앱을 어떤 User 관점으로 볼지 바꾸는 장치이며, 비밀번호, 토큰, 권한, 서버 세션을 만들지 않는다.
+
 MVP3에서 구현할 것:
 
 ```text
 User 타입
 src/data/users.json
 active user 선택 기능
-active user localStorage 저장
+active user localStorage 저장 (`local-feed-active-user-id`)
 user별 follow 상태 분리
+user별 follow localStorage 저장 (`local-feed-following-by-user`)
 /me 페이지
 ```
 
@@ -49,6 +52,7 @@ DB
 북마크
 검색
 태그 모아보기
+tag pages
 mock data 대규모 다양화
 ```
 
@@ -149,6 +153,8 @@ Report
 ## 5. Account 개념
 
 Account는 게시물을 발행하는 주체다.
+
+User와 Account는 구분한다. User는 현재 앱을 어떤 로컬 사용자 관점으로 보고 있는지를 나타내는 viewer이고, Account는 Post를 발행하는 feed 주체다. User는 `account_id`를 통해 자신과 연결된 Account를 가질 수 있지만, User 자체가 인증 계정이나 서버 계정이 되는 것은 아니다.
 
 Account는 다음과 같은 형태가 될 수 있다.
 
@@ -279,6 +285,13 @@ MVP3부터 follow 상태는 active user별로 분리한다. active user를 바�
 
 로컬 프로토타입에서는 active user와 follow 상태를 `localStorage`에 저장한다.
 
+현재 저장 key는 다음과 같다.
+
+```text
+active user id = local-feed-active-user-id
+user별 follow 상태 = local-feed-following-by-user
+```
+
 ---
 
 ## 10. 필수 화면
@@ -349,7 +362,8 @@ MVP3부터 follow 상태는 active user별로 분리한다. active user를 바�
 
 ```text
 - active user 정보 표시
-- active user가 연결한 Account 목록 표시
+- active user의 `account_id`와 연결된 Account 표시
+- 내가 follow한 Account 수 표시
 - 연결된 Account가 발행한 Post 목록 표시
 - Account profile과 Post detail로 이동 가능
 ```
@@ -392,6 +406,7 @@ File write logic
 Post create/update/delete
 Search
 Tag aggregation
+Tag pages
 Server deployment
 Real-time update
 ```
@@ -411,6 +426,13 @@ src/data/accounts.json
 src/data/users.json
 src/data/posts.json
 src/data/follows.json
+```
+
+MVP3 기준 데이터 구조:
+
+```text
+users.json: id, display_name, handle, avatar?, bio?, account_id?, metadata?
+follows.json: user_id, following_account_ids
 ```
 
 정적 asset은 다음 경로 아래에 둘 수 있다.

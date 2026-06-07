@@ -35,10 +35,11 @@ This stage is intentionally local and static.
 
 - Use static JSON data.
 - Keep static assets under `public/assets`.
-- Do not implement a backend, database, authentication, likes, comments, notifications, upload flows, file write logic, deployment, or real-time updates.
+- Do not implement a backend, database, authentication, likes, comments, bookmarks, search, tag pages, notifications, upload flows, file write logic, deployment, or real-time updates.
 - MVP3 introduces a local `User` model only for selecting an active local user and separating local state. It is not a login, authentication, authorization, password, token, or account-management system.
-- Active user state should be stored in `localStorage`.
-- Follow state should be lightweight, local, stored in `localStorage`, and separated by active user.
+- A `User` represents the local viewer of the app. An `Account` represents an entity that publishes Posts.
+- Active user state should be stored in `localStorage` under `local-feed-active-user-id`.
+- Follow state should be lightweight, local, separated by active user, and stored in `localStorage` under `local-feed-following-by-user`.
 - The `/me` route should show the active user's local personal area, including connected Accounts and their Posts.
 
 ## Development Guidelines
