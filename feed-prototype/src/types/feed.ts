@@ -61,8 +61,8 @@ export interface Post {
 }
 
 export interface FollowState {
-  accountId: string;
-  isFollowing: boolean;
+  user_id: string;
+  following_account_ids: string[];
 }
 
 export interface FeedItem {
