@@ -5,12 +5,11 @@ import EmptyState from '../components/EmptyState';
 import MetadataTable from '../components/MetadataTable';
 import PostBadges from '../components/PostBadges';
 import TagList from '../components/TagList';
-import accountsData from '../data/accounts.json';
 import postsData from '../data/posts.json';
+import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import type { Account, Post } from '../types/feed';
 import { formatDateTime } from '../utils/format';
 
-const accounts = accountsData as unknown as Account[];
 const posts = postsData as unknown as Post[];
 
 function AccountAvatar({ account }: { account: Account }) {
@@ -38,6 +37,7 @@ function AccountAvatar({ account }: { account: Account }) {
 export default function PostDetail() {
   const navigate = useNavigate();
   const { postId } = useParams();
+  const accounts = useEffectiveAccounts();
   const post = posts.find((postItem) => postItem.id === postId);
   const account = post
     ? accounts.find((accountItem) => accountItem.id === post.accountId)

@@ -1,22 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import followsData from '../data/follows.json';
-import type { FollowState } from '../types/feed';
+import {
+  LOCAL_DATA_EVENT,
+  readFollowingByUserOverlay,
+  writeFollowingByUserOverlay,
+} from '../utils/localData';
 import { useActiveUser } from './useActiveUser';
 
-const STORAGE_KEY = 'local-feed-following-by-user';
 const FOLLOW_STATE_EVENT = 'local-feed-following-change';
-
-const initialFollows = followsData as unknown as FollowState[];
 
 function normalizeIds(ids: string[]): string[] {
   return Array.from(new Set(ids)).sort();
-}
-
-function getInitialFollowingByUser(): Record<string, string[]> {
-  return initialFollows.reduce<Record<string, string[]>>((result, followState) => {
-    result[followState.user_id] = normalizeIds(followState.following_account_ids);
-    return result;
-  }, {});
 }
 
 function normalizeFollowingByUser(
@@ -31,44 +24,7 @@ function normalizeFollowingByUser(
 }
 
 function readFollowingByUser(): Record<string, string[]> {
-  const initialFollowingByUser = getInitialFollowingByUser();
-
-  if (typeof window === 'undefined') {
-    return initialFollowingByUser;
-  }
-
-  const storedValue = window.localStorage.getItem(STORAGE_KEY);
-
-  if (!storedValue) {
-    return initialFollowingByUser;
-  }
-
-  try {
-    const parsedValue: unknown = JSON.parse(storedValue);
-
-    if (!parsedValue || typeof parsedValue !== 'object' || Array.isArray(parsedValue)) {
-      return initialFollowingByUser;
-    }
-
-    const storedFollowingByUser = Object.entries(parsedValue).reduce<
-      Record<string, string[]>
-    >((result, [userId, accountIds]) => {
-      if (!Array.isArray(accountIds)) {
-        return result;
-      }
-
-      result[userId] = accountIds.filter(
-        (accountId): accountId is string => typeof accountId === 'string',
-      );
-      return result;
-    }, {});
-
-    return normalizeFollowingByUser(
-      { ...initialFollowingByUser, ...storedFollowingByUser },
-    );
-  } catch {
-    return initialFollowingByUser;
-  }
+  return normalizeFollowingByUser(readFollowingByUserOverlay());
 }
 
 function writeFollowingByUser(followingByUser: Record<string, string[]>) {
@@ -76,10 +32,7 @@ function writeFollowingByUser(followingByUser: Record<string, string[]>) {
     return;
   }
 
-  window.localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(normalizeFollowingByUser(followingByUser)),
-  );
+  writeFollowingByUserOverlay(normalizeFollowingByUser(followingByUser));
   window.dispatchEvent(new Event(FOLLOW_STATE_EVENT));
 }
 
@@ -96,10 +49,12 @@ export function useFollowState() {
 
     window.addEventListener('storage', syncFollowingByUser);
     window.addEventListener(FOLLOW_STATE_EVENT, syncFollowingByUser);
+    window.addEventListener(LOCAL_DATA_EVENT, syncFollowingByUser);
 
     return () => {
       window.removeEventListener('storage', syncFollowingByUser);
       window.removeEventListener(FOLLOW_STATE_EVENT, syncFollowingByUser);
+      window.removeEventListener(LOCAL_DATA_EVENT, syncFollowingByUser);
     };
   }, []);
 
