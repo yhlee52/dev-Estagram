@@ -46,6 +46,8 @@ MVP5 data policy:
 
 MVP5 does not add real login/authentication, write APIs, admin UI, upload APIs, S3 integration, comments, likes, bookmarks, search, tag pages, or equipment-report-specific core naming.
 
+Backend setup, migration, seed, run, and API smoke-test instructions are documented in `feed-prototype/backend/README.md`.
+
 ## MVP4: Local User Entry & Registration Flow
 
 MVP4 adds a local user entry flow so the app can feel like it starts from "my id" without adding a backend, database, or authentication system.

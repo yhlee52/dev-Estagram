@@ -74,7 +74,7 @@ tag pages
 equipment-report-specific core naming
 ```
 
-The next implementation step after this documentation pass is MVP5-1: create the backend skeleton.
+MVP5 backend setup, migration, seed, run, and read-only API smoke-test steps are documented in `feed-prototype/backend/README.md`.
 
 ## MVP4: Local User Entry & Registration Flow
 

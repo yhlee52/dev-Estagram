@@ -4,16 +4,59 @@ MVP5 adds a minimal FastAPI backend for the local feed prototype.
 
 The backend now includes `GET /health`, SQLModel database setup, Alembic migrations, and a small demo seed script. It does not add authentication, CRUD APIs, uploads, admin features, or frontend API integration.
 
+## Stack
+
+- FastAPI
+- PostgreSQL
+- SQLModel
+- Alembic
+- Local file folder: `backend/uploads/`
+
 ## Setup
 
 ```bash
 cd feed-prototype/backend
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\.venv\Scripts\activate
 pip install -r requirements.txt
+copy .env.example .env
 ```
 
-## Run
+Edit `.env` and set `DATABASE_URL` for your local PostgreSQL environment.
+
+Example:
+
+```text
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/feed_prototype
+```
+
+Do not commit a real `.env` file.
+
+## PostgreSQL
+
+Create a local PostgreSQL database named:
+
+```text
+feed_prototype
+```
+
+You can create it with pgAdmin or any local PostgreSQL tool. Real DB data, dumps, and local `.env` files should not be committed.
+
+## Migrate
+
+```bash
+alembic upgrade head
+```
+
+## Seed
+
+```bash
+python -m app.services.seed
+```
+
+The seed script inserts a small generic feed dataset for backend API checks. It is separate from the frontend mock JSON data.
+
+## Run Backend
 
 ```bash
 uvicorn app.main:app --reload
@@ -25,29 +68,36 @@ The API will be available at:
 http://127.0.0.1:8000
 ```
 
-## Health Check
+## API Smoke Test
 
 ```bash
 curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/api/users
+curl http://127.0.0.1:8000/api/accounts
+curl http://127.0.0.1:8000/api/posts
+curl http://127.0.0.1:8000/api/follows
+curl "http://127.0.0.1:8000/api/feed?user_id=demo-user-ari"
 ```
 
-Expected response:
-
-```json
-{
-  "status": "ok",
-  "service": "feed-prototype-backend"
-}
-```
-
-Use `.env.example` as a reference for local environment variables. Do not commit a real `.env` file.
-
-## Seed Demo Data
-
-After applying migrations to a local PostgreSQL database, run:
+If your database has a user with id `1`, this shape also works:
 
 ```bash
-python -m app.services.seed
+curl "http://127.0.0.1:8000/api/feed?user_id=1"
 ```
 
-The seed script inserts a small generic feed dataset for backend API checks. It is separate from the frontend mock JSON data.
+## Data Policy
+
+- Existing frontend mock JSON stays in place during MVP5.
+- The frontend is not converted to API-backed data yet.
+- Backend seed data exists separately for DB and read-only API verification.
+- DB state should be reproducible from Alembic migrations plus the seed script.
+- Real PostgreSQL DB data is not committed.
+
+## Not In MVP5
+
+- Authentication or login
+- POST/PUT/PATCH/DELETE APIs
+- Admin UI
+- File upload API
+- S3 integration
+- Frontend API migration
