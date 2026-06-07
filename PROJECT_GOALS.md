@@ -1,5 +1,81 @@
 # PROJECT_GOALS.md
 
+## MVP4: Local User Entry & Registration Flow
+
+MVP4 adds a local user entry and local registration flow on top of the existing local/static feed prototype.
+
+The goal is to let a user naturally enter the app by id or handle without introducing a backend, database, authentication, passwords, tokens, secure sessions, authorization, or account security.
+
+Current MVP4 implementation:
+
+```text
+1. If there is no active user, show a User Entry screen.
+2. Let the user enter an id or handle.
+3. If the entered id/handle matches an existing effective User, set that User as active.
+4. If the entered id/handle does not match, guide the user to local registration.
+5. Local registration creates one new User and one corresponding Account.
+6. During the MVP stage, User and Account should remain 1:1.
+7. Store new local user/account records in localStorage.
+8. Initialize the new user's follow state in localStorage.
+9. Keep active user state in localStorage under local-feed-active-user-id.
+10. Provide logout and switch user flows.
+11. Preserve MVP3 user-specific follow, feed, and /me behavior.
+```
+
+The entry flow works like this:
+
+```text
+1. The user enters a local user id or handle.
+2. If the value matches an existing effective User, the app sets that User as active.
+3. If the value does not match, the app offers local registration.
+4. Local registration creates one User and one Account for that User.
+5. The new User, Account, and initial empty follow state are saved in localStorage.
+6. The app sets the new User as active and enters the feed experience.
+```
+
+MVP4 should not implement:
+
+```text
+real login
+passwords
+authentication tokens
+secure sessions
+authorization
+backend API
+database
+runtime writes to src/data/*.json
+post create/update/delete
+comments
+likes
+bookmarks
+search
+tag aggregation
+tag pages
+```
+
+Runtime data should be treated as effective data composed from static JSON plus localStorage overlays:
+
+```text
+effective users = src/data/users.json + localStorage local user records
+effective accounts = src/data/accounts.json + localStorage local account records
+effective follow state = src/data/follows.json + localStorage follow records
+```
+
+Current localStorage keys:
+
+```text
+active user id = local-feed-active-user-id
+local users = local-feed-local-users
+local accounts = local-feed-local-accounts
+user follow state = local-feed-following-by-user
+```
+
+The static JSON files remain seed data. Runtime local registration does not write to `src/data/*.json`. If browser localStorage is cleared, locally registered users, accounts, and follow changes can disappear.
+
+Use generic core concepts: `User`, `Account`, `Post`, `Feed`, `Follow`, `Asset`, and `Metadata`. Company-internal equipment reports remain one possible data scenario only. Equipment-report-specific values should stay in `metadata` or asset metadata, not in core type names, routes, or primary component names.
+
+Prefer local user entry and local registration language. Avoid code and documentation names that imply real auth/security is implemented. `Logout`, `Switch user`, and similar user-facing actions may be used, but in MVP4 they only clear the active local user id from localStorage. They do not end a secure session.
+
 # Instagram-like Local Feed Prototype 프로젝트 목표
 
 ## 1. 프로젝트 목표

@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
-import accountsData from '../data/accounts.json';
 import postsData from '../data/posts.json';
+import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useFollowState } from '../hooks/useFollowState';
-import type { Account, Post } from '../types/feed';
+import type { Post } from '../types/feed';
 import { getFeedItems, getFollowedFeedItems } from '../utils/feed';
 
-const accounts = accountsData as unknown as Account[];
 const posts = postsData as unknown as Post[];
 type FeedScope = 'following' | 'all';
 
@@ -21,6 +20,7 @@ const feedScopeOptions: Array<{
 
 export default function HomeFeed() {
   const [feedScope, setFeedScope] = useState<FeedScope>('following');
+  const accounts = useEffectiveAccounts();
   const { followingIds } = useFollowState();
   const followingFeedItems = getFollowedFeedItems(posts, accounts, followingIds);
   const allFeedItems = getFeedItems(posts, accounts);

@@ -1,38 +1,72 @@
 import { Outlet } from 'react-router';
 import { useActiveUser } from '../hooks/useActiveUser';
 import BottomNav from './BottomNav';
+import LocalUserEntry from './LocalUserEntry';
 
 export default function AppShell() {
-  const { users, activeUser, activeUserId, setActiveUserId } = useActiveUser();
+  const { activeUser, clearActiveUser } = useActiveUser();
+
+  if (!activeUser) {
+    return <LocalUserEntry />;
+  }
+
+  const avatarInitial =
+    activeUser.display_name.trim().charAt(0).toUpperCase() ||
+    activeUser.handle.trim().charAt(0).toUpperCase() ||
+    'U';
 
   return (
     <div className="min-h-screen bg-neutral-200 text-neutral-950">
       <div className="mx-auto flex min-h-screen max-w-[430px] flex-col bg-neutral-50 shadow-sm">
         <header className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-50/95 px-4 py-3 backdrop-blur">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <h1 className="text-lg font-bold tracking-normal">Local Feed</h1>
-              {activeUser ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold tracking-normal">Local Feed</h1>
+                <p className="truncate text-xs font-medium text-neutral-500">
+                  Local user
+                </p>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  className="h-8 rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100"
+                  onClick={clearActiveUser}
+                >
+                  Switch user
+                </button>
+                <button
+                  type="button"
+                  className="h-8 rounded-md bg-neutral-950 px-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-neutral-800"
+                  onClick={clearActiveUser}
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-md border border-neutral-200 bg-white px-3 py-2 shadow-sm">
+              {activeUser.avatar ? (
+                <img
+                  src={activeUser.avatar}
+                  alt={`${activeUser.display_name} avatar`}
+                  className="size-10 shrink-0 rounded-full bg-neutral-200 object-cover ring-1 ring-neutral-200"
+                />
+              ) : (
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-sm font-bold text-neutral-600 ring-1 ring-neutral-200">
+                  {avatarInitial}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-neutral-950">
+                  {activeUser.display_name}
+                </p>
                 <p className="truncate text-xs font-medium text-neutral-500">
                   @{activeUser.handle}
                 </p>
-              ) : null}
+              </div>
             </div>
-
-            <label className="min-w-0 shrink-0">
-              <span className="sr-only">Active user</span>
-              <select
-                className="h-9 max-w-40 rounded-md border border-neutral-200 bg-white px-2 text-sm font-semibold text-neutral-800 shadow-sm"
-                value={activeUserId}
-                onChange={(event) => setActiveUserId(event.target.value)}
-              >
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.display_name}
-                  </option>
-                ))}
-              </select>
-            </label>
           </div>
         </header>
 

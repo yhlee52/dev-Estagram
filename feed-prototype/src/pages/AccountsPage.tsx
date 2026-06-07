@@ -1,11 +1,10 @@
 import EmptyState from '../components/EmptyState';
 import AccountCard from '../components/AccountCard';
-import accountsData from '../data/accounts.json';
 import postsData from '../data/posts.json';
+import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useFollowState } from '../hooks/useFollowState';
-import type { Account, Post } from '../types/feed';
+import type { Post } from '../types/feed';
 
-const accounts = accountsData as unknown as Account[];
 const posts = postsData as unknown as Post[];
 
 const postCountByAccountId = posts.reduce<Record<string, number>>((counts, post) => {
@@ -14,6 +13,7 @@ const postCountByAccountId = posts.reduce<Record<string, number>>((counts, post)
 }, {});
 
 export default function AccountsPage() {
+  const accounts = useEffectiveAccounts();
   const { isFollowing, toggleFollow } = useFollowState();
 
   if (accounts.length === 0) {

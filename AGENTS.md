@@ -37,10 +37,32 @@ This stage is intentionally local and static.
 - Keep static assets under `public/assets`.
 - Do not implement a backend, database, authentication, likes, comments, bookmarks, search, tag pages, notifications, upload flows, file write logic, deployment, or real-time updates.
 - MVP3 introduces a local `User` model only for selecting an active local user and separating local state. It is not a login, authentication, authorization, password, token, or account-management system.
+- MVP4 introduces a local user entry and local registration flow. It is still not authentication, signup, authorization, password handling, token handling, or a secure session.
 - A `User` represents the local viewer of the app. An `Account` represents an entity that publishes Posts.
+- During the MVP stage, each local `User` should have exactly one corresponding `Account`.
 - Active user state should be stored in `localStorage` under `local-feed-active-user-id`.
 - Follow state should be lightweight, local, separated by active user, and stored in `localStorage` under `local-feed-following-by-user`.
+- New locally registered users, their corresponding accounts, and their initialized follow state should be stored in `localStorage`, not written back to `src/data/*.json`.
+- Runtime data should be treated as effective data composed from static JSON data plus localStorage overlays.
+- Local users should be stored under `local-feed-local-users`; local accounts should be stored under `local-feed-local-accounts`.
+- Clearing browser localStorage can remove locally registered users, accounts, and follow changes.
 - The `/me` route should show the active user's local personal area, including connected Accounts and their Posts.
+
+## MVP4 Scope: Local User Entry & Registration Flow
+
+MVP4 supports a natural local entry flow before the feed is shown:
+
+- If there is no active user, show a User Entry screen.
+- Let the user enter an id or handle.
+- If the entered id or handle matches an existing effective user, set that user as the active user.
+- If no matching user exists, guide the user into local registration.
+- Local registration creates a new `User` and a 1:1 corresponding `Account`.
+- The new local user/account is stored in `localStorage`.
+- The new local user's follow state is initialized in `localStorage`.
+- The active user remains stored in `localStorage` after refresh.
+- Provide logout and switch user flows. In this prototype, logout only clears the active local user.
+
+Prefer terms such as local user entry, local registration, active user, switch user, and logout. Avoid naming code or documentation as if real auth/security exists. `Logout` is allowed as a UI action, but it must be documented and implemented as clearing `local-feed-active-user-id`, not ending an authenticated session.
 
 ## Development Guidelines
 

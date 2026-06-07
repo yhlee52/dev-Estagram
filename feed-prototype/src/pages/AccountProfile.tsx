@@ -2,14 +2,13 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
-import accountsData from '../data/accounts.json';
 import postsData from '../data/posts.json';
+import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useFollowState } from '../hooks/useFollowState';
 import type { Account, Post } from '../types/feed';
 import { formatDateTime } from '../utils/format';
 import { getPostsByAccountId, joinPostWithAccount } from '../utils/feed';
 
-const accounts = accountsData as unknown as Account[];
 const posts = postsData as unknown as Post[];
 
 function AccountAvatar({ account }: { account: Account }) {
@@ -45,6 +44,7 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
 
 export default function AccountProfile() {
   const { accountId } = useParams();
+  const accounts = useEffectiveAccounts();
   const { isFollowing, toggleFollow } = useFollowState();
   const account = accounts.find((accountItem) => accountItem.id === accountId);
 
