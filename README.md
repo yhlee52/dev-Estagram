@@ -261,3 +261,232 @@ Account avatar도 같은 방식으로 `/assets/avatars/...` 경로를 사용할 
 - Post는 daily report, 작업 로그, 점검 기록, 분석 결과를 담을 수 있습니다.
 - 설비나 리포트에 특화된 값은 core type 이름으로 만들지 않고 `metadata` 또는 asset metadata에 저장합니다.
 - 따라서 회사 내부 리포트 feed는 별도 전용 앱이 아니라 범용 local feed 모델 위에 얹히는 데이터 시나리오로 유지됩니다.
+
+## 테스트 방법 정리
+
+1. PostgreSQL DB 준비
+
+MVP5-2만 했다면 아직 DB가 필요 없지만, MVP5-4 이후까지 진행했다면 DB가 필요합니다.
+
+pgAdmin 또는 psql에서 DB를 하나 만듭니다.
+
+DB 이름:
+
+feed_prototype
+
+pgAdmin 기준:
+
+Servers
+→ PostgreSQL 서버 선택
+→ Databases 우클릭
+→ Create
+→ Database
+→ Database name: feed_prototype
+→ Save
+
+사용자/비밀번호는 본인 PostgreSQL 설치 시 설정한 값을 사용하면 됩니다.
+
+예를 들어:
+
+host: localhost
+port: 5432
+database: feed_prototype
+user: postgres
+password: 본인 비밀번호
+2. backend conda 환경 준비
+
+VSCode PowerShell 또는 Miniconda Prompt에서 repo 루트로 이동합니다.
+
+cd C:\...\feed-prototype
+
+conda 환경이 이미 있으면 활성화합니다.
+
+conda activate feed-backend
+
+없으면 생성합니다.
+
+conda create -n feed-backend python=3.11
+conda activate feed-backend
+
+backend 폴더로 이동합니다.
+
+cd backend
+
+필요 패키지를 설치합니다.
+
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+설치 확인:
+
+pip list
+
+최소한 아래 계열이 보여야 합니다.
+
+fastapi
+uvicorn
+sqlmodel
+psycopg
+alembic
+pydantic-settings
+3. backend .env 만들기
+
+backend 폴더 안에서 실행합니다.
+
+copy .env.example .env
+
+그 다음 VSCode에서 backend/.env 파일을 열고 DATABASE_URL을 본인 DB 정보에 맞게 수정합니다.
+
+예:
+
+DATABASE_URL=postgresql+psycopg://postgres:내비밀번호@localhost:5432/feed_prototype
+
+예를 들어 비밀번호가 postgres라면:
+
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/feed_prototype
+
+주의:
+
+.env는 Git에 올리면 안 됩니다.
+.env.example만 Git에 올라가야 합니다.
+
+확인:
+
+git status
+
+여기서 backend/.env가 보이면 안 됩니다.
+보이면 .gitignore에 backend/.env를 추가해야 합니다.
+
+4. migration 실행
+
+backend 폴더에서 실행합니다.
+
+alembic upgrade head
+
+정상이라면 큰 에러 없이 종료됩니다.
+
+확인용:
+
+alembic current
+alembic history
+
+만약 connection refused, password authentication failed, database does not exist 같은 에러가 나오면 대부분 .env의 DATABASE_URL 문제입니다.
+
+대표 원인:
+
+DB 이름이 feed_prototype이 아님
+PostgreSQL 서버가 꺼져 있음
+비밀번호가 틀림
+포트가 5432가 아님
+DATABASE_URL 문법이 틀림
+5. seed data 삽입
+
+migration이 성공한 뒤 실행합니다.
+
+python -m app.services.seed
+
+정상이라면 users/accounts/posts/assets/follows 같은 demo data가 DB에 들어갑니다.
+
+중복 방지 확인을 위해 한 번 더 실행해도 됩니다.
+
+python -m app.services.seed
+
+두 번째 실행에서 duplicate이 무한히 생기지 않아야 합니다.
+
+6. backend 실행
+
+backend 폴더에서 실행합니다.
+
+python -m uvicorn app.main:app --reload
+
+정상 로그 예:
+
+Uvicorn running on http://127.0.0.1:8000
+Application startup complete.
+
+이 터미널은 backend 서버용으로 계속 켜둡니다.
+
+7. backend API 확인
+
+브라우저에서 먼저 확인합니다.
+
+http://127.0.0.1:8000/health
+
+정상 예:
+
+{"status":"ok","service":"feed-prototype-backend"}
+
+FastAPI 문서도 확인합니다.
+
+http://127.0.0.1:8000/docs
+
+여기서 /api/users, /api/accounts, /api/posts, /api/feed 등이 보이면 좋습니다.
+
+다른 터미널에서 curl로도 확인할 수 있습니다.
+
+curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/api/users
+curl http://127.0.0.1:8000/api/accounts
+curl http://127.0.0.1:8000/api/posts
+curl http://127.0.0.1:8000/api/follows
+curl "http://127.0.0.1:8000/api/feed?user_id=1"
+
+특히 이게 잘 나오면 backend DB/API skeleton은 정상입니다.
+
+curl "http://127.0.0.1:8000/api/feed?user_id=1"
+8. frontend 패키지 설치
+
+새 VSCode 터미널을 열고 repo 루트로 이동합니다.
+
+cd C:\...\feed-prototype
+
+아직 node_modules가 없으면:
+
+npm install
+
+이미 설치되어 있으면 생략 가능하지만, 처음 환경이면 반드시 해야 합니다.
+
+빌드 확인:
+
+npm run build
+
+정상적으로 build가 통과해야 합니다.
+
+9. frontend 실행
+
+repo 루트에서 실행합니다.
+
+npm run dev
+
+정상이라면 대략 이런 주소가 나옵니다.
+
+Local: http://localhost:5173/
+
+브라우저에서 접속합니다.
+
+http://localhost:5173/
+10. 브라우저에서 feed 확인
+
+MVP5에서는 frontend가 아직 backend API를 쓰지 않는 구조일 가능성이 높습니다.
+따라서 브라우저에서 확인할 것은 다음입니다.
+
+1. User Entry 화면이 정상적으로 뜨는지
+2. 기존 user id/handle로 진입 가능한지
+3. 새 local user 등록이 되는지
+4. Home Feed가 뜨는지
+5. Following / All 탭이 동작하는지
+6. Accounts / Explore 화면이 동작하는지
+7. Account Profile로 이동되는지
+8. Post Detail이 열리는지
+9. follow / unfollow가 localStorage 기준으로 동작하는지
+
+즉, frontend feed가 잘 나오는지 확인하는 것은 아직 mock JSON/localStorage 기반 UI 확인입니다.
+
+backend 확인은 별도입니다.
+
+frontend feed 확인
+→ http://localhost:5173/
+
+backend API 확인
+→ http://127.0.0.1:8000/docs
+→ http://127.0.0.1:8000/api/feed?user_id=1
