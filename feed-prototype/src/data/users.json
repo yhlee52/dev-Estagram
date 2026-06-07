@@ -1,0 +1,32 @@
+[
+  {
+    "id": "user_mina",
+    "display_name": "Mina Park",
+    "handle": "mina",
+    "avatar": "/assets/avatars/daily-notes.png",
+    "bio": "Uses Local Feed for personal notes and quiet daily snapshots.",
+    "account_id": "acct_daily_notes",
+    "metadata": {
+      "workspace": "personal"
+    }
+  },
+  {
+    "id": "user_joon",
+    "display_name": "Joon Lee",
+    "handle": "joon",
+    "bio": "Checks saved feeds and lightweight project updates.",
+    "account_id": "acct_joon_notes",
+    "metadata": {
+      "workspace": "project"
+    }
+  },
+  {
+    "id": "user_ara",
+    "display_name": "Ara Kim",
+    "handle": "ara",
+    "bio": "Reviews local feed scenarios without a backend account.",
+    "metadata": {
+      "workspace": "review"
+    }
+  }
+]
