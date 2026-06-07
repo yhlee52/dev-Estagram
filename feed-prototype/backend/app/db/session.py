@@ -1,13 +1,19 @@
+from functools import lru_cache
+
 from sqlmodel import Session, create_engine
+from sqlalchemy.engine import Engine
 
-from app.core.config import settings
+from app.core.config import get_settings
 
 
-engine = create_engine(
-    settings.database_url,
-    pool_pre_ping=True,
-)
+@lru_cache
+def get_engine() -> Engine:
+    settings = get_settings()
+    return create_engine(
+        settings.database_url,
+        pool_pre_ping=True,
+    )
 
 
 def create_session() -> Session:
-    return Session(engine)
+    return Session(get_engine())
