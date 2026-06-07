@@ -80,19 +80,30 @@ MVP6 completion criteria:
 10. TypeScript build passes from feed-prototype/.
 ```
 
-Suggested next work steps:
+MVP6 completed implementation scope:
 
 ```text
-MVP6-1 frontend env / data source mode setting
-MVP6-2 frontend API client
-MVP6-3 API user lookup and API user entry
-MVP6-4 API feed repository
-MVP6-5 Home Feed API mode connection
-MVP6-6 API mode loading/error/empty states
-MVP6-7 Accounts/Profile/Post Detail read-only API mode
-MVP6-8 mock mode regression check
-MVP6-9 run/test documentation
-MVP6-10 final checkpoint
+frontend env / data source mode setting
+frontend read-only API client
+API user lookup and API user entry
+active API user localStorage storage, separate from mock local user storage
+API feed repository and mock feed repository
+Home Feed API mode connection
+API mode loading/error/empty states
+Accounts/Profile/Post Detail read-only API mode
+mock mode regression and scope check
+MVP6 run/test documentation under feed-prototype/docs/
+frontend .env ignored by Git
+```
+
+MVP6 known follow-up candidates for later MVPs:
+
+```text
+include assets in GET /api/accounts/{account_id}/posts if profile cards need full asset previews
+consider API-backed follow/unfollow only after write API scope is intentionally opened
+consider API-backed user creation only after authentication/authorization goals are explicitly designed
+add automated browser smoke tests for mock mode and API mode
+fill or regenerate missing frontend public/assets files if mock image previews are required
 ```
 
 ## MVP5: Backend & DB Skeleton
