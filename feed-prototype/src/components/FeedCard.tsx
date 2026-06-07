@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import type { FeedItem } from '../types/feed';
 import { formatDateTime } from '../utils/format';
 import AssetRenderer from './AssetRenderer';
+import PostBadges from './PostBadges';
 import TagList from './TagList';
 
 type FeedCardProps = {
@@ -81,6 +82,7 @@ export default function FeedCard({ item }: FeedCardProps) {
 
         <div className="space-y-3">
           <div className="space-y-1.5">
+            <PostBadges post={post} />
             <h2 className="text-base font-bold leading-6 text-neutral-950">
               {post.title}
             </h2>

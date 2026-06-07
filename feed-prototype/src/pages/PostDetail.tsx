@@ -2,6 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import AssetRenderer from '../components/AssetRenderer';
 import EmptyState from '../components/EmptyState';
 import MetadataTable from '../components/MetadataTable';
+import PostBadges from '../components/PostBadges';
 import TagList from '../components/TagList';
 import accountsData from '../data/accounts.json';
 import postsData from '../data/posts.json';
@@ -75,6 +76,9 @@ export default function PostDetail() {
       </Link>
 
       <header className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+        <div className="mb-3">
+          <PostBadges post={post} />
+        </div>
         <h1 className="text-xl font-bold leading-7 text-neutral-950">{post.title}</h1>
         {post.caption ? (
           <p className="mt-2 text-sm leading-6 text-neutral-700">{post.caption}</p>
