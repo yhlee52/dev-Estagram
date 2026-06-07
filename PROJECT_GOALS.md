@@ -21,6 +21,37 @@ Account
 
 첫 번째 버전은 서버나 데이터베이스 없이, JSON 파일과 로컬 이미지/에셋을 사용하는 정적 데이터 기반 프로토타입으로 구현한다.
 
+MVP3의 목표는 **Multi-user Local Feed Base**다. 여러 로컬 User 중 현재 active user를 선택하고, active user별로 follow 상태와 Home Feed를 분리하는 기반을 만든다. 이 User는 실제 로그인 계정이 아니라 정적 JSON과 `localStorage`로 동작하는 로컬 프로필이다.
+
+MVP3에서 구현할 것:
+
+```text
+User 타입
+src/data/users.json
+active user 선택 기능
+active user localStorage 저장
+user별 follow 상태 분리
+/me 페이지
+```
+
+MVP3에서 구현하지 않을 것:
+
+```text
+실제 로그인
+비밀번호
+인증 토큰
+권한 관리
+backend API
+DB
+게시물 작성/수정/삭제
+댓글
+좋아요
+북마크
+검색
+태그 모아보기
+mock data 대규모 다양화
+```
+
 ---
 
 ## 2. 장기 목표
@@ -90,6 +121,7 @@ Daily analysis report = Post
 
 ```text
 Account
+User
 Post
 Feed
 Follow
@@ -232,6 +264,8 @@ UI는 metadata를 특정 도메인에 종속된 방식으로 해석하기보다,
 
 Home Feed는 사용자가 follow한 Account들의 Post만 보여준다.
 
+MVP3부터 follow 상태는 active user별로 분리한다. active user를 바꾸면 Home Feed, Accounts, Account Profile에서 보이는 follow 상태도 해당 User의 상태로 바뀌어야 한다.
+
 기본적인 feed 생성 과정은 다음과 같다.
 
 ```text
@@ -243,9 +277,7 @@ Home Feed는 사용자가 follow한 Account들의 Post만 보여준다.
 6. Feed card 형태로 렌더링한다.
 ```
 
-첫 번째 버전에서는 follow 상태를 간단하게 관리한다.
-
-로컬 프로토타입에서는 follow 상태를 `localStorage`에 저장한다.
+로컬 프로토타입에서는 active user와 follow 상태를 `localStorage`에 저장한다.
 
 ---
 
@@ -309,6 +341,19 @@ Home Feed는 사용자가 follow한 Account들의 Post만 보여준다.
 - metadata가 있으면 표시
 ```
 
+## 10.5 Me
+
+현재 active user의 개인 영역을 보여주는 화면이다.
+
+필수 동작:
+
+```text
+- active user 정보 표시
+- active user가 연결한 Account 목록 표시
+- 연결된 Account가 발행한 Post 목록 표시
+- Account profile과 Post detail로 이동 가능
+```
+
 ---
 
 ## 11. 초기 구현 범위
@@ -334,12 +379,19 @@ localStorage
 Backend API
 Database
 Authentication
-User account system
+Real login or user account system
+Password
+Auth token
+Authorization
 Likes
 Comments
+Bookmarks
 Notifications
 Image upload
 File write logic
+Post create/update/delete
+Search
+Tag aggregation
 Server deployment
 Real-time update
 ```
@@ -356,6 +408,7 @@ Real-time update
 
 ```text
 src/data/accounts.json
+src/data/users.json
 src/data/posts.json
 src/data/follows.json
 ```
