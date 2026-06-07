@@ -1,5 +1,51 @@
 # Instagram-like Local Feed Prototype
 
+## MVP5: Backend & DB Skeleton Planning
+
+MVP5 introduces the direction for a future backend and database layer while keeping the current frontend local/static.
+
+Planned backend stack:
+
+```text
+Backend: FastAPI
+Database: PostgreSQL
+ORM / DB layer: SQLModel
+Migration: Alembic
+File storage: backend/uploads/ local folder
+Backend path: backend/
+```
+
+MVP5 is a skeleton-introduction stage. It should make the project ready to move from static JSON and localStorage toward API/DB-backed data later, but it does not switch the frontend to API data yet.
+
+Planned database tables:
+
+- `users`
+- `accounts`
+- `posts`
+- `post_assets`
+- `follows`
+
+During MVP5, `User` and `Account` remain a 1:1 relationship. `User` represents the local viewer/person concept, and `Account` represents the entity that publishes Posts.
+
+Planned read-only API surface:
+
+- `GET /health`
+- `GET /api/users`
+- `GET /api/accounts`
+- `GET /api/posts`
+- `GET /api/follows`
+- `GET /api/feed?user_id=...`
+
+MVP5 data policy:
+
+- Keep the existing frontend mock JSON files.
+- Keep the MVP4 localStorage-based local user entry, local registration, active user, and follow flows.
+- Do not convert the frontend to API-backed data in MVP5.
+- Add backend seed data separately for PostgreSQL verification when backend work begins.
+- Do not commit a real PostgreSQL database. The database should be reproducible from migrations plus seed scripts.
+
+MVP5 does not add real login/authentication, write APIs, admin UI, upload APIs, S3 integration, comments, likes, bookmarks, search, tag pages, or equipment-report-specific core naming.
+
 ## MVP4: Local User Entry & Registration Flow
 
 MVP4 adds a local user entry flow so the app can feel like it starts from "my id" without adding a backend, database, or authentication system.
