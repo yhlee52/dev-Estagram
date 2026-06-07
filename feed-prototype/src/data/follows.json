@@ -1,18 +1,24 @@
 [
   {
-    "accountId": "acct_cafe_bot",
-    "isFollowing": true
+    "user_id": "user_mina",
+    "following_account_ids": [
+      "acct_cafe_bot",
+      "acct_daily_notes"
+    ]
   },
   {
-    "accountId": "acct_travel_bot",
-    "isFollowing": true
+    "user_id": "user_joon",
+    "following_account_ids": [
+      "acct_travel_bot",
+      "acct_equipment_report_bot",
+      "acct_joon_notes"
+    ]
   },
   {
-    "accountId": "acct_daily_notes",
-    "isFollowing": false
-  },
-  {
-    "accountId": "acct_equipment_report_bot",
-    "isFollowing": true
+    "user_id": "user_ara",
+    "following_account_ids": [
+      "acct_cafe_bot",
+      "acct_travel_bot"
+    ]
   }
 ]

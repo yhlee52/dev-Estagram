@@ -45,5 +45,15 @@
       "topic": "internal analysis",
       "cadence": "daily"
     }
+  },
+  {
+    "id": "acct_joon_notes",
+    "handle": "joon.notes",
+    "displayName": "Joon Notes",
+    "bio": "A lightweight personal account for project notes and saved observations.",
+    "kind": "person",
+    "metadata": {
+      "topic": "project notes"
+    }
   }
 ]

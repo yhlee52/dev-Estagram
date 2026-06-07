@@ -22,11 +22,7 @@ const feedScopeOptions: Array<{
 export default function HomeFeed() {
   const [feedScope, setFeedScope] = useState<FeedScope>('following');
   const { followingIds } = useFollowState();
-  const follows = followingIds.map((accountId) => ({
-    accountId,
-    isFollowing: true,
-  }));
-  const followingFeedItems = getFollowedFeedItems(posts, accounts, follows);
+  const followingFeedItems = getFollowedFeedItems(posts, accounts, followingIds);
   const allFeedItems = getFeedItems(posts, accounts);
   const feedItems = feedScope === 'following' ? followingFeedItems : allFeedItems;
 

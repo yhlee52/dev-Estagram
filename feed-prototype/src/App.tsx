@@ -3,6 +3,7 @@ import AppShell from './components/AppShell';
 import AccountProfile from './pages/AccountProfile';
 import AccountsPage from './pages/AccountsPage';
 import HomeFeed from './pages/HomeFeed';
+import MePage from './pages/MePage';
 import PostDetail from './pages/PostDetail';
 
 const router = createBrowserRouter([
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
       {
         path: 'accounts/:accountId',
         element: <AccountProfile />,
+      },
+      {
+        path: 'me',
+        element: <MePage />,
       },
       {
         path: 'posts/:postId',

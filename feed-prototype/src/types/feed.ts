@@ -17,6 +17,16 @@ export type MetadataValue =
 
 export type PostMetadata = Record<string, MetadataValue>;
 
+export interface User {
+  id: string;
+  display_name: string;
+  handle: string;
+  avatar?: string;
+  bio?: string;
+  account_id?: string;
+  metadata?: PostMetadata;
+}
+
 export interface Account {
   id: string;
   handle: string;
@@ -51,8 +61,8 @@ export interface Post {
 }
 
 export interface FollowState {
-  accountId: string;
-  isFollowing: boolean;
+  user_id: string;
+  following_account_ids: string[];
 }
 
 export interface FeedItem {

@@ -1,4 +1,4 @@
-import type { Account, FeedItem, FollowState, Post } from "../types/feed";
+import type { Account, FeedItem, Post } from "../types/feed";
 
 export function getAccountById(
   accounts: Account[],
@@ -36,13 +36,9 @@ export function getFeedItems(posts: Post[], accounts: Account[]): FeedItem[] {
 export function getFollowedFeedItems(
   posts: Post[],
   accounts: Account[],
-  follows: FollowState[],
+  followingAccountIds: string[],
 ): FeedItem[] {
-  const followedAccountIds = new Set(
-    follows
-      .filter((followState) => followState.isFollowing)
-      .map((followState) => followState.accountId),
-  );
+  const followedAccountIds = new Set(followingAccountIds);
 
   return getFeedItems(
     posts.filter((post) => followedAccountIds.has(post.accountId)),
