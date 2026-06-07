@@ -31,6 +31,8 @@ export interface PostAsset {
   id: string;
   type: PostAssetType;
   title?: string;
+  description?: string;
+  src?: string;
   url?: string;
   alt?: string;
   content?: MetadataValue;
