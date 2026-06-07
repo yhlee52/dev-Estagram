@@ -1,15 +1,36 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import { ApiClientError, ApiNetworkError } from '../api/client';
+import { getAccount, getAccountPosts } from '../api/accountsApi';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
 import postsData from '../data/posts.json';
+import {
+  mapApiAccountToAccount,
+  mapApiPostToPost,
+} from '../data/apiFeedRepository';
+import { getApiBaseUrl } from '../config/apiConfig';
+import { getDataSourceMode } from '../config/dataSource';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useFollowState } from '../hooks/useFollowState';
-import type { Account, Post } from '../types/feed';
+import type { Account, FeedItem, Post } from '../types/feed';
 import { formatDateTime } from '../utils/format';
 import { getPostsByAccountId, joinPostWithAccount } from '../utils/feed';
 
 const posts = postsData as unknown as Post[];
+const isApiDataSource = getDataSourceMode() === 'api';
+
+function getProfileErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError && error.status === 404) {
+    return 'This account was not found in the backend database.';
+  }
+
+  return 'Could not load this API account. Check the backend server and try again.';
+}
 
 function AccountAvatar({ account }: { account: Account }) {
   const [hasImageError, setHasImageError] = useState(false);
@@ -46,7 +67,82 @@ export default function AccountProfile() {
   const { accountId } = useParams();
   const accounts = useEffectiveAccounts();
   const { isFollowing, toggleFollow } = useFollowState();
-  const account = accounts.find((accountItem) => accountItem.id === accountId);
+  const [apiAccount, setApiAccount] = useState<Account | undefined>();
+  const [apiAccountPosts, setApiAccountPosts] = useState<FeedItem[]>([]);
+  const [isLoading, setIsLoading] = useState(isApiDataSource);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!isApiDataSource || !accountId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadAccountProfile = async () => {
+      setIsLoading(true);
+      setError('');
+
+      try {
+        const [accountResponse, postsResponse] = await Promise.all([
+          getAccount(accountId),
+          getAccountPosts(accountId),
+        ]);
+        const mappedAccount = mapApiAccountToAccount(accountResponse);
+
+        if (isMounted) {
+          setApiAccount(mappedAccount);
+          setApiAccountPosts(
+            postsResponse.map((post) => ({
+              account: mappedAccount,
+              // TODO(MVP6): /api/accounts/{account_id}/posts does not include assets yet.
+              post: mapApiPostToPost(post, []),
+            })),
+          );
+        }
+      } catch (loadError) {
+        if (isMounted) {
+          setApiAccount(undefined);
+          setApiAccountPosts([]);
+          setError(getProfileErrorMessage(loadError));
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadAccountProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [accountId]);
+
+  const mockAccount = accounts.find((accountItem) => accountItem.id === accountId);
+  const account = isApiDataSource ? apiAccount : mockAccount;
+
+  if (isLoading) {
+    return (
+      <p className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
+        Loading API account...
+      </p>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
+          {error}
+        </p>
+        <Link className="block text-sm font-semibold text-neutral-950" to="/accounts">
+          Browse Accounts
+        </Link>
+      </div>
+    );
+  }
 
   if (!account) {
     return (
@@ -66,10 +162,12 @@ export default function AccountProfile() {
     );
   }
 
-  const accountPosts = getPostsByAccountId(posts, account.id)
-    .map((post) => joinPostWithAccount(post, accounts))
-    .filter((feedItem) => feedItem !== undefined);
-  const following = isFollowing(account.id);
+  const accountPosts = isApiDataSource
+    ? apiAccountPosts
+    : getPostsByAccountId(posts, account.id)
+        .map((post) => joinPostWithAccount(post, accounts))
+        .filter((feedItem) => feedItem !== undefined);
+  const following = !isApiDataSource && isFollowing(account.id);
   const latestPost = accountPosts[0]?.post;
   const latestPostDate = latestPost
     ? formatDateTime(latestPost.createdAt)
@@ -78,6 +176,17 @@ export default function AccountProfile() {
   return (
     <div className="space-y-4">
       <section className="space-y-4 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-bold uppercase text-neutral-400">
+            Data source: {isApiDataSource ? 'API' : 'Mock'}
+          </p>
+          {isApiDataSource ? (
+            <p className="text-right text-xs font-semibold text-neutral-500">
+              Read-only
+            </p>
+          ) : null}
+        </div>
+
         <div className="flex items-start gap-4">
           <AccountAvatar account={account} />
           <div className="min-w-0 flex-1">
@@ -102,13 +211,16 @@ export default function AccountProfile() {
           type="button"
           className={[
             'w-full rounded-md px-4 py-2.5 text-sm font-bold transition-colors',
-            following
+            isApiDataSource
+              ? 'cursor-not-allowed border border-neutral-200 bg-neutral-100 text-neutral-400'
+              : following
               ? 'border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'
               : 'bg-neutral-950 text-white hover:bg-neutral-800',
           ].join(' ')}
+          disabled={isApiDataSource}
           onClick={() => toggleFollow(account.id)}
         >
-          {following ? 'Following' : 'Follow'}
+          {isApiDataSource ? 'Follow unavailable in API mode' : following ? 'Following' : 'Follow'}
         </button>
       </section>
 
@@ -129,7 +241,11 @@ export default function AccountProfile() {
         ) : (
           <EmptyState
             title="No posts yet"
-            description="Posts from this account will appear here."
+            description={
+              isApiDataSource
+                ? 'No read-only API posts are available for this account.'
+                : 'Posts from this account will appear here.'
+            }
           />
         )}
       </section>

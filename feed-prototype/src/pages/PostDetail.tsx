@@ -1,16 +1,38 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
+import { ApiClientError, ApiNetworkError } from '../api/client';
+import { getAccount } from '../api/accountsApi';
+import { getPost } from '../api/postsApi';
 import AssetRenderer from '../components/AssetRenderer';
 import EmptyState from '../components/EmptyState';
 import MetadataTable from '../components/MetadataTable';
 import PostBadges from '../components/PostBadges';
 import TagList from '../components/TagList';
 import postsData from '../data/posts.json';
+import {
+  mapApiAccountToAccount,
+  mapApiPostToPost,
+} from '../data/apiFeedRepository';
+import { getApiBaseUrl } from '../config/apiConfig';
+import { getDataSourceMode } from '../config/dataSource';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import type { Account, Post } from '../types/feed';
 import { formatDateTime } from '../utils/format';
 
 const posts = postsData as unknown as Post[];
+const isApiDataSource = getDataSourceMode() === 'api';
+
+function getPostDetailErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError && error.status === 404) {
+    return 'This post or account was not found in the backend database.';
+  }
+
+  return 'Could not load this API post. Check the backend server and try again.';
+}
 
 function AccountAvatar({ account }: { account: Account }) {
   const [hasImageError, setHasImageError] = useState(false);
@@ -38,10 +60,86 @@ export default function PostDetail() {
   const navigate = useNavigate();
   const { postId } = useParams();
   const accounts = useEffectiveAccounts();
-  const post = posts.find((postItem) => postItem.id === postId);
-  const account = post
-    ? accounts.find((accountItem) => accountItem.id === post.accountId)
+  const [apiPost, setApiPost] = useState<Post | undefined>();
+  const [apiAccount, setApiAccount] = useState<Account | undefined>();
+  const [isLoading, setIsLoading] = useState(isApiDataSource);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!isApiDataSource || !postId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadPostDetail = async () => {
+      setIsLoading(true);
+      setError('');
+
+      try {
+        const postResponse = await getPost(postId);
+        const accountResponse = await getAccount(postResponse.account_id);
+
+        if (isMounted) {
+          setApiPost(mapApiPostToPost(postResponse, postResponse.assets));
+          setApiAccount(mapApiAccountToAccount(accountResponse));
+        }
+      } catch (loadError) {
+        if (isMounted) {
+          setApiPost(undefined);
+          setApiAccount(undefined);
+          setError(getPostDetailErrorMessage(loadError));
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadPostDetail();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [postId]);
+
+  const mockPost = posts.find((postItem) => postItem.id === postId);
+  const mockAccount = mockPost
+    ? accounts.find((accountItem) => accountItem.id === mockPost.accountId)
     : undefined;
+  const post = isApiDataSource ? apiPost : mockPost;
+  const account = isApiDataSource ? apiAccount : mockAccount;
+
+  if (isLoading) {
+    return (
+      <p className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
+        Loading API post...
+      </p>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <nav className="flex items-center justify-between gap-3">
+          <button
+            type="button"
+            className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
+            onClick={() => navigate(-1)}
+          >
+            Back
+          </button>
+          <Link className="rounded-md bg-neutral-950 px-3 py-2 text-sm font-bold text-white" to="/">
+            Home
+          </Link>
+        </nav>
+        <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
+          {error}
+        </p>
+      </div>
+    );
+  }
 
   if (!post || !account) {
     return (
@@ -112,6 +210,17 @@ export default function PostDetail() {
       </Link>
 
       <header className="space-y-4 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-bold uppercase text-neutral-400">
+            Data source: {isApiDataSource ? 'API' : 'Mock'}
+          </p>
+          {isApiDataSource ? (
+            <p className="text-right text-xs font-semibold text-neutral-500">
+              Read-only
+            </p>
+          ) : null}
+        </div>
+
         <div className="space-y-3">
           <PostBadges post={post} />
           <h1 className="text-2xl font-bold leading-8 text-neutral-950">{post.title}</h1>
