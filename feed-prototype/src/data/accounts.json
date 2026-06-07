@@ -1,59 +1,82 @@
 [
   {
-    "id": "acct_cafe_bot",
-    "handle": "cafe.bot",
-    "displayName": "Cafe Bot",
-    "avatarUrl": "/assets/avatars/cafe-bot.png",
-    "bio": "Finds cozy cafe moments, seasonal drinks, and quiet corners.",
-    "kind": "bot",
-    "metadata": {
-      "topic": "cafes",
-      "city": "Seoul"
-    }
-  },
-  {
-    "id": "acct_travel_bot",
-    "handle": "travel.bot",
-    "displayName": "Travel Bot",
-    "avatarUrl": "/assets/avatars/travel-bot.png",
-    "bio": "Collects short travel notes, views, and weekend route ideas.",
-    "kind": "bot",
-    "metadata": {
-      "topic": "travel",
-      "home_region": "Asia Pacific"
-    }
-  },
-  {
-    "id": "acct_daily_notes",
-    "handle": "daily.notes",
-    "displayName": "Daily Notes",
-    "avatarUrl": "/assets/avatars/daily-notes.png",
-    "bio": "Small personal notes and image-first memories.",
+    "id": "acct_mina_notes",
+    "handle": "mina.notes",
+    "displayName": "Mina Notes",
+    "avatarUrl": "/assets/avatars/mina-park.png",
+    "bio": "Small personal notes, daily records, and image-first memories.",
     "kind": "person",
     "metadata": {
       "topic": "personal journal"
     }
   },
   {
-    "id": "acct_equipment_report_bot",
-    "handle": "equipment.report.bot",
-    "displayName": "Equipment Report Bot",
-    "avatarUrl": "/assets/avatars/equipment-report-bot.png",
-    "bio": "Publishes structured daily analysis posts for internal review.",
-    "kind": "bot",
-    "metadata": {
-      "topic": "internal analysis",
-      "cadence": "daily"
-    }
-  },
-  {
     "id": "acct_joon_notes",
     "handle": "joon.notes",
     "displayName": "Joon Notes",
+    "avatarUrl": "/assets/avatars/joon-notes.png",
     "bio": "A lightweight personal account for project notes and saved observations.",
     "kind": "person",
     "metadata": {
       "topic": "project notes"
+    }
+  },
+  {
+    "id": "acct_ara_photo",
+    "handle": "ara.photo",
+    "displayName": "Ara Photo Log",
+    "avatarUrl": "/assets/avatars/ara-photo.png",
+    "bio": "Photo records from walks, rooms, and small trips.",
+    "kind": "person",
+    "metadata": {
+      "topic": "photo records"
+    }
+  },
+  {
+    "id": "acct_cafe_route_bot",
+    "handle": "cafe.route.bot",
+    "displayName": "Cafe Route Bot",
+    "avatarUrl": "/assets/avatars/cafe-route-bot.png",
+    "bio": "Collects cozy cafe notes, short routes, and weekend travel ideas.",
+    "kind": "bot",
+    "metadata": {
+      "topic": "cafes and travel",
+      "home_region": "Seoul"
+    }
+  },
+  {
+    "id": "acct_project_status_bot",
+    "handle": "project.status.bot",
+    "displayName": "Project Status Bot",
+    "avatarUrl": "/assets/avatars/project-status-bot.png",
+    "bio": "Publishes compact project updates and status snapshots.",
+    "kind": "bot",
+    "metadata": {
+      "topic": "project status",
+      "cadence": "weekday"
+    }
+  },
+  {
+    "id": "acct_log_summary_bot",
+    "handle": "log.summary.bot",
+    "displayName": "Log Summary Bot",
+    "avatarUrl": "/assets/avatars/log-summary-bot.png",
+    "bio": "Turns structured logs and notes into readable summaries.",
+    "kind": "bot",
+    "metadata": {
+      "topic": "summary and logs",
+      "cadence": "daily"
+    }
+  },
+  {
+    "id": "acct_tech_memo_bot",
+    "handle": "tech.memo.bot",
+    "displayName": "Tech Memo Bot",
+    "avatarUrl": "/assets/avatars/tech-memo-bot.png",
+    "bio": "Posts short technical notes, checklists, and JSON examples.",
+    "kind": "bot",
+    "metadata": {
+      "topic": "technical notes"
     }
   }
 ]
