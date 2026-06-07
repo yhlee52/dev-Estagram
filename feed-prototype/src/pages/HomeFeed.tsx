@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { ApiClientError, ApiNetworkError } from '../api/client';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
 import { useActiveApiUser } from '../auth/apiActiveUser';
+import { getApiBaseUrl } from '../config/apiConfig';
 import { getDataSourceMode } from '../config/dataSource';
 import { getHomeFeedItems, type FeedScope } from '../data/feedRepository';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
@@ -10,6 +12,22 @@ import type { FeedItem } from '../types/feed';
 
 const dataSourceMode = getDataSourceMode();
 const isApiDataSource = dataSourceMode === 'api';
+
+function getFeedErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and reload the feed.`;
+  }
+
+  if (error instanceof ApiClientError) {
+    if (error.status === 404) {
+      return 'The selected API user was not found in the backend database. Switch user and choose a seeded backend user.';
+    }
+
+    return `The backend API returned ${error.status}. ${error.message}`;
+  }
+
+  return 'Could not load the API feed. Check the backend server and try again.';
+}
 
 const feedScopeOptions: Array<{
   value: FeedScope;
@@ -51,10 +69,14 @@ export default function HomeFeed() {
         if (isMounted) {
           setFeedItems(items);
         }
-      } catch {
+      } catch (feedError) {
         if (isMounted) {
           setFeedItems([]);
-          setError('Could not load the feed. Check that the API server is running.');
+          setError(
+            isApiDataSource
+              ? getFeedErrorMessage(feedError)
+              : 'Could not load the feed.',
+          );
         }
       } finally {
         if (isMounted) {
@@ -79,8 +101,8 @@ export default function HomeFeed() {
   const emptyState =
     isApiDataSource ? (
       <EmptyState
-        title="No API feed posts"
-        description="The selected backend user has no followed account posts in the API feed."
+        title="No feed to display"
+        description="This backend user has no followed account posts in the API feed yet."
       />
     ) : feedScope === 'following' ? (
       <EmptyState
@@ -109,7 +131,7 @@ export default function HomeFeed() {
 
       {isApiDataSource ? (
         <p className="rounded-md border border-neutral-200 bg-neutral-100 px-3 py-2 text-xs font-semibold leading-5 text-neutral-600">
-          API mode reads the backend feed only. Follow and unfollow changes are not available in MVP6.
+          API mode reads seeded backend data only. Follow and unfollow changes are unavailable in MVP6.
         </p>
       ) : (
         <div className="grid grid-cols-2 rounded-md border border-neutral-200 bg-neutral-100 p-1">
@@ -143,7 +165,7 @@ export default function HomeFeed() {
         />
       ) : isLoading ? (
         <p className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
-          Loading feed...
+          {isApiDataSource ? 'Loading API feed...' : 'Loading feed...'}
         </p>
       ) : error ? (
         <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">

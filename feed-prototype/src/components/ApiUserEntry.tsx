@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { findUserByIdOrHandle, getUsers } from '../api/usersApi';
+import { ApiNetworkError } from '../api/client';
 import type { ApiUser } from '../api/types';
+import { findUserByIdOrHandle, getUsers } from '../api/usersApi';
 import { setActiveApiUser } from '../auth/apiActiveUser';
+import { getApiBaseUrl } from '../config/apiConfig';
+
+function getUserEntryErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  return 'Could not load backend users. Check the API server and try again.';
+}
 
 export default function ApiUserEntry() {
   const navigate = useNavigate();
@@ -26,9 +36,10 @@ export default function ApiUserEntry() {
         if (isMounted) {
           setUsers(apiUsers);
         }
-      } catch {
+      } catch (loadError) {
         if (isMounted) {
-          setError('Could not load backend users. Check that the API server is running.');
+          setUsers([]);
+          setError(getUserEntryErrorMessage(loadError));
         }
       } finally {
         if (isMounted) {
@@ -63,15 +74,15 @@ export default function ApiUserEntry() {
 
       if (!user) {
         setError(
-          '해당 사용자를 찾을 수 없습니다. API mode에서는 backend DB에 seed된 사용자만 사용할 수 있습니다.',
+          'User not found. API mode can only use users already seeded in the backend database.',
         );
         return;
       }
 
       setActiveApiUser(user);
       navigate('/');
-    } catch {
-      setError('Could not check backend users. Check that the API server is running.');
+    } catch (lookupError) {
+      setError(getUserEntryErrorMessage(lookupError));
     } finally {
       setIsSubmitting(false);
     }
@@ -89,7 +100,7 @@ export default function ApiUserEntry() {
               Select a backend user
             </h1>
             <p className="text-sm leading-6 text-neutral-600">
-              Enter an id or handle from the backend seed data. API mode does not create new users.
+              Choose a seeded backend user by id or handle. This is local user selection, not login.
             </p>
           </div>
 
@@ -97,10 +108,11 @@ export default function ApiUserEntry() {
             <label className="block space-y-2">
               <span className="text-sm font-bold text-neutral-700">User id or handle</span>
               <input
-                className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500"
+                className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
                 value={entryValue}
                 placeholder="demo-user-ari or ari"
                 autoComplete="off"
+                disabled={isSubmitting}
                 onChange={(event) => setEntryValue(event.target.value)}
               />
             </label>
@@ -114,9 +126,9 @@ export default function ApiUserEntry() {
             <button
               type="submit"
               className="h-11 w-full rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-400"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLoadingUsers}
             >
-              {isSubmitting ? 'Checking...' : 'Continue'}
+              {isSubmitting ? 'Checking...' : isLoadingUsers ? 'Loading users...' : 'Continue'}
             </button>
           </form>
 
@@ -127,13 +139,13 @@ export default function ApiUserEntry() {
 
             {isLoadingUsers ? (
               <p className="rounded-md bg-neutral-100 px-3 py-2 text-sm font-semibold text-neutral-600">
-                Loading users...
+                Loading backend users...
               </p>
             ) : null}
 
-            {!isLoadingUsers && users.length === 0 ? (
+            {!isLoadingUsers && !error && users.length === 0 ? (
               <p className="rounded-md bg-neutral-100 px-3 py-2 text-sm font-semibold text-neutral-600">
-                No backend users are available.
+                No seeded backend users are available.
               </p>
             ) : null}
 
@@ -150,7 +162,7 @@ export default function ApiUserEntry() {
                       {user.display_name}
                     </p>
                     <p className="truncate text-xs font-medium text-neutral-500">
-                      @{user.handle} · {user.id}
+                      @{user.handle} / {user.id}
                     </p>
                   </button>
                 ))}
