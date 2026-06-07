@@ -1,8 +1,8 @@
 # Feed Prototype Backend
 
-MVP5-1 adds a minimal FastAPI backend skeleton for the local feed prototype.
+MVP5 adds a minimal FastAPI backend for the local feed prototype.
 
-This stage only provides a runnable app and `GET /health`. It does not add database models, SQLModel, Alembic, seed scripts, authentication, CRUD APIs, uploads, admin features, or frontend API integration.
+The backend now includes `GET /health`, SQLModel database setup, Alembic migrations, and a small demo seed script. It does not add authentication, CRUD APIs, uploads, admin features, or frontend API integration.
 
 ## Setup
 
@@ -41,3 +41,13 @@ Expected response:
 ```
 
 Use `.env.example` as a reference for local environment variables. Do not commit a real `.env` file.
+
+## Seed Demo Data
+
+After applying migrations to a local PostgreSQL database, run:
+
+```bash
+python -m app.services.seed
+```
+
+The seed script inserts a small generic feed dataset for backend API checks. It is separate from the frontend mock JSON data.
