@@ -1,5 +1,100 @@
 # PROJECT_GOALS.md
 
+## MVP6: Frontend API Read Mode with API User Entry
+
+MVP6 moves the frontend one step beyond the completed MVP5 backend skeleton by allowing the Vite/React app to read feed data from the FastAPI read-only API.
+
+The goal is to add an API mode while preserving the existing mock mode:
+
+```text
+mock mode = existing frontend mock JSON + local assets + MVP4 localStorage overlays
+api mode = FastAPI read-only API + PostgreSQL seed data + active API user selection
+```
+
+Mock mode remains in the project. The existing `src/data/*.json` files are not deleted, and the MVP4 local user entry/local registration flow continues to belong to mock mode. API mode is additive: it lets the frontend call backend endpoints and render DB-backed feed data without removing the local/static prototype behavior.
+
+MVP6 API mode should:
+
+```text
+read backend users through the API
+allow selecting an existing backend User by id or handle
+store the selected active API user in localStorage
+call GET /api/feed?user_id=... for that selected User
+display the backend PostgreSQL seed-data-backed feed in the frontend
+keep all backend access behind FastAPI; the frontend never connects directly to PostgreSQL
+```
+
+API user entry is a prototype user-selection flow, not real authentication:
+
+```text
+no password
+no JWT
+no session cookie
+no OAuth
+no authorization or permission checks
+no account-security semantics
+```
+
+If an entered id or handle does not match a backend database user in API mode, the UI should explain that API mode can only use users that already exist in the database. MVP6 should not create a new user from API mode.
+
+MVP6 should not implement:
+
+```text
+removal of frontend mock JSON
+removal of MVP4 localStorage local user flow
+real login
+signup/authentication
+sessions
+JWT
+OAuth
+authorization
+POST/PUT/PATCH/DELETE APIs
+follow/unfollow API
+post create/update/delete
+account create/update/delete
+file upload
+S3 integration
+admin UI
+comments
+likes
+bookmarks
+search
+tag pages
+backend/frontend single-server integration
+production deployment
+equipment-report-specific core naming
+```
+
+MVP6 completion criteria:
+
+```text
+1. A documented frontend data source mode exists for mock mode and API mode.
+2. Mock mode still runs with the existing MVP4 local user entry and registration behavior.
+3. API mode can look up and select an existing backend User by id or handle.
+4. API mode persists the selected active API user locally without implying authentication.
+5. API mode fetches GET /api/feed?user_id=... through FastAPI.
+6. Home Feed renders backend PostgreSQL seed data in API mode.
+7. API mode has clear loading, error, and empty states.
+8. Accounts/Profile/Post Detail have a read-only API-mode extension path.
+9. No MVP6 non-goals are introduced.
+10. TypeScript build passes from feed-prototype/.
+```
+
+Suggested next work steps:
+
+```text
+MVP6-1 frontend env / data source mode setting
+MVP6-2 frontend API client
+MVP6-3 API user lookup and API user entry
+MVP6-4 API feed repository
+MVP6-5 Home Feed API mode connection
+MVP6-6 API mode loading/error/empty states
+MVP6-7 Accounts/Profile/Post Detail read-only API mode
+MVP6-8 mock mode regression check
+MVP6-9 run/test documentation
+MVP6-10 final checkpoint
+```
+
 ## MVP5: Backend & DB Skeleton
 
 MVP5 prepares the project for a future API and database-backed version without replacing the completed MVP1-MVP4 local/static frontend behavior.

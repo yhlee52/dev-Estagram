@@ -1,5 +1,38 @@
 # Instagram-like Local Feed Prototype
 
+## MVP6: Frontend API Read Mode with API User Entry
+
+MVP6 connects the `feed-prototype` frontend to the backend read-only API so the app can display a PostgreSQL seed-data-backed feed through FastAPI.
+
+MVP6 adds an API data source mode alongside the existing mock mode. Mock mode remains the default local/static experience from MVP1-MVP4: it keeps using frontend mock JSON, local assets, MVP4 local user entry, local registration, active user localStorage, and local follow overlays. API mode reads backend data through FastAPI endpoints and does not remove or replace the mock mode data flow.
+
+In API mode, user entry is not real login or authentication. The user enters an id or handle for a `User` that already exists in the backend database. If a matching backend user is found, the frontend stores that selection as the active API user in localStorage and calls `GET /api/feed?user_id=...` for that user. If no matching backend user exists, the UI should explain that API mode can only use users already present in the database.
+
+MVP6 does not create users, accounts, posts, follows, or assets. It does not add passwords, JWT, session cookies, OAuth, authorization, write APIs, follow/unfollow APIs, upload APIs, S3, admin UI, comments, likes, bookmarks, search, tags, deployment, or a combined frontend/backend server.
+
+MVP6 completion criteria:
+
+- The frontend can be configured for mock mode or API mode.
+- Mock mode continues to work with existing MVP4 local user entry and local registration.
+- API mode can find an existing backend user by id or handle.
+- API mode stores the selected active API user locally without treating it as an authenticated session.
+- API mode calls the FastAPI read-only feed endpoint for the selected user.
+- The Home Feed displays backend PostgreSQL seed data through the API.
+- Loading, error, and empty states are clear in API mode.
+- Accounts, Profile, and Post Detail can be extended read-only without introducing write flows.
+- `npm run build` passes from `feed-prototype/`.
+
+Suggested MVP6 implementation order:
+
+1. Add frontend env/data source mode settings.
+2. Add a frontend API client.
+3. Add API user lookup and API user entry.
+4. Add an API feed repository.
+5. Connect Home Feed to API mode.
+6. Refine API mode loading, error, and empty states.
+7. Extend Accounts, Profile, and Post Detail for read-only API mode.
+8. Re-check mock mode behavior and document run/test steps.
+
 ## MVP5: Backend & DB Skeleton Planning
 
 MVP5 introduces the direction for a future backend and database layer while keeping the current frontend local/static.
