@@ -1,5 +1,81 @@
 # PROJECT_GOALS.md
 
+## MVP5: Backend & DB Skeleton
+
+MVP5 prepares the project for a future API and database-backed version without replacing the completed MVP1-MVP4 local/static frontend behavior.
+
+The goal is to introduce and document a backend/database skeleton direction:
+
+```text
+Backend: FastAPI
+Database: PostgreSQL
+ORM / DB layer: SQLModel
+Migration: Alembic
+File storage: feed-prototype/backend/uploads/ local folder only
+Backend location: feed-prototype/backend/
+```
+
+MVP5 should keep the core domain generic: `User`, `Account`, `Post`, `Feed`, `Follow`, `Asset`, and `Metadata`. Company-internal equipment reports remain one possible data scenario only. Do not rename core types, shared components, routes, or data flow around equipment/report-specific terms such as Equipment, Chamber, Sensor, Recipe, Severity, or Report.
+
+Planned backend tables:
+
+```text
+users
+accounts
+posts
+post_assets
+follows
+```
+
+For MVP5, `User` and `Account` remain 1:1. A `User` is the viewer/person concept, and an `Account` is the publishing entity for Posts.
+
+Planned read-only API endpoints:
+
+```text
+GET /health
+GET /api/users
+GET /api/accounts
+GET /api/posts
+GET /api/follows
+GET /api/feed?user_id=...
+```
+
+MVP5 mock and seed data policy:
+
+```text
+frontend mock JSON stays in place
+MVP4 localStorage user/follow flows stay in place
+frontend is not converted to API data yet
+backend seed data is separate and used for PostgreSQL verification
+real PostgreSQL database files are not committed
+database state must be reproducible from Alembic migrations plus seed scripts
+```
+
+MVP5 should not implement:
+
+```text
+backend feature code beyond the planned skeleton stage
+real login
+authentication
+authorization
+password handling
+tokens
+POST/PUT/PATCH/DELETE APIs
+admin UI
+file upload API
+S3 integration
+frontend API migration
+removal of frontend mock JSON
+comments
+likes
+bookmarks
+search
+tag pages
+equipment-report-specific core naming
+```
+
+MVP5 backend setup, migration, seed, run, and read-only API smoke-test steps are documented in `feed-prototype/backend/README.md`.
+
 ## MVP4: Local User Entry & Registration Flow
 
 MVP4 adds a local user entry and local registration flow on top of the existing local/static feed prototype.

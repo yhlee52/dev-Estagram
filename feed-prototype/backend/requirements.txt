@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+psycopg[binary]
+pydantic-settings
+alembic
