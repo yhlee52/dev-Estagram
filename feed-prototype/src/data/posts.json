@@ -1,180 +1,212 @@
 [
   {
-    "id": "post_cafe_001",
-    "accountId": "acct_cafe_bot",
-    "title": "Morning pour-over near the station",
-    "caption": "A bright table, citrus notes, and a short queue before work.",
-    "createdAt": "2026-06-06T08:20:00+09:00",
-    "tags": ["coffee", "morning", "seoul"],
-    "assets": [
-      {
-        "id": "asset_cafe_001_image",
-        "type": "image",
-        "title": "Window seat coffee",
-        "url": "/assets/posts/cafe-window-seat.jpg",
-        "alt": "A cup of pour-over coffee beside a cafe window"
-      }
-    ],
-    "metadata": {
-      "location": "Seoul",
-      "mood": "calm",
-      "price_range": "moderate"
-    }
+    "id": "post_project_003",
+    "accountId": "acct_project_status_bot",
+    "title": "MVP3 follow-state check",
+    "caption": "Active-user switching was reviewed with separate follow lists and no backend state.",
+    "createdAt": "2026-06-07T09:10:00+09:00",
+    "tags": ["project", "summary", "note"],
+    "assets": [{ "id": "asset_project_003_table", "type": "table", "title": "Check results", "content": [{ "area": "active user", "status": "done", "score": 1 }, { "area": "following feed", "status": "done", "score": 1 }, { "area": "local state", "status": "review", "score": 0.8 }] }],
+    "metadata": { "status": "Review", "priority": "medium", "category": "project" }
   },
   {
-    "id": "post_travel_001",
-    "accountId": "acct_travel_bot",
-    "title": "Busan sea walk route",
-    "caption": "A compact afternoon route with ocean views, snacks, and an easy return.",
-    "createdAt": "2026-06-05T18:40:00+09:00",
-    "tags": ["travel", "busan", "weekend"],
-    "assets": [
-      {
-        "id": "asset_travel_001_image",
-        "type": "image",
-        "title": "Coastal path",
-        "url": "/assets/posts/busan-coastal-path.jpg",
-        "alt": "A coastal walking path facing the sea"
-      },
-      {
-        "id": "asset_travel_001_text",
-        "type": "text",
-        "title": "Route note",
-        "content": "Start near the beach, walk the coastal path, stop for dinner, then return by metro."
-      }
-    ],
-    "metadata": {
-      "region": "Busan",
-      "duration_hours": 4,
-      "difficulty": "easy"
-    }
+    "id": "post_mina_004",
+    "accountId": "acct_mina_notes",
+    "title": "Early notebook page",
+    "caption": "Three small tasks, one coffee, and a clean margin for later thoughts.",
+    "createdAt": "2026-06-07T08:35:00+09:00",
+    "tags": ["daily", "note"],
+    "assets": [{ "id": "asset_mina_004_text", "type": "text", "title": "Morning list", "content": "Plan the route, answer the design notes, and leave a short reminder for tomorrow." }],
+    "metadata": { "category": "personal", "source": "manual" }
   },
   {
-    "id": "post_daily_001",
-    "accountId": "acct_daily_notes",
+    "id": "post_log_004",
+    "accountId": "acct_log_summary_bot",
+    "title": "Daily log digest",
+    "caption": "Generated digest from recent local notes with one follow-up item marked for review.",
+    "createdAt": "2026-06-06T22:20:00+09:00",
+    "tags": ["summary", "log", "daily"],
+    "assets": [{ "id": "asset_log_004_json", "type": "json", "title": "Digest payload", "content": { "status": "Review", "score": 0.74, "items": 12, "next_action": "Check two unresolved notes" } }],
+    "metadata": { "status": "Review", "score": 0.74, "source": "generated" }
+  },
+  {
+    "id": "post_cafe_004",
+    "accountId": "acct_cafe_route_bot",
+    "title": "Late cafe window seat",
+    "caption": "A quiet second-floor table with warm light and a short dessert menu.",
+    "createdAt": "2026-06-06T17:50:00+09:00",
+    "tags": ["cafe", "photo", "daily"],
+    "assets": [{ "id": "asset_cafe_004_image", "type": "image", "title": "Window seat", "url": "/assets/posts/cafe-window-evening.jpg", "alt": "A cafe window seat in warm evening light" }],
+    "metadata": { "category": "cafe", "score": 0.88 }
+  },
+  {
+    "id": "post_ara_003",
+    "accountId": "acct_ara_photo",
+    "title": "Riverside blue hour",
+    "caption": "The sky held a soft blue for a few minutes before the lights took over.",
+    "createdAt": "2026-06-06T16:30:00+09:00",
+    "tags": ["photo", "daily"],
+    "assets": [{ "id": "asset_ara_003_image", "type": "image", "title": "Blue hour path", "url": "/assets/posts/riverside-blue-hour.jpg", "alt": "A riverside path during blue hour" }]
+  },
+  {
+    "id": "post_tech_003",
+    "accountId": "acct_tech_memo_bot",
+    "title": "JSON shape note",
+    "caption": "Small reminder to keep domain-specific values inside metadata rather than core fields.",
+    "createdAt": "2026-06-06T11:45:00+09:00",
+    "tags": ["note", "json", "project"],
+    "assets": [{ "id": "asset_tech_003_json", "type": "json", "title": "Generic metadata example", "content": { "status": "Ok", "score": 0.91, "category": "example", "source": "memo" } }],
+    "metadata": { "category": "technical note", "source": "generated" }
+  },
+  {
+    "id": "post_joon_003",
+    "accountId": "acct_joon_notes",
+    "title": "Prototype review notes",
+    "caption": "The feed feels easier to test when each account has a clear publishing style.",
+    "createdAt": "2026-06-05T20:15:00+09:00",
+    "tags": ["project", "note"],
+    "assets": [{ "id": "asset_joon_003_text", "type": "text", "title": "Review note", "content": "Keep MVP4 preparation focused on data variety. Avoid adding UI behavior until the next milestone." }]
+  },
+  {
+    "id": "post_log_003",
+    "accountId": "acct_log_summary_bot",
+    "title": "Weekly activity table",
+    "caption": "A compact table for checking how table assets render in feed cards and detail pages.",
+    "createdAt": "2026-06-05T18:05:00+09:00",
+    "tags": ["table", "summary", "log"],
+    "assets": [{ "id": "asset_log_003_table", "type": "table", "title": "Activity summary", "content": [{ "day": "Mon", "notes": 5, "status": "Ok" }, { "day": "Tue", "notes": 8, "status": "Ok" }, { "day": "Wed", "notes": 3, "status": "Review" }] }],
+    "metadata": { "status": "Ok", "category": "summary" }
+  },
+  {
+    "id": "post_cafe_003",
+    "accountId": "acct_cafe_route_bot",
+    "title": "Weekend route idea",
+    "caption": "Start with a bakery stop, walk through the park, then take the long bus home.",
+    "createdAt": "2026-06-05T12:25:00+09:00",
+    "tags": ["travel", "cafe", "daily"],
+    "assets": [{ "id": "asset_cafe_003_text", "type": "text", "title": "Route note", "content": "Bakery -> park path -> small gallery -> bus window seat." }],
+    "metadata": { "category": "travel", "priority": "low" }
+  },
+  {
+    "id": "post_project_002",
+    "accountId": "acct_project_status_bot",
+    "title": "Data coverage snapshot",
+    "caption": "Counts by account and asset type look balanced enough for manual MVP3 checks.",
+    "createdAt": "2026-06-04T19:00:00+09:00",
+    "tags": ["project", "chart"],
+    "assets": [{ "id": "asset_project_002_chart", "type": "chart", "title": "Post mix", "content": { "labels": ["personal", "photo", "place", "project", "log", "tech"], "values": [4, 3, 4, 3, 4, 3] } }],
+    "metadata": { "status": "Ok", "score": 0.86, "source": "local data" }
+  },
+  {
+    "id": "post_mina_003",
+    "accountId": "acct_mina_notes",
     "title": "Desk reset",
     "caption": "Cleared the desk, kept only the notebook, lamp, and one plant.",
-    "createdAt": "2026-06-04T21:15:00+09:00",
-    "tags": ["home", "notes", "focus"],
-    "assets": [
-      {
-        "id": "asset_daily_001_image",
-        "type": "image",
-        "title": "Clean desk",
-        "url": "/assets/posts/clean-desk.jpg",
-        "alt": "A tidy desk with a notebook and small plant"
-      }
-    ],
-    "metadata": {
-      "mood": "focused",
-      "weather": "rainy"
-    }
+    "createdAt": "2026-06-04T14:10:00+09:00",
+    "tags": ["daily", "photo", "note"],
+    "assets": [{ "id": "asset_mina_003_image", "type": "image", "title": "Clean desk", "url": "/assets/posts/clean-desk.jpg", "alt": "A tidy desk with a notebook and small plant" }]
+  },
+  {
+    "id": "post_tech_002",
+    "accountId": "acct_tech_memo_bot",
+    "title": "Fallback preview reminder",
+    "caption": "Missing image URLs should still render a calm placeholder in card and detail views.",
+    "createdAt": "2026-06-03T22:40:00+09:00",
+    "tags": ["note", "log"],
+    "assets": [{ "id": "asset_tech_002_plot", "type": "plot", "title": "Placeholder plot", "url": "/assets/posts/missing-preview-plot.png", "alt": "Plot preview placeholder path" }],
+    "metadata": { "status": "Watch", "priority": "low" }
+  },
+  {
+    "id": "post_ara_002",
+    "accountId": "acct_ara_photo",
+    "title": "Stairwell shadow",
+    "caption": "A narrow rectangle of light moved across the wall right before lunch.",
+    "createdAt": "2026-06-03T13:05:00+09:00",
+    "tags": ["photo", "daily"],
+    "assets": [{ "id": "asset_ara_002_image", "type": "image", "title": "Stairwell light", "url": "/assets/posts/stairwell-shadow.jpg", "alt": "A stairwell wall with a rectangle of light" }]
+  },
+  {
+    "id": "post_log_002",
+    "accountId": "acct_log_summary_bot",
+    "title": "HTML summary link",
+    "caption": "A linked HTML asset for checking report-like previews without adding a route.",
+    "createdAt": "2026-06-02T21:10:00+09:00",
+    "tags": ["summary", "html", "log"],
+    "assets": [{ "id": "asset_log_002_html", "type": "html", "title": "Generated summary page", "description": "Static HTML asset path used for link rendering.", "url": "/assets/posts/generated-summary-20260602.html" }]
   },
   {
     "id": "post_cafe_002",
-    "accountId": "acct_cafe_bot",
-    "title": "New seasonal menu snapshot",
-    "caption": "Three iced drinks are trending this week, led by grapefruit ade.",
-    "createdAt": "2026-06-03T12:05:00+09:00",
-    "tags": ["cafe", "menu", "chart"],
-    "assets": [
-      {
-        "id": "asset_cafe_002_chart",
-        "type": "chart",
-        "title": "Seasonal drink mentions",
-        "content": {
-          "labels": ["Grapefruit ade", "Cold brew", "Matcha latte"],
-          "values": [42, 31, 24]
-        },
-        "metadata": {
-          "unit": "mentions"
-        }
-      }
-    ],
-    "metadata": {
-      "source": "local notes",
-      "sample_size": 97
-    }
+    "accountId": "acct_cafe_route_bot",
+    "title": "Seasonal drink mentions",
+    "caption": "Grapefruit ade is leading the small local note sample this week.",
+    "createdAt": "2026-06-02T12:05:00+09:00",
+    "tags": ["cafe", "chart", "summary"],
+    "assets": [{ "id": "asset_cafe_002_chart", "type": "chart", "title": "Drink mentions", "content": { "labels": ["Grapefruit ade", "Cold brew", "Matcha latte"], "values": [42, 31, 24] } }],
+    "metadata": { "source": "local notes", "score": 0.79 }
   },
   {
-    "id": "post_report_001",
-    "accountId": "acct_equipment_report_bot",
-    "title": "Daily analysis summary",
-    "caption": "Automated checks found a watch item with a rising variance trend.",
-    "createdAt": "2026-06-06T07:30:00+09:00",
-    "tags": ["analysis", "daily", "watch"],
-    "assets": [
-      {
-        "id": "asset_report_001_plot",
-        "type": "plot",
-        "title": "Variance trend",
-        "url": "/assets/posts/variance-trend-20260606.png",
-        "alt": "Line plot showing a rising variance trend",
-        "metadata": {
-          "x_axis": "time",
-          "y_axis": "variance"
-        }
-      },
-      {
-        "id": "asset_report_001_json",
-        "type": "json",
-        "title": "Analysis output",
-        "content": {
-          "status": "Watch",
-          "severity_score": 0.83,
-          "top_channel": "TEMP_01",
-          "top_step": 3
-        }
-      }
-    ],
-    "metadata": {
-      "status": "Watch",
-      "severity_score": 0.83,
-      "top_channel": "TEMP_01",
-      "top_step": 3
-    }
+    "id": "post_joon_002",
+    "accountId": "acct_joon_notes",
+    "title": "Tiny milestone list",
+    "caption": "Mock data, build check, and a quick sweep for unwanted domain-specific fields.",
+    "createdAt": "2026-06-01T18:45:00+09:00",
+    "tags": ["project", "table"],
+    "assets": [{ "id": "asset_joon_002_table", "type": "table", "title": "Milestones", "content": [{ "item": "mock data", "status": "done" }, { "item": "build", "status": "pending" }, { "item": "handoff", "status": "pending" }] }],
+    "metadata": { "priority": "medium", "category": "project" }
   },
   {
-    "id": "post_report_002",
-    "accountId": "acct_equipment_report_bot",
-    "title": "Daily stability check",
-    "caption": "Signals returned to the expected operating band after yesterday's watch item.",
-    "createdAt": "2026-06-05T07:30:00+09:00",
-    "tags": ["analysis", "daily", "stable"],
-    "assets": [
-      {
-        "id": "asset_report_002_chart",
-        "type": "chart",
-        "title": "Status distribution",
-        "content": {
-          "labels": ["Stable", "Watch", "Action"],
-          "values": [18, 2, 0]
-        },
-        "metadata": {
-          "unit": "checks"
-        }
-      },
-      {
-        "id": "asset_report_002_table",
-        "type": "table",
-        "title": "Summary statistics",
-        "content": [
-          {
-            "metric": "mean_drift",
-            "value": 0.04
-          },
-          {
-            "metric": "max_delta",
-            "value": 0.12
-          }
-        ]
-      }
-    ],
-    "metadata": {
-      "status": "Stable",
-      "severity_score": 0.18,
-      "top_channel": "FLOW_02",
-      "top_step": 1
-    }
+    "id": "post_mina_002",
+    "accountId": "acct_mina_notes",
+    "title": "Lunch walk",
+    "caption": "Took the longer street back and found a quiet corner near the library.",
+    "createdAt": "2026-06-01T12:30:00+09:00",
+    "tags": ["daily", "photo"],
+    "assets": [{ "id": "asset_mina_002_image", "type": "image", "title": "Library corner", "url": "/assets/posts/library-corner.jpg", "alt": "A quiet street corner near a library" }]
+  },
+  {
+    "id": "post_project_001",
+    "accountId": "acct_project_status_bot",
+    "title": "Prototype scope reminder",
+    "caption": "Keep this milestone local and static: no backend, uploads, search, or new routes.",
+    "createdAt": "2026-05-31T17:20:00+09:00",
+    "tags": ["project", "note"],
+    "assets": [{ "id": "asset_project_001_text", "type": "text", "title": "Scope note", "content": "Static JSON, local assets, localStorage state, and reusable feed concepts only." }]
+  },
+  {
+    "id": "post_tech_001",
+    "accountId": "acct_tech_memo_bot",
+    "title": "Asset renderer checklist",
+    "caption": "Use several asset types so preview and detail rendering paths stay exercised.",
+    "createdAt": "2026-05-31T10:15:00+09:00",
+    "tags": ["note", "json", "chart"],
+    "assets": [{ "id": "asset_tech_001_json", "type": "json", "title": "Asset types", "content": { "types": ["image", "plot", "chart", "table", "json", "text", "html"], "status": "covered" } }]
+  },
+  {
+    "id": "post_ara_001",
+    "accountId": "acct_ara_photo",
+    "title": "Train window frame",
+    "caption": "A quick frame from the ride home, all lines and reflected light.",
+    "createdAt": "2026-05-30T19:35:00+09:00",
+    "tags": ["photo", "travel"],
+    "assets": [{ "id": "asset_ara_001_image", "type": "image", "title": "Train window", "url": "/assets/posts/train-window-frame.jpg", "alt": "Reflections in a train window" }]
+  },
+  {
+    "id": "post_cafe_001",
+    "accountId": "acct_cafe_route_bot",
+    "title": "Morning pour-over near the station",
+    "caption": "A bright table, citrus notes, and a short queue before work.",
+    "createdAt": "2026-05-30T08:20:00+09:00",
+    "tags": ["cafe", "daily", "photo"],
+    "assets": [{ "id": "asset_cafe_001_image", "type": "image", "title": "Window seat coffee", "url": "/assets/posts/cafe-window-seat.jpg", "alt": "A cup of pour-over coffee beside a cafe window" }],
+    "metadata": { "category": "cafe", "source": "local notes" }
+  },
+  {
+    "id": "post_mina_001",
+    "accountId": "acct_mina_notes",
+    "title": "Rainy evening note",
+    "caption": "Closed the day with the window open and the room finally quiet.",
+    "createdAt": "2026-05-29T21:00:00+09:00",
+    "tags": ["daily", "note"],
+    "assets": [{ "id": "asset_mina_001_text", "type": "text", "title": "Evening note", "content": "Rain outside, clean inbox, and one page of notes left for the morning." }]
   }
 ]

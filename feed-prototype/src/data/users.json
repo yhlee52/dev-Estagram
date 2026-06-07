@@ -3,9 +3,9 @@
     "id": "user_mina",
     "display_name": "Mina Park",
     "handle": "mina",
-    "avatar": "/assets/avatars/daily-notes.png",
+    "avatar": "/assets/avatars/mina-park.png",
     "bio": "Uses Local Feed for personal notes and quiet daily snapshots.",
-    "account_id": "acct_daily_notes",
+    "account_id": "acct_mina_notes",
     "metadata": {
       "workspace": "personal"
     }
@@ -14,6 +14,7 @@
     "id": "user_joon",
     "display_name": "Joon Lee",
     "handle": "joon",
+    "avatar": "/assets/avatars/joon-notes.png",
     "bio": "Checks saved feeds and lightweight project updates.",
     "account_id": "acct_joon_notes",
     "metadata": {
@@ -24,9 +25,59 @@
     "id": "user_ara",
     "display_name": "Ara Kim",
     "handle": "ara",
-    "bio": "Reviews local feed scenarios without a backend account.",
+    "avatar": "/assets/avatars/ara-photo.png",
+    "bio": "Keeps a small photo record and reviews local feed scenarios.",
+    "account_id": "acct_ara_photo",
     "metadata": {
-      "workspace": "review"
+      "workspace": "photo"
+    }
+  },
+  {
+    "id": "user_cafe_route_bot",
+    "display_name": "Cafe Route Bot",
+    "handle": "cafe_route_bot",
+    "avatar": "/assets/avatars/cafe-route-bot.png",
+    "bio": "Local bot profile for cafe and short trip notes.",
+    "account_id": "acct_cafe_route_bot",
+    "metadata": {
+      "workspace": "bot",
+      "category": "places"
+    }
+  },
+  {
+    "id": "user_project_status_bot",
+    "display_name": "Project Status Bot",
+    "handle": "project_status_bot",
+    "avatar": "/assets/avatars/project-status-bot.png",
+    "bio": "Local bot profile for compact project status updates.",
+    "account_id": "acct_project_status_bot",
+    "metadata": {
+      "workspace": "bot",
+      "category": "project"
+    }
+  },
+  {
+    "id": "user_log_summary_bot",
+    "display_name": "Log Summary Bot",
+    "handle": "log_summary_bot",
+    "avatar": "/assets/avatars/log-summary-bot.png",
+    "bio": "Local bot profile for generated summaries, logs, and tables.",
+    "account_id": "acct_log_summary_bot",
+    "metadata": {
+      "workspace": "bot",
+      "category": "summary"
+    }
+  },
+  {
+    "id": "user_tech_memo_bot",
+    "display_name": "Tech Memo Bot",
+    "handle": "tech_memo_bot",
+    "avatar": "/assets/avatars/tech-memo-bot.png",
+    "bio": "Local bot profile for short technical notes and JSON snippets.",
+    "account_id": "acct_tech_memo_bot",
+    "metadata": {
+      "workspace": "bot",
+      "category": "notes"
     }
   }
 ]

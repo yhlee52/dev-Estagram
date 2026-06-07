@@ -2,23 +2,62 @@
   {
     "user_id": "user_mina",
     "following_account_ids": [
-      "acct_cafe_bot",
-      "acct_daily_notes"
+      "acct_mina_notes",
+      "acct_ara_photo",
+      "acct_cafe_route_bot",
+      "acct_tech_memo_bot"
     ]
   },
   {
     "user_id": "user_joon",
     "following_account_ids": [
-      "acct_travel_bot",
-      "acct_equipment_report_bot",
-      "acct_joon_notes"
+      "acct_joon_notes",
+      "acct_project_status_bot",
+      "acct_log_summary_bot",
+      "acct_tech_memo_bot"
     ]
   },
   {
     "user_id": "user_ara",
     "following_account_ids": [
-      "acct_cafe_bot",
-      "acct_travel_bot"
+      "acct_ara_photo",
+      "acct_mina_notes",
+      "acct_cafe_route_bot"
+    ]
+  },
+  {
+    "user_id": "user_cafe_route_bot",
+    "following_account_ids": [
+      "acct_cafe_route_bot",
+      "acct_ara_photo",
+      "acct_mina_notes",
+      "acct_log_summary_bot"
+    ]
+  },
+  {
+    "user_id": "user_project_status_bot",
+    "following_account_ids": [
+      "acct_project_status_bot",
+      "acct_joon_notes",
+      "acct_log_summary_bot"
+    ]
+  },
+  {
+    "user_id": "user_log_summary_bot",
+    "following_account_ids": [
+      "acct_log_summary_bot",
+      "acct_project_status_bot",
+      "acct_tech_memo_bot",
+      "acct_cafe_route_bot"
+    ]
+  },
+  {
+    "user_id": "user_tech_memo_bot",
+    "following_account_ids": [
+      "acct_tech_memo_bot",
+      "acct_project_status_bot",
+      "acct_joon_notes",
+      "acct_mina_notes"
     ]
   }
 ]
