@@ -70,11 +70,23 @@ function normalizeLookupValue(value: string): string {
   return value.trim().replace(/^@/, '').toLowerCase();
 }
 
-function slugify(value: string): string {
+export function normalizeLocalHandle(value: string): string {
   return normalizeLookupValue(value)
     .replace(/[^a-z0-9._-]+/g, '_')
     .replace(/_+/g, '_')
     .replace(/^_+|_+$/g, '');
+}
+
+function createUniqueId(baseId: string, existingIds: Set<string>): string {
+  let nextId = baseId;
+  let index = 2;
+
+  while (existingIds.has(nextId)) {
+    nextId = `${baseId}_${index}`;
+    index += 1;
+  }
+
+  return nextId;
 }
 
 function isUser(value: unknown): value is User {
@@ -157,15 +169,17 @@ export function getEffectiveUsers(): User[] {
 
 export function findUserByIdOrHandle(value: string): User | undefined {
   const normalizedValue = normalizeLookupValue(value);
+  const normalizedHandleValue = normalizeLocalHandle(value);
 
-  if (!normalizedValue) {
+  if (!normalizedValue && !normalizedHandleValue) {
     return undefined;
   }
 
   return getEffectiveUsers().find(
     (user) =>
       normalizeLookupValue(user.id) === normalizedValue ||
-      normalizeLookupValue(user.handle) === normalizedValue,
+      normalizeLookupValue(user.handle) === normalizedValue ||
+      normalizeLocalHandle(user.handle) === normalizedHandleValue,
   );
 }
 
@@ -238,16 +252,20 @@ export function initializeFollowingForUser(userId: string) {
 export function registerLocalUser(
   input: RegisterLocalUserInput,
 ): RegisterLocalUserResult {
-  const handle = slugify(input.handle);
+  const handle = normalizeLocalHandle(input.handle);
   const displayName = input.displayName.trim();
 
   if (!handle || !displayName) {
     throw new Error('Local user registration requires a handle and display name.');
   }
 
-  const userId = input.id?.trim() || `user_${handle}`;
-  const accountId = input.accountId?.trim() || `acct_${handle}`;
-  const accountHandle = slugify(input.accountHandle ?? `${handle}.local`) || `${handle}.local`;
+  const existingUserIds = new Set(getEffectiveUsers().map((user) => user.id));
+  const existingAccountIds = new Set(getEffectiveAccounts().map((account) => account.id));
+  const userId = input.id?.trim() || createUniqueId(`user_${handle}`, existingUserIds);
+  const accountId =
+    input.accountId?.trim() || createUniqueId(`acc_${handle}`, existingAccountIds);
+  const accountHandle =
+    normalizeLocalHandle(input.accountHandle ?? `${handle}.local`) || `${handle}.local`;
 
   if (findUserByIdOrHandle(userId) || findUserByIdOrHandle(handle)) {
     throw new Error('A user with this id or handle already exists.');

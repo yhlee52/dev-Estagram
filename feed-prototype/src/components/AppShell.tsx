@@ -1,9 +1,14 @@
 import { Outlet } from 'react-router';
 import { useActiveUser } from '../hooks/useActiveUser';
 import BottomNav from './BottomNav';
+import LocalUserEntry from './LocalUserEntry';
 
 export default function AppShell() {
   const { users, activeUser, activeUserId, setActiveUserId } = useActiveUser();
+
+  if (!activeUser) {
+    return <LocalUserEntry />;
+  }
 
   return (
     <div className="min-h-screen bg-neutral-200 text-neutral-950">

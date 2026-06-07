@@ -8,17 +8,13 @@ import {
 
 const ACTIVE_USER_EVENT = 'local-feed-active-user-change';
 
-function getDefaultUserId(): string {
-  return getEffectiveUsers()[0]?.id ?? '';
-}
-
 function isKnownUserId(userId: string, users = getEffectiveUsers()): boolean {
   return users.some((user) => user.id === userId);
 }
 
 function readActiveUserId(): string {
   if (typeof window === 'undefined') {
-    return getDefaultUserId();
+    return '';
   }
 
   const storedUserId = window.localStorage.getItem(ACTIVE_USER_STORAGE_KEY);
@@ -27,7 +23,7 @@ function readActiveUserId(): string {
     return storedUserId;
   }
 
-  return getDefaultUserId();
+  return '';
 }
 
 function writeActiveUserId(userId: string) {
@@ -60,16 +56,16 @@ export function useActiveUser() {
   }, []);
 
   const setActiveUserId = useCallback((userId: string) => {
-    if (!isKnownUserId(userId, users)) {
+    if (!isKnownUserId(userId)) {
       return;
     }
 
     setActiveUserIdState(userId);
     writeActiveUserId(userId);
-  }, [users]);
+  }, []);
 
   const activeUser = useMemo(
-    () => users.find((user) => user.id === activeUserId) ?? users[0],
+    () => users.find((user) => user.id === activeUserId),
     [activeUserId, users],
   );
 
