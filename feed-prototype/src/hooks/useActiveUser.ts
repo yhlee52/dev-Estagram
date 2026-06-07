@@ -35,6 +35,15 @@ function writeActiveUserId(userId: string) {
   window.dispatchEvent(new Event(ACTIVE_USER_EVENT));
 }
 
+function clearStoredActiveUserId() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.removeItem(ACTIVE_USER_STORAGE_KEY);
+  window.dispatchEvent(new Event(ACTIVE_USER_EVENT));
+}
+
 export function useActiveUser() {
   const users = useEffectiveUsers();
   const [activeUserId, setActiveUserIdState] = useState<string>(readActiveUserId);
@@ -64,6 +73,11 @@ export function useActiveUser() {
     writeActiveUserId(userId);
   }, []);
 
+  const clearActiveUser = useCallback(() => {
+    setActiveUserIdState('');
+    clearStoredActiveUserId();
+  }, []);
+
   const activeUser = useMemo(
     () => users.find((user) => user.id === activeUserId),
     [activeUserId, users],
@@ -74,5 +88,6 @@ export function useActiveUser() {
     activeUser,
     activeUserId,
     setActiveUserId,
+    clearActiveUser,
   };
 }
