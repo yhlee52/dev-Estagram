@@ -1,5 +1,123 @@
 # PROJECT_GOALS.md
 
+## MVP8: Personal Post Create/Delete
+
+MVP8 builds on the completed MVP6 API read mode, MVP7 API follow/unfollow management, and MVP7.5 API local user/account registration by allowing API mode to create and delete personal posts.
+
+The goal is to add a narrow API-mode post create/delete path while preserving mock mode:
+
+```text
+mock mode = existing frontend mock JSON + local assets + MVP4 localStorage user/follow overlays
+api mode = FastAPI + PostgreSQL posts table + active API user selection
+```
+
+MVP8 API mode should:
+
+```text
+allow the active API User to create a new Post
+create the Post through the active API User's 1:1 Account
+store the created Post in the PostgreSQL posts table
+avoid frontend account selection for post creation
+display the created Post through existing feed/profile/detail read paths where applicable
+show delete controls only for Posts written by the active API User's own Account
+allow deleting Posts written by the active API User's own Account
+refresh Home Feed, Account Profile, and Post Detail or navigate safely after deletion
+keep mock mode behavior in place
+```
+
+MVP8 adds these backend API endpoints:
+
+```text
+POST /api/posts
+DELETE /api/posts/{post_id}
+```
+
+`POST /api/posts` policy:
+
+```text
+accept user_id
+accept title
+accept text
+accept optional metadata_json
+trim title and text
+require non-empty title and text
+find the backend User from user_id
+find that User's 1:1 Account
+create the Post with that Account's account_id
+do not let the frontend choose account_id
+```
+
+`DELETE /api/posts/{post_id}` policy:
+
+```text
+accept user_id as a query parameter or request body value
+find the backend User from user_id
+find that User's 1:1 Account
+delete only when the target Post was written by that Account
+use hard delete for MVP8
+```
+
+MVP8 ownership checking is a prototype ownership check:
+
+```text
+active API user selection is still local prototype state
+ownership is checked against the selected User's 1:1 Account
+this is not real login
+this is not authentication
+this is not a permission system
+this is not an authorization framework
+```
+
+MVP8 should not implement:
+
+```text
+post edit/update
+asset upload
+local file upload
+S3 integration
+rich text editor
+complex metadata editor
+draft saving
+comments
+likes
+bookmarks
+search
+tag pages
+formal auth
+JWT
+sessions
+OAuth
+permission system
+multiple account selection
+admin UI
+post moderation
+mock mode removal
+equipment-report-specific core naming
+```
+
+MVP8 completion criteria:
+
+```text
+1. API mode can submit a title and text for a new Post.
+2. POST /api/posts creates the Post for the active API User's 1:1 Account.
+3. The frontend does not expose account selection for post creation.
+4. Created Posts are stored in the backend PostgreSQL posts table.
+5. Created Posts can be seen through Home Feed, Account Profile, or Post Detail where applicable.
+6. API mode shows delete controls only for the active API User's own Posts.
+7. DELETE /api/posts/{post_id} deletes only Posts owned by the selected User's 1:1 Account.
+8. Deleted Posts disappear from refreshed list views or Post Detail navigates safely away.
+9. Mock mode behavior remains unchanged.
+10. No MVP8 non-goals are introduced.
+11. TypeScript build passes from feed-prototype/.
+```
+
+MVP9 candidates:
+
+```text
+asset attach/upload skeleton
+post edit
+```
+
 ## MVP7.5: API Local User/Account Registration
 
 MVP7.5 builds on the completed MVP6 API read mode and MVP7 API follow/unfollow management by allowing API mode to create a new backend `User` and its corresponding `Account`.
@@ -100,7 +218,7 @@ MVP7.5 completion criteria:
 MVP8 connection:
 
 ```text
-MVP8 is expected to add post creation/deletion for API-mode accounts created or selected through the existing User/Account model.
+MVP8 adds personal post creation/deletion for API-mode users through the active User's 1:1 Account.
 ```
 
 ## MVP7: API Follow/Unfollow

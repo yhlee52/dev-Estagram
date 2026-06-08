@@ -240,36 +240,43 @@ export default function AccountProfile() {
           </p>
         ) : null}
 
-        <button
-          type="button"
-          className={[
-            'w-full rounded-md px-4 py-2.5 text-sm font-bold transition-colors',
-            isApiDataSource && isApiFollowDisabled
-              ? 'cursor-not-allowed border border-neutral-200 bg-neutral-100 text-neutral-400'
-              : following
-              ? 'border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'
-              : 'bg-neutral-950 text-white hover:bg-neutral-800',
-          ].join(' ')}
-          disabled={isApiDataSource && isApiFollowDisabled}
-          onClick={() => {
-            if (isApiDataSource) {
-              void apiFollows.toggleFollow(account.id);
-              return;
-            }
+        {isOwnApiAccount ? (
+          <Link
+            to="/posts/new"
+            className="flex h-11 w-full items-center justify-center rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800"
+          >
+            New Post
+          </Link>
+        ) : (
+          <button
+            type="button"
+            className={[
+              'w-full rounded-md px-4 py-2.5 text-sm font-bold transition-colors',
+              isApiDataSource && isApiFollowDisabled
+                ? 'cursor-not-allowed border border-neutral-200 bg-neutral-100 text-neutral-400'
+                : following
+                ? 'border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'
+                : 'bg-neutral-950 text-white hover:bg-neutral-800',
+            ].join(' ')}
+            disabled={isApiDataSource && isApiFollowDisabled}
+            onClick={() => {
+              if (isApiDataSource) {
+                void apiFollows.toggleFollow(account.id);
+                return;
+              }
 
-            toggleMockFollow(account.id);
-          }}
-        >
-          {isOwnApiAccount
-            ? 'This is your account'
-            : apiFollows.isLoading
-            ? 'Loading...'
-            : isPendingApiAccount
-            ? 'Saving...'
-            : following
-            ? 'Unfollow'
-            : 'Follow'}
-        </button>
+              toggleMockFollow(account.id);
+            }}
+          >
+            {apiFollows.isLoading
+              ? 'Loading...'
+              : isPendingApiAccount
+              ? 'Saving...'
+              : following
+              ? 'Unfollow'
+              : 'Follow'}
+          </button>
+        )}
       </section>
 
       <section className="space-y-3">
@@ -291,7 +298,9 @@ export default function AccountProfile() {
             title="No posts yet"
             description={
               isApiDataSource
-                ? 'No read-only API posts are available for this account.'
+                ? isOwnApiAccount
+                  ? 'Create a post and it will appear here.'
+                  : 'Posts from this account will appear here.'
                 : 'Posts from this account will appear here.'
             }
           />

@@ -48,6 +48,21 @@ const getErrorMessage = (
       return errorBody.detail;
     }
 
+    if (Array.isArray(errorBody.detail)) {
+      const firstDetail = errorBody.detail[0];
+
+      if (
+        typeof firstDetail === "object" &&
+        firstDetail !== null &&
+        "msg" in firstDetail &&
+        typeof firstDetail.msg === "string"
+      ) {
+        return firstDetail.msg;
+      }
+
+      return "Request validation failed.";
+    }
+
     if (typeof errorBody.message === "string") {
       return errorBody.message;
     }

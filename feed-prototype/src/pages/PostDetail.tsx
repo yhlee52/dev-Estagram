@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import { getAccount } from '../api/accountsApi';
-import { getPost } from '../api/postsApi';
+import { deletePost, getPost } from '../api/postsApi';
+import { useActiveApiUser } from '../auth/apiActiveUser';
 import AssetRenderer from '../components/AssetRenderer';
 import EmptyState from '../components/EmptyState';
 import MetadataTable from '../components/MetadataTable';
@@ -34,6 +35,22 @@ function getPostDetailErrorMessage(error: unknown): string {
   return 'Could not load this API post. Check the backend server and try again.';
 }
 
+function getDeletePostErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError) {
+    if (error.status === 403) {
+      return 'Only the account that wrote this post can delete it.';
+    }
+
+    return `The backend API returned ${error.status}. ${error.message}`;
+  }
+
+  return 'Could not delete this post. Check the backend server and try again.';
+}
+
 function AccountAvatar({ account }: { account: Account }) {
   const [hasImageError, setHasImageError] = useState(false);
   const initial = account.displayName.trim().charAt(0).toUpperCase() || 'A';
@@ -56,14 +73,23 @@ function AccountAvatar({ account }: { account: Account }) {
   );
 }
 
+function getAccountUserId(account: Account): string {
+  const userId = account.metadata?.user_id;
+
+  return typeof userId === 'string' ? userId : '';
+}
+
 export default function PostDetail() {
   const navigate = useNavigate();
   const { postId } = useParams();
   const accounts = useEffectiveAccounts();
+  const { activeApiUserId } = useActiveApiUser();
   const [apiPost, setApiPost] = useState<Post | undefined>();
   const [apiAccount, setApiAccount] = useState<Account | undefined>();
   const [isLoading, setIsLoading] = useState(isApiDataSource);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     if (!isApiDataSource || !postId) {
@@ -110,6 +136,31 @@ export default function PostDetail() {
     : undefined;
   const post = isApiDataSource ? apiPost : mockPost;
   const account = isApiDataSource ? apiAccount : mockAccount;
+  const isOwnApiPost =
+    isApiDataSource && account ? getAccountUserId(account) === activeApiUserId : false;
+
+  const handleDeletePost = async () => {
+    if (!postId || !account || !activeApiUserId || isDeleting) {
+      return;
+    }
+
+    const shouldDelete = window.confirm('Delete this post?');
+    if (!shouldDelete) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError('');
+
+    try {
+      await deletePost(postId, activeApiUserId);
+      navigate(`/accounts/${account.id}`, { replace: true });
+    } catch (deletePostError) {
+      setDeleteError(getDeletePostErrorMessage(deletePostError));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -179,6 +230,16 @@ export default function PostDetail() {
           Back
         </button>
         <div className="flex items-center gap-2">
+          {isOwnApiPost ? (
+            <button
+              type="button"
+              className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:text-red-300"
+              disabled={isDeleting}
+              onClick={handleDeletePost}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          ) : null}
           <Link
             className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
             to={`/accounts/${account.id}`}
@@ -190,6 +251,12 @@ export default function PostDetail() {
           </Link>
         </div>
       </nav>
+
+      {deleteError ? (
+        <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
+          {deleteError}
+        </p>
+      ) : null}
 
       <Link
         to={`/accounts/${account.id}`}
@@ -216,7 +283,7 @@ export default function PostDetail() {
           </p>
           {isApiDataSource ? (
             <p className="text-right text-xs font-semibold text-neutral-500">
-              Read-only
+              {isOwnApiPost ? 'Your post' : 'API post'}
             </p>
           ) : null}
         </div>

@@ -134,7 +134,7 @@ export default function HomeFeed() {
           No followed accounts yet
         </h2>
         <p className="mx-auto mt-2 max-w-[280px] text-sm leading-6 text-neutral-500">
-          Follow accounts from Accounts to start filling this API feed.
+          Follow accounts to fill this API feed, or create a post and view it from your account profile.
         </p>
         <Link
           to="/accounts"
@@ -161,10 +161,13 @@ export default function HomeFeed() {
         <p className="text-xs font-bold uppercase text-neutral-400">
           Data source: {isApiDataSource ? 'API' : 'Mock'}
         </p>
-        {isApiDataSource ? (
-          <p className="text-right text-xs font-semibold text-neutral-500">
-            API follow state
-          </p>
+        {isApiDataSource && activeApiUserId ? (
+          <Link
+            to="/posts/new"
+            className="h-8 shrink-0 rounded-md bg-neutral-950 px-3 py-2 text-xs font-bold leading-4 text-white shadow-sm transition hover:bg-neutral-800"
+          >
+            New Post
+          </Link>
         ) : null}
       </div>
 
