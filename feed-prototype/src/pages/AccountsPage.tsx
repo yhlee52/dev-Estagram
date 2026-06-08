@@ -166,6 +166,8 @@ export default function AccountsPage() {
               followButtonLabel={
                 isOwnApiAccount
                   ? 'This is your account'
+                  : apiFollows.isLoading
+                  ? 'Loading...'
                   : isPendingApiAccount
                   ? 'Saving...'
                   : isApiDataSource

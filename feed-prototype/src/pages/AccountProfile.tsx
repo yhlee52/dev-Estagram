@@ -262,6 +262,8 @@ export default function AccountProfile() {
         >
           {isOwnApiAccount
             ? 'This is your account'
+            : apiFollows.isLoading
+            ? 'Loading...'
             : isPendingApiAccount
             ? 'Saving...'
             : following

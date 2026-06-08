@@ -30,6 +30,10 @@ function getFeedErrorMessage(error: unknown): string {
   return 'Could not load the API feed. Check the backend server and try again.';
 }
 
+function getFeedRefreshErrorMessage(error: unknown): string {
+  return `Feed refresh failed after the follow change. ${getFeedErrorMessage(error)}`;
+}
+
 const feedScopeOptions: Array<{
   value: FeedScope;
   label: string;
@@ -92,7 +96,9 @@ export default function HomeFeed() {
           setFeedItems([]);
           setError(
             isApiDataSource
-              ? getFeedErrorMessage(feedError)
+              ? apiFollowRefreshKey > 0
+                ? getFeedRefreshErrorMessage(feedError)
+                : getFeedErrorMessage(feedError)
               : 'Could not load the feed.',
           );
         }
