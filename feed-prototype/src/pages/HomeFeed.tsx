@@ -149,9 +149,21 @@ export default function HomeFeed() {
       </div>
 
       {isApiDataSource ? (
-        <p className="rounded-md border border-neutral-200 bg-neutral-100 px-3 py-2 text-xs font-semibold leading-5 text-neutral-600">
-          API mode feed reflects backend follow state.
-        </p>
+        <div className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-100 px-3 py-2">
+          <p className="text-xs font-semibold leading-5 text-neutral-600">
+            API mode feed reflects backend follow state.
+          </p>
+          <button
+            type="button"
+            className="h-8 shrink-0 rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-400"
+            disabled={isLoading}
+            onClick={() => {
+              setApiFollowRefreshKey((currentKey) => currentKey + 1);
+            }}
+          >
+            Refresh feed
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-2 rounded-md border border-neutral-200 bg-neutral-100 p-1">
           {feedScopeOptions.map((option) => {

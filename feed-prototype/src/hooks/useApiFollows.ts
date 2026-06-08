@@ -15,6 +15,10 @@ const dispatchApiFollowsChange = () => {
   window.dispatchEvent(new Event(API_FOLLOWS_CHANGE_EVENT));
 };
 
+type LoadFollowsOptions = {
+  broadcastChange?: boolean;
+};
+
 export function useApiFollows(activeApiUserId: string) {
   const [followingIds, setFollowingIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(Boolean(activeApiUserId));
@@ -22,7 +26,7 @@ export function useApiFollows(activeApiUserId: string) {
   const [pendingAccountId, setPendingAccountId] = useState('');
   const [error, setError] = useState('');
 
-  const loadFollows = useCallback(async () => {
+  const loadFollows = useCallback(async (options: LoadFollowsOptions = {}) => {
     if (!activeApiUserId) {
       setFollowingIds([]);
       setIsLoading(false);
@@ -36,7 +40,10 @@ export function useApiFollows(activeApiUserId: string) {
     try {
       const response = await getUserFollows(activeApiUserId);
       setFollowingIds(response.following_account_ids);
-      dispatchApiFollowsChange();
+
+      if (options.broadcastChange) {
+        dispatchApiFollowsChange();
+      }
     } catch {
       setFollowingIds([]);
       setError('Could not load API follow state.');
@@ -64,7 +71,6 @@ export function useApiFollows(activeApiUserId: string) {
 
         if (isActive) {
           setFollowingIds(response.following_account_ids);
-          dispatchApiFollowsChange();
         }
       } catch {
         if (isActive) {
@@ -105,7 +111,7 @@ export function useApiFollows(activeApiUserId: string) {
 
       try {
         await followAccountApi(activeApiUserId, accountId);
-        await loadFollows();
+        await loadFollows({ broadcastChange: true });
       } catch {
         setError('Could not follow this account.');
       } finally {
@@ -129,7 +135,7 @@ export function useApiFollows(activeApiUserId: string) {
 
       try {
         await unfollowAccountApi(activeApiUserId, accountId);
-        await loadFollows();
+        await loadFollows({ broadcastChange: true });
       } catch {
         setError('Could not unfollow this account.');
       } finally {
