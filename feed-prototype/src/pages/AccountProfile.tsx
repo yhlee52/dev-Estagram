@@ -298,7 +298,9 @@ export default function AccountProfile() {
             title="No posts yet"
             description={
               isApiDataSource
-                ? 'No read-only API posts are available for this account.'
+                ? isOwnApiAccount
+                  ? 'Create a post and it will appear here.'
+                  : 'Posts from this account will appear here.'
                 : 'Posts from this account will appear here.'
             }
           />

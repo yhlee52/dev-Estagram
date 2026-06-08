@@ -35,6 +35,22 @@ function getPostDetailErrorMessage(error: unknown): string {
   return 'Could not load this API post. Check the backend server and try again.';
 }
 
+function getDeletePostErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError) {
+    if (error.status === 403) {
+      return 'Only the account that wrote this post can delete it.';
+    }
+
+    return `The backend API returned ${error.status}. ${error.message}`;
+  }
+
+  return 'Could not delete this post. Check the backend server and try again.';
+}
+
 function AccountAvatar({ account }: { account: Account }) {
   const [hasImageError, setHasImageError] = useState(false);
   const initial = account.displayName.trim().charAt(0).toUpperCase() || 'A';
@@ -124,7 +140,7 @@ export default function PostDetail() {
     isApiDataSource && account ? getAccountUserId(account) === activeApiUserId : false;
 
   const handleDeletePost = async () => {
-    if (!postId || !account || !activeApiUserId) {
+    if (!postId || !account || !activeApiUserId || isDeleting) {
       return;
     }
 
@@ -139,12 +155,8 @@ export default function PostDetail() {
     try {
       await deletePost(postId, activeApiUserId);
       navigate(`/accounts/${account.id}`, { replace: true });
-    } catch (deleteError) {
-      setDeleteError(
-        deleteError instanceof ApiClientError
-          ? `The backend API returned ${deleteError.status}. ${deleteError.message}`
-          : 'Could not delete this post. Check the backend server and try again.',
-      );
+    } catch (deletePostError) {
+      setDeleteError(getDeletePostErrorMessage(deletePostError));
     } finally {
       setIsDeleting(false);
     }

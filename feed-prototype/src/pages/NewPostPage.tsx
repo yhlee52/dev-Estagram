@@ -48,6 +48,10 @@ export default function NewPostPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (isSubmitting) {
+      return;
+    }
+
     const trimmedTitle = title.trim();
     const normalizedText = text.trim();
 
@@ -106,10 +110,13 @@ export default function NewPostPage() {
             id="post-title"
             className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-950 outline-none transition focus:border-neutral-400"
             maxLength={200}
-            required
+            aria-invalid={Boolean(error && !title.trim())}
             value={title}
             onChange={(event) => setTitle(event.target.value)}
           />
+          <p className="text-xs font-medium text-neutral-400">
+            {title.length}/200
+          </p>
         </div>
 
         <div className="space-y-1.5">
@@ -126,6 +133,9 @@ export default function NewPostPage() {
             value={text}
             onChange={(event) => setText(event.target.value)}
           />
+          <p className="text-xs font-medium text-neutral-400">
+            Optional in MVP8. {text.length}/5000
+          </p>
         </div>
 
         {error ? (

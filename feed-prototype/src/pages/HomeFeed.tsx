@@ -134,7 +134,7 @@ export default function HomeFeed() {
           No followed accounts yet
         </h2>
         <p className="mx-auto mt-2 max-w-[280px] text-sm leading-6 text-neutral-500">
-          Follow accounts from Accounts to start filling this API feed.
+          Follow accounts to fill this API feed, or create a post and view it from your account profile.
         </p>
         <Link
           to="/accounts"
