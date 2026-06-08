@@ -15,6 +15,22 @@ PostgreSQL
 Git
 ```
 
+## MVP7 planned scope note
+
+MVP7 is planned to add API-mode follow/unfollow writes while keeping this MVP6 mock/API read-mode behavior available.
+
+Planned MVP7 endpoints:
+
+```text
+POST /api/users/{user_id}/follows/{account_id}
+DELETE /api/users/{user_id}/follows/{account_id}
+GET /api/users/{user_id}/follows
+```
+
+MVP7 should store API-mode follow changes in the PostgreSQL `follows` table, refetch Home Feed after successful follow/unfollow, and keep mock mode localStorage follow/unfollow behavior unchanged.
+
+MVP7 should not add real login, passwords, JWT, sessions, OAuth, authorization, upload features, comments, likes, bookmarks, search, tag pages, admin UI, or API user/account creation.
+
 개발 중에는 backend와 frontend를 별도 터미널에서 실행합니다.
 
 ```text

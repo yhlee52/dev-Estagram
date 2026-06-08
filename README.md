@@ -18,6 +18,34 @@ Detailed MVP6 setup and test steps are documented in:
 
 - `feed-prototype/docs/MVP6_TEST_PROCEDURE.md`
 
+## MVP7: API Follow/Unfollow
+
+MVP7 opens a small, intentional write surface for follow state in API mode while preserving the existing mock mode behavior.
+
+MVP7 goals:
+
+- In API mode, the active API user can follow and unfollow accounts.
+- Follow/unfollow changes are stored in the backend PostgreSQL `follows` table through FastAPI.
+- Home Feed refreshes after a successful follow/unfollow API request.
+- Accounts and Account Profile screens support working API-mode follow/unfollow buttons.
+- Mock mode keeps the existing localStorage-based follow/unfollow flow.
+
+MVP7 adds these backend API endpoints:
+
+- `POST /api/users/{user_id}/follows/{account_id}`
+- `DELETE /api/users/{user_id}/follows/{account_id}`
+- `GET /api/users/{user_id}/follows`
+
+MVP7 follow API policy:
+
+- Follow and unfollow should be idempotent where practical.
+- Following an already-followed account must not create duplicate `follows` rows.
+- Unfollowing an already-unfollowed account should not break the frontend.
+- Prefer "API success, then refetch" over optimistic updates for this MVP.
+- The frontend may hide or disable the follow button for the active user's own account.
+
+MVP7 does not add new API user/account creation, post writes, asset or file upload, S3, comments, likes, bookmarks, search, tags, real login, passwords, JWT, sessions, OAuth, authorization, admin UI, mock JSON removal, or removal of the MVP4/MVP6 mock mode.
+
 ## MVP6: Frontend API Read Mode with API User Entry
 
 MVP6 connects the `feed-prototype` frontend to the backend read-only API so the app can display PostgreSQL seed-data-backed feed content through FastAPI.

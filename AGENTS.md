@@ -31,7 +31,7 @@ When equipment-report-specific information is needed, represent it as `post.meta
 
 ## Current Implementation Scope
 
-MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skeleton. MVP6 adds a frontend API read mode while preserving the mock mode.
+MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skeleton. MVP6 adds a frontend API read mode while preserving the mock mode. MVP7 adds an API-mode follow/unfollow write path while keeping mock mode follow state local.
 
 - Use static JSON data.
 - Keep static assets under `public/assets`.
@@ -40,6 +40,7 @@ MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skele
 - MVP4 introduces a local user entry and local registration flow. It is still not authentication, signup, authorization, password handling, token handling, or a secure session.
 - MVP5 introduces the direction for a FastAPI + PostgreSQL + SQLModel + Alembic backend skeleton under `feed-prototype/backend/`. It does not convert the frontend to API-backed data.
 - MVP6 introduces API mode so the frontend can read backend seed data through FastAPI. Mock mode and the MVP4 localStorage-based local user flow must remain available.
+- MVP7 introduces API-mode follow/unfollow writes through FastAPI and stores those changes in the PostgreSQL `follows` table. Mock mode must keep using localStorage follow state.
 - A `User` represents the local viewer of the app. An `Account` represents an entity that publishes Posts.
 - During the MVP stage, each local `User` should have exactly one corresponding `Account`.
 - Active user state should be stored in `localStorage` under `local-feed-active-user-id`.
@@ -49,6 +50,45 @@ MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skele
 - Local users should be stored under `local-feed-local-users`; local accounts should be stored under `local-feed-local-accounts`.
 - Clearing browser localStorage can remove locally registered users, accounts, and follow changes.
 - The `/me` route should show the active user's local personal area, including connected Accounts and their Posts.
+
+## MVP7 Scope: API Follow/Unfollow
+
+MVP7 lets the active API user follow and unfollow accounts in API mode.
+
+MVP7 goals:
+
+- In API mode, the active backend `User` can follow an `Account`.
+- In API mode, the active backend `User` can unfollow an `Account`.
+- Follow/unfollow results are stored in the backend PostgreSQL `follows` table.
+- Home Feed is refreshed after successful follow/unfollow.
+- Accounts and Account Profile screens have working API-mode follow/unfollow buttons.
+- Mock mode keeps the existing localStorage-based follow/unfollow behavior.
+
+MVP7 backend API:
+
+- `POST /api/users/{user_id}/follows/{account_id}`
+- `DELETE /api/users/{user_id}/follows/{account_id}`
+- `GET /api/users/{user_id}/follows`
+
+MVP7 API behavior policy:
+
+- Follow API behavior should be idempotent where practical.
+- Re-following an already-followed account must not create duplicate rows.
+- Unfollowing an already-unfollowed account should not break the frontend.
+- Prefer "API success, then refetch" over optimistic updates.
+- The frontend may hide or disable the follow button for the active user's own account.
+
+MVP7 non-goals:
+
+- New API user/account creation.
+- Post create/update/delete.
+- Asset upload, file upload, or S3.
+- Comments, likes, bookmarks, search, or tag pages.
+- Real login, passwords, JWT, sessions, OAuth, authorization, or permission systems.
+- Admin UI.
+- Removing frontend mock JSON.
+- Removing MVP4/MVP6 mock mode.
+- Equipment-report-specific core type names, component names, routes, or data flow.
 
 ## MVP6 Scope: Frontend API Read Mode with API User Entry
 
