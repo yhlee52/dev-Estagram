@@ -5,12 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 def normalize_user_handle(handle: str) -> str:
-    normalized_handle = handle.strip().lower()
-
-    if not normalized_handle:
-        raise ValueError("Handle is required.")
-
-    return normalized_handle
+    return handle.strip().lower()
 
 
 def normalize_optional_text(value: str | None) -> str | None:
