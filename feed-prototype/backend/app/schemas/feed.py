@@ -1,7 +1,24 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+def normalize_user_handle(handle: str) -> str:
+    normalized_handle = handle.strip().lower()
+
+    if not normalized_handle:
+        raise ValueError("Handle is required.")
+
+    return normalized_handle
+
+
+def normalize_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+
+    normalized_value = value.strip()
+    return normalized_value or None
 
 
 class UserRead(BaseModel):
@@ -16,6 +33,22 @@ class UserRead(BaseModel):
     updated_at: datetime
 
 
+class UserCreate(BaseModel):
+    handle: str
+    display_name: str | None = None
+    bio: str | None = None
+
+    @field_validator("handle")
+    @classmethod
+    def validate_handle(cls, value: str) -> str:
+        return normalize_user_handle(value)
+
+    @field_validator("display_name", "bio")
+    @classmethod
+    def validate_optional_text(cls, value: str | None) -> str | None:
+        return normalize_optional_text(value)
+
+
 class AccountRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -28,6 +61,11 @@ class AccountRead(BaseModel):
     kind: str
     created_at: datetime
     updated_at: datetime
+
+
+class UserRegistrationResponse(BaseModel):
+    user: UserRead
+    account: AccountRead
 
 
 class PostAssetRead(BaseModel):
