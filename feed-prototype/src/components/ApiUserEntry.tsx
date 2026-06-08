@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { ApiNetworkError } from '../api/client';
-import type { ApiUser } from '../api/types';
-import { findUserByIdOrHandle, getUsers } from '../api/usersApi';
+import { ApiClientError, ApiNetworkError } from '../api/client';
+import type { ApiUser, ApiUserRegistrationResponse } from '../api/types';
+import {
+  findUserByIdOrHandle,
+  getUsers,
+  registerApiUser,
+} from '../api/usersApi';
 import { setActiveApiUser } from '../auth/apiActiveUser';
 import { getApiBaseUrl } from '../config/apiConfig';
 
@@ -13,6 +17,14 @@ interface MissingUserPrompt {
   inputValue: string;
   handleCandidate: string;
 }
+
+interface RegistrationFormState {
+  handle: string;
+  displayName: string;
+  bio: string;
+}
+
+const API_HANDLE_PATTERN = /^[a-z0-9_-]{3,32}$/;
 
 function getUserEntryErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
@@ -26,16 +38,53 @@ function normalizeApiHandleCandidate(input: string): string {
   return input.trim().toLowerCase();
 }
 
+function getDisplayNameFromHandle(handle: string): string {
+  const words = handle
+    .split(/[_-]+/)
+    .map((word) => word.trim())
+    .filter(Boolean);
+
+  if (words.length === 0) {
+    return handle;
+  }
+
+  return words
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(' ');
+}
+
+function getRegistrationErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError) {
+    return error.message;
+  }
+
+  return 'Could not register this API user. Check the API server and try again.';
+}
+
 export default function ApiUserEntry() {
   const navigate = useNavigate();
   const [entryValue, setEntryValue] = useState('');
   const [entryMode, setEntryMode] = useState<ApiUserEntryMode>('entry');
   const [missingUserPrompt, setMissingUserPrompt] =
     useState<MissingUserPrompt | null>(null);
+  const [registrationForm, setRegistrationForm] =
+    useState<RegistrationFormState>({
+      handle: '',
+      displayName: '',
+      bio: '',
+    });
+  const [registrationResult, setRegistrationResult] =
+    useState<ApiUserRegistrationResponse | null>(null);
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState('');
+  const [registrationError, setRegistrationError] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -105,6 +154,15 @@ export default function ApiUserEntry() {
   };
 
   const handleStartRegistration = () => {
+    const handleCandidate =
+      missingUserPrompt?.handleCandidate ?? normalizeApiHandleCandidate(entryValue);
+    setRegistrationForm({
+      handle: handleCandidate,
+      displayName: getDisplayNameFromHandle(handleCandidate),
+      bio: '',
+    });
+    setRegistrationResult(null);
+    setRegistrationError('');
     setEntryMode('registration');
     setError('');
   };
@@ -112,10 +170,78 @@ export default function ApiUserEntry() {
   const handleBackToEntry = () => {
     setEntryMode('entry');
     setMissingUserPrompt(null);
+    setRegistrationResult(null);
+    setRegistrationError('');
+    setIsRegistering(false);
     setError('');
   };
 
+  const handleRegistrationChange = (
+    field: keyof RegistrationFormState,
+    value: string,
+  ) => {
+    setRegistrationForm((currentForm) => ({
+      ...currentForm,
+      [field]: field === 'handle' ? normalizeApiHandleCandidate(value) : value,
+    }));
+    setRegistrationError('');
+  };
+
+  const handleRegistrationSubmit = async (
+    event: FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+
+    const handle = normalizeApiHandleCandidate(registrationForm.handle);
+    const displayName = registrationForm.displayName.trim() || handle;
+    const bio = registrationForm.bio.trim();
+
+    setRegistrationError('');
+    setRegistrationResult(null);
+
+    if (!handle) {
+      setRegistrationError('Handle is required.');
+      return;
+    }
+
+    if (!API_HANDLE_PATTERN.test(handle)) {
+      setRegistrationError(
+        'Handle must be 3-32 characters and use only lowercase letters, numbers, underscores, or hyphens.',
+      );
+      return;
+    }
+
+    setIsRegistering(true);
+
+    try {
+      const result = await registerApiUser({
+        handle,
+        display_name: displayName,
+        bio: bio || null,
+      });
+
+      setRegistrationForm({
+        handle: result.user.handle,
+        displayName: result.user.display_name,
+        bio: result.user.bio ?? '',
+      });
+      setRegistrationResult(result);
+    } catch (registrationErrorValue) {
+      setRegistrationError(getRegistrationErrorMessage(registrationErrorValue));
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
   if (entryMode === 'registration') {
+    const normalizedRegistrationHandle = normalizeApiHandleCandidate(
+      registrationForm.handle,
+    );
+    const isRegistrationHandleValid =
+      API_HANDLE_PATTERN.test(normalizedRegistrationHandle);
+    const isRegistrationSubmitDisabled =
+      isRegistering || !normalizedRegistrationHandle || !isRegistrationHandleValid;
+
     return (
       <div className="min-h-screen bg-neutral-200 text-neutral-950">
         <main className="mx-auto flex min-h-screen max-w-[430px] items-center bg-neutral-50 px-5 py-8 shadow-sm">
@@ -128,15 +254,86 @@ export default function ApiUserEntry() {
                 Register API user
               </h1>
               <p className="text-sm leading-6 text-neutral-600">
-                Registration form will be added in the next MVP7.5 step. This remains local API user selection, not login.
+                Create a backend user and matching account for API mode. This is local API user registration, not login.
               </p>
             </div>
 
-            {missingUserPrompt ? (
-              <div className="mt-5 rounded-md bg-neutral-100 px-3 py-2 text-sm font-semibold text-neutral-700">
-                Prepared handle: @{missingUserPrompt.handleCandidate}
-              </div>
-            ) : null}
+            <form className="mt-5 space-y-3" onSubmit={handleRegistrationSubmit}>
+              <label className="block space-y-2">
+                <span className="text-sm font-bold text-neutral-700">Handle</span>
+                <input
+                  className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
+                  value={registrationForm.handle}
+                  placeholder="new_user"
+                  autoComplete="off"
+                  disabled={isRegistering || Boolean(registrationResult)}
+                  onChange={(event) =>
+                    handleRegistrationChange('handle', event.target.value)
+                  }
+                />
+              </label>
+
+              <p
+                className={`text-xs font-medium ${
+                  normalizedRegistrationHandle && !isRegistrationHandleValid
+                    ? 'text-red-600'
+                    : 'text-neutral-500'
+                }`}
+              >
+                Use 3-32 lowercase letters, numbers, underscores, or hyphens.
+              </p>
+
+              <label className="block space-y-2">
+                <span className="text-sm font-bold text-neutral-700">
+                  Display name
+                </span>
+                <input
+                  className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
+                  value={registrationForm.displayName}
+                  placeholder={normalizedRegistrationHandle || 'Display name'}
+                  autoComplete="off"
+                  disabled={isRegistering || Boolean(registrationResult)}
+                  onChange={(event) =>
+                    handleRegistrationChange('displayName', event.target.value)
+                  }
+                />
+              </label>
+
+              <label className="block space-y-2">
+                <span className="text-sm font-bold text-neutral-700">
+                  Bio optional
+                </span>
+                <textarea
+                  className="min-h-20 w-full resize-none rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-medium leading-6 text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
+                  value={registrationForm.bio}
+                  placeholder="Short profile note"
+                  disabled={isRegistering || Boolean(registrationResult)}
+                  onChange={(event) =>
+                    handleRegistrationChange('bio', event.target.value)
+                  }
+                />
+              </label>
+
+              {registrationError ? (
+                <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+                  {registrationError}
+                </p>
+              ) : null}
+
+              {registrationResult ? (
+                <div className="rounded-md bg-green-50 px-3 py-2 text-sm font-semibold text-green-800">
+                  Created @{registrationResult.user.handle} and matching account.
+                </div>
+              ) : null}
+
+              <button
+                type="submit"
+                className="h-11 w-full rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-400"
+                disabled={isRegistrationSubmitDisabled || Boolean(registrationResult)}
+              >
+                {isRegistering ? 'Registering...' : 'Register API user'}
+              </button>
+            </form>
 
             <button
               type="button"
