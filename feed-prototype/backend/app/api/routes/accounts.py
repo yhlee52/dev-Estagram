@@ -3,8 +3,9 @@ from sqlmodel import Session, select
 
 from app.api.deps import get_session
 from app.models.account import Account
+from app.models.asset import PostAsset
 from app.models.post import Post
-from app.schemas.feed import AccountRead, PostRead
+from app.schemas.feed import AccountRead, PostAssetRead, PostRead, PostWithAssets
 
 
 router = APIRouter(prefix="/api/accounts", tags=["accounts"])
@@ -24,11 +25,30 @@ def get_account(account_id: str, session: Session = Depends(get_session)) -> Acc
     return account
 
 
-@router.get("/{account_id}/posts", response_model=list[PostRead])
+def get_post_assets(session: Session, post_id: str) -> list[PostAsset]:
+    assets = session.exec(
+        select(PostAsset)
+        .where(PostAsset.post_id == post_id)
+        .order_by(PostAsset.sort_order, PostAsset.created_at)
+    ).all()
+    return list(assets)
+
+
+def build_post_with_assets(session: Session, post: Post) -> PostWithAssets:
+    return PostWithAssets(
+        **PostRead.model_validate(post).model_dump(),
+        assets=[
+            PostAssetRead.model_validate(asset)
+            for asset in get_post_assets(session, post.id)
+        ],
+    )
+
+
+@router.get("/{account_id}/posts", response_model=list[PostWithAssets])
 def list_account_posts(
     account_id: str,
     session: Session = Depends(get_session),
-) -> list[Post]:
+) -> list[PostWithAssets]:
     account = session.get(Account, account_id)
     if account is None:
         raise HTTPException(status_code=404, detail="Account not found")
@@ -38,4 +58,4 @@ def list_account_posts(
         .where(Post.account_id == account_id)
         .order_by(Post.created_at.desc())
     ).all()
-    return list(posts)
+    return [build_post_with_assets(session, post) for post in posts]
