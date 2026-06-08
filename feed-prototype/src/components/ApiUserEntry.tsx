@@ -7,6 +7,13 @@ import { findUserByIdOrHandle, getUsers } from '../api/usersApi';
 import { setActiveApiUser } from '../auth/apiActiveUser';
 import { getApiBaseUrl } from '../config/apiConfig';
 
+type ApiUserEntryMode = 'entry' | 'registration';
+
+interface MissingUserPrompt {
+  inputValue: string;
+  handleCandidate: string;
+}
+
 function getUserEntryErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
     return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
@@ -15,9 +22,16 @@ function getUserEntryErrorMessage(error: unknown): string {
   return 'Could not load backend users. Check the API server and try again.';
 }
 
+function normalizeApiHandleCandidate(input: string): string {
+  return input.trim().toLowerCase();
+}
+
 export default function ApiUserEntry() {
   const navigate = useNavigate();
   const [entryValue, setEntryValue] = useState('');
+  const [entryMode, setEntryMode] = useState<ApiUserEntryMode>('entry');
+  const [missingUserPrompt, setMissingUserPrompt] =
+    useState<MissingUserPrompt | null>(null);
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,6 +75,7 @@ export default function ApiUserEntry() {
     const trimmedValue = entryValue.trim();
 
     setError('');
+    setMissingUserPrompt(null);
 
     if (!trimmedValue) {
       setError('Enter a backend user id or handle.');
@@ -73,9 +88,10 @@ export default function ApiUserEntry() {
       const user = await findUserByIdOrHandle(trimmedValue);
 
       if (!user) {
-        setError(
-          'User not found. API mode can only use users already seeded in the backend database.',
-        );
+        setMissingUserPrompt({
+          inputValue: trimmedValue,
+          handleCandidate: normalizeApiHandleCandidate(trimmedValue),
+        });
         return;
       }
 
@@ -87,6 +103,53 @@ export default function ApiUserEntry() {
       setIsSubmitting(false);
     }
   };
+
+  const handleStartRegistration = () => {
+    setEntryMode('registration');
+    setError('');
+  };
+
+  const handleBackToEntry = () => {
+    setEntryMode('entry');
+    setMissingUserPrompt(null);
+    setError('');
+  };
+
+  if (entryMode === 'registration') {
+    return (
+      <div className="min-h-screen bg-neutral-200 text-neutral-950">
+        <main className="mx-auto flex min-h-screen max-w-[430px] items-center bg-neutral-50 px-5 py-8 shadow-sm">
+          <section className="w-full rounded-md border border-neutral-200 bg-white p-5 shadow-sm">
+            <div className="space-y-2">
+              <p className="text-xs font-bold uppercase text-neutral-400">
+                API Local Registration
+              </p>
+              <h1 className="text-2xl font-bold leading-8 text-neutral-950">
+                Register API user
+              </h1>
+              <p className="text-sm leading-6 text-neutral-600">
+                Registration form will be added in the next MVP7.5 step. This remains local API user selection, not login.
+              </p>
+            </div>
+
+            {missingUserPrompt ? (
+              <div className="mt-5 rounded-md bg-neutral-100 px-3 py-2 text-sm font-semibold text-neutral-700">
+                Prepared handle: @{missingUserPrompt.handleCandidate}
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              className="mt-4 h-11 w-full rounded-md border border-neutral-200 bg-neutral-50 px-4 text-sm font-bold text-neutral-800 transition hover:bg-neutral-100"
+              onClick={handleBackToEntry}
+            >
+              Back to user entry
+            </button>
+          </section>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-neutral-200 text-neutral-950">
@@ -121,6 +184,38 @@ export default function ApiUserEntry() {
               <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
                 {error}
               </p>
+            ) : null}
+
+            {missingUserPrompt ? (
+              <div className="space-y-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-neutral-900">
+                    User not found.
+                  </p>
+                  <p className="text-sm font-semibold leading-6 text-neutral-700">
+                    Register "{missingUserPrompt.handleCandidate}" as a new API user?
+                  </p>
+                  <p className="text-xs font-medium leading-5 text-neutral-500">
+                    Entered value: {missingUserPrompt.inputValue}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    className="h-10 rounded-md bg-neutral-950 px-3 text-sm font-bold text-white transition hover:bg-neutral-800"
+                    onClick={handleStartRegistration}
+                  >
+                    Register user
+                  </button>
+                  <button
+                    type="button"
+                    className="h-10 rounded-md border border-neutral-200 bg-white px-3 text-sm font-bold text-neutral-700 transition hover:bg-neutral-100"
+                    onClick={handleBackToEntry}
+                  >
+                    Try again
+                  </button>
+                </div>
+              </div>
             ) : null}
 
             <button
