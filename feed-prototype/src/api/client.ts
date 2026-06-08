@@ -70,13 +70,18 @@ const readJsonBody = async (response: Response): Promise<unknown> => {
   }
 };
 
-export const apiGet = async <T>(path: string): Promise<T> => {
+const apiRequest = async <T>(
+  path: string,
+  init: RequestInit = {},
+): Promise<T> => {
   let response: Response;
 
   try {
     response = await fetch(buildApiUrl(path), {
+      ...init,
       headers: {
         Accept: "application/json",
+        ...init.headers,
       },
     });
   } catch (error) {
@@ -96,3 +101,11 @@ export const apiGet = async <T>(path: string): Promise<T> => {
 
   return body as T;
 };
+
+export const apiGet = async <T>(path: string): Promise<T> => apiRequest<T>(path);
+
+export const apiPost = async <T>(path: string): Promise<T> =>
+  apiRequest<T>(path, { method: "POST" });
+
+export const apiDelete = async <T>(path: string): Promise<T> =>
+  apiRequest<T>(path, { method: "DELETE" });
