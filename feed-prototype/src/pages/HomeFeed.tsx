@@ -6,6 +6,7 @@ import { useActiveApiUser } from '../auth/apiActiveUser';
 import { getApiBaseUrl } from '../config/apiConfig';
 import { getDataSourceMode } from '../config/dataSource';
 import { getHomeFeedItems, type FeedScope } from '../data/feedRepository';
+import { API_FOLLOWS_CHANGE_EVENT } from '../hooks/useApiFollows';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useFollowState } from '../hooks/useFollowState';
 import type { FeedItem } from '../types/feed';
@@ -45,6 +46,23 @@ export default function HomeFeed() {
   const accounts = useEffectiveAccounts();
   const { activeUserId, followingIds } = useFollowState();
   const { activeApiUserId } = useActiveApiUser();
+  const [apiFollowRefreshKey, setApiFollowRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (!isApiDataSource) {
+      return;
+    }
+
+    const refreshApiFeed = () => {
+      setApiFollowRefreshKey((currentKey) => currentKey + 1);
+    };
+
+    window.addEventListener(API_FOLLOWS_CHANGE_EVENT, refreshApiFeed);
+
+    return () => {
+      window.removeEventListener(API_FOLLOWS_CHANGE_EVENT, refreshApiFeed);
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -93,6 +111,7 @@ export default function HomeFeed() {
   }, [
     activeApiUserId,
     activeUserId,
+    apiFollowRefreshKey,
     feedScope,
     followingIds,
     accounts,
@@ -124,14 +143,14 @@ export default function HomeFeed() {
         </p>
         {isApiDataSource ? (
           <p className="text-right text-xs font-semibold text-neutral-500">
-            Read-only
+            API follow state
           </p>
         ) : null}
       </div>
 
       {isApiDataSource ? (
         <p className="rounded-md border border-neutral-200 bg-neutral-100 px-3 py-2 text-xs font-semibold leading-5 text-neutral-600">
-          API mode reads seeded backend data only. Follow and unfollow changes are unavailable in MVP6.
+          API mode feed reflects backend follow state.
         </p>
       ) : (
         <div className="grid grid-cols-2 rounded-md border border-neutral-200 bg-neutral-100 p-1">

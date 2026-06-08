@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import { getAccount, getAccountPosts } from '../api/accountsApi';
+import { useActiveApiUser } from '../auth/apiActiveUser';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
 import postsData from '../data/posts.json';
@@ -11,6 +12,7 @@ import {
 } from '../data/apiFeedRepository';
 import { getApiBaseUrl } from '../config/apiConfig';
 import { getDataSourceMode } from '../config/dataSource';
+import { useApiFollows } from '../hooks/useApiFollows';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useFollowState } from '../hooks/useFollowState';
 import type { Account, FeedItem, Post } from '../types/feed';
@@ -63,10 +65,19 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
   );
 }
 
+function getAccountUserId(account: Account): string {
+  const userId = account.metadata?.user_id;
+
+  return typeof userId === 'string' ? userId : '';
+}
+
 export default function AccountProfile() {
   const { accountId } = useParams();
   const accounts = useEffectiveAccounts();
-  const { isFollowing, toggleFollow } = useFollowState();
+  const { isFollowing: isMockFollowing, toggleFollow: toggleMockFollow } =
+    useFollowState();
+  const { activeApiUserId } = useActiveApiUser();
+  const apiFollows = useApiFollows(isApiDataSource ? activeApiUserId : '');
   const [apiAccount, setApiAccount] = useState<Account | undefined>();
   const [apiAccountPosts, setApiAccountPosts] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(isApiDataSource);
@@ -167,7 +178,14 @@ export default function AccountProfile() {
     : getPostsByAccountId(posts, account.id)
         .map((post) => joinPostWithAccount(post, accounts))
         .filter((feedItem) => feedItem !== undefined);
-  const following = !isApiDataSource && isFollowing(account.id);
+  const following = isApiDataSource
+    ? apiFollows.isFollowing(account.id)
+    : isMockFollowing(account.id);
+  const isOwnApiAccount =
+    isApiDataSource && getAccountUserId(account) === activeApiUserId;
+  const isPendingApiAccount = apiFollows.pendingAccountId === account.id;
+  const isApiFollowDisabled =
+    apiFollows.isLoading || apiFollows.isMutating || isOwnApiAccount;
   const latestPost = accountPosts[0]?.post;
   const latestPostDate = latestPost
     ? formatDateTime(latestPost.createdAt)
@@ -182,7 +200,7 @@ export default function AccountProfile() {
           </p>
           {isApiDataSource ? (
             <p className="text-right text-xs font-semibold text-neutral-500">
-              Read-only
+              Follow changes sync to API
             </p>
           ) : null}
         </div>
@@ -203,24 +221,52 @@ export default function AccountProfile() {
         <div className="grid grid-cols-2 gap-2">
           <SummaryItem label="Posts" value={String(accountPosts.length)} />
           <SummaryItem label="Latest" value={latestPostDate} />
-          <SummaryItem label="Follow" value={following ? 'Following' : 'Not following'} />
+          <SummaryItem
+            label="Follow"
+            value={
+              isOwnApiAccount
+                ? 'This is your account'
+                : following
+                ? 'Following'
+                : 'Not following'
+            }
+          />
           <SummaryItem label="Handle" value={`@${account.handle}`} />
         </div>
+
+        {isApiDataSource && apiFollows.error ? (
+          <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
+            {apiFollows.error}
+          </p>
+        ) : null}
 
         <button
           type="button"
           className={[
             'w-full rounded-md px-4 py-2.5 text-sm font-bold transition-colors',
-            isApiDataSource
+            isApiDataSource && isApiFollowDisabled
               ? 'cursor-not-allowed border border-neutral-200 bg-neutral-100 text-neutral-400'
               : following
               ? 'border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'
               : 'bg-neutral-950 text-white hover:bg-neutral-800',
           ].join(' ')}
-          disabled={isApiDataSource}
-          onClick={() => toggleFollow(account.id)}
+          disabled={isApiDataSource && isApiFollowDisabled}
+          onClick={() => {
+            if (isApiDataSource) {
+              void apiFollows.toggleFollow(account.id);
+              return;
+            }
+
+            toggleMockFollow(account.id);
+          }}
         >
-          {isApiDataSource ? 'Follow unavailable in API mode' : following ? 'Following' : 'Follow'}
+          {isOwnApiAccount
+            ? 'This is your account'
+            : isPendingApiAccount
+            ? 'Saving...'
+            : following
+            ? 'Unfollow'
+            : 'Follow'}
         </button>
       </section>
 

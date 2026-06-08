@@ -6,8 +6,10 @@ type AccountCardProps = {
   account: Account;
   postCount: number;
   isFollowing: boolean;
-  onToggleFollow: (accountId: string) => void;
+  onToggleFollow: (accountId: string) => void | Promise<void>;
   isFollowReadOnly?: boolean;
+  isFollowDisabled?: boolean;
+  followButtonLabel?: string;
 };
 
 function Avatar({ src, name }: { src?: string; name: string }) {
@@ -39,6 +41,8 @@ export default function AccountCard({
   isFollowing,
   onToggleFollow,
   isFollowReadOnly = false,
+  isFollowDisabled = false,
+  followButtonLabel,
 }: AccountCardProps) {
   const navigate = useNavigate();
 
@@ -56,12 +60,17 @@ export default function AccountCard({
   const handleFollowClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
 
-    if (isFollowReadOnly) {
+    if (isFollowReadOnly || isFollowDisabled) {
       return;
     }
 
-    onToggleFollow(account.id);
+    void onToggleFollow(account.id);
   };
+
+  const isButtonDisabled = isFollowReadOnly || isFollowDisabled;
+  const buttonLabel =
+    followButtonLabel ??
+    (isFollowReadOnly ? 'Read-only' : isFollowing ? 'Following' : 'Follow');
 
   return (
     <article
@@ -88,16 +97,16 @@ export default function AccountCard({
               type="button"
               className={[
                 'shrink-0 rounded-md px-3 py-1.5 text-xs font-bold transition-colors',
-                isFollowReadOnly
+                isButtonDisabled
                   ? 'cursor-not-allowed border border-neutral-200 bg-neutral-100 text-neutral-400'
                   : isFollowing
                   ? 'border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'
                   : 'bg-neutral-950 text-white hover:bg-neutral-800',
               ].join(' ')}
-              disabled={isFollowReadOnly}
+              disabled={isButtonDisabled}
               onClick={handleFollowClick}
             >
-              {isFollowReadOnly ? 'Read-only' : isFollowing ? 'Following' : 'Follow'}
+              {buttonLabel}
             </button>
           </div>
 

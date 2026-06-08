@@ -5,6 +5,16 @@ import {
   unfollowAccount as unfollowAccountApi,
 } from '../api/followsApi';
 
+export const API_FOLLOWS_CHANGE_EVENT = 'feed-prototype-api-follows-change';
+
+const dispatchApiFollowsChange = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.dispatchEvent(new Event(API_FOLLOWS_CHANGE_EVENT));
+};
+
 export function useApiFollows(activeApiUserId: string) {
   const [followingIds, setFollowingIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(Boolean(activeApiUserId));
@@ -26,6 +36,7 @@ export function useApiFollows(activeApiUserId: string) {
     try {
       const response = await getUserFollows(activeApiUserId);
       setFollowingIds(response.following_account_ids);
+      dispatchApiFollowsChange();
     } catch {
       setFollowingIds([]);
       setError('Could not load API follow state.');
@@ -53,6 +64,7 @@ export function useApiFollows(activeApiUserId: string) {
 
         if (isActive) {
           setFollowingIds(response.following_account_ids);
+          dispatchApiFollowsChange();
         }
       } catch {
         if (isActive) {
