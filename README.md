@@ -22,6 +22,10 @@ MVP7 follow/unfollow setup and test steps are documented in:
 
 - `feed-prototype/docs/MVP7_TEST_PROCEDURE.md`
 
+MVP7.5 API local user/account registration setup and test steps are documented in:
+
+- `feed-prototype/docs/MVP7_5_TEST_PROCEDURE.md`
+
 ## MVP7.5: API Local User/Account Registration
 
 MVP7.5 adds API-mode local user/account registration while preserving the existing mock mode and MVP7 follow/unfollow behavior.
