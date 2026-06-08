@@ -8,7 +8,20 @@ The backend now includes `GET /health`, SQLModel database setup, Alembic migrati
 
 MVP6 uses this backend as the read-only API source for the frontend's API mode. The frontend should call FastAPI endpoints such as `GET /api/users` and `GET /api/feed?user_id=...` to display PostgreSQL seed-data-backed feed content.
 
-API user entry in MVP6 is only a prototype user-selection flow. A frontend user can select a backend `User` that already exists by id or handle, but the backend still does not provide login, passwords, JWT, session cookies, OAuth, authorization, user creation, follow/unfollow writes, post writes, uploads, or admin features.
+API user entry in MVP6 is only a prototype user-selection flow. A frontend user can select a backend `User` that already exists by id or handle, but the backend still does not provide login, passwords, JWT, session cookies, OAuth, authorization, user creation, post writes, uploads, or admin features.
+
+## MVP7 API Follow/Unfollow
+
+MVP7 adds a narrow write API for API-mode follow state. It stores follow/unfollow changes in the PostgreSQL `follows` table and keeps mock mode localStorage follow behavior separate.
+
+```bash
+curl http://127.0.0.1:8000/api/users/demo-user-ari/follows
+curl -X POST http://127.0.0.1:8000/api/users/demo-user-ari/follows/demo-account-nova
+curl -X DELETE http://127.0.0.1:8000/api/users/demo-user-ari/follows/demo-account-nova
+curl "http://127.0.0.1:8000/api/feed?user_id=demo-user-ari"
+```
+
+Follow is intended to be idempotent: repeating the same follow should not create duplicate rows, and repeating the same unfollow should still return a successful current follow list when the user and account exist.
 
 Mock mode remains separate in the frontend. Existing frontend mock JSON and MVP4 localStorage-based local user registration are not replaced by this backend.
 
