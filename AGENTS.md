@@ -31,7 +31,7 @@ When equipment-report-specific information is needed, represent it as `post.meta
 
 ## Current Implementation Scope
 
-MVP1-MVP4 are intentionally local and static. MVP5 begins preparing a future backend and database layer, but it does not replace the current frontend data flow yet.
+MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skeleton. MVP6 adds a frontend API read mode while preserving the mock mode.
 
 - Use static JSON data.
 - Keep static assets under `public/assets`.
@@ -39,6 +39,7 @@ MVP1-MVP4 are intentionally local and static. MVP5 begins preparing a future bac
 - MVP3 introduces a local `User` model only for selecting an active local user and separating local state. It is not a login, authentication, authorization, password, token, or account-management system.
 - MVP4 introduces a local user entry and local registration flow. It is still not authentication, signup, authorization, password handling, token handling, or a secure session.
 - MVP5 introduces the direction for a FastAPI + PostgreSQL + SQLModel + Alembic backend skeleton under `feed-prototype/backend/`. It does not convert the frontend to API-backed data.
+- MVP6 introduces API mode so the frontend can read backend seed data through FastAPI. Mock mode and the MVP4 localStorage-based local user flow must remain available.
 - A `User` represents the local viewer of the app. An `Account` represents an entity that publishes Posts.
 - During the MVP stage, each local `User` should have exactly one corresponding `Account`.
 - Active user state should be stored in `localStorage` under `local-feed-active-user-id`.
@@ -48,6 +49,49 @@ MVP1-MVP4 are intentionally local and static. MVP5 begins preparing a future bac
 - Local users should be stored under `local-feed-local-users`; local accounts should be stored under `local-feed-local-accounts`.
 - Clearing browser localStorage can remove locally registered users, accounts, and follow changes.
 - The `/me` route should show the active user's local personal area, including connected Accounts and their Posts.
+
+## MVP6 Scope: Frontend API Read Mode with API User Entry
+
+MVP6 connects the frontend to backend read-only APIs while preserving the completed local/static prototype behavior.
+
+MVP6 goals:
+
+- Add a frontend data source mode for `mock` and `api`.
+- Keep existing frontend mock JSON and MVP4 local user entry/local registration in mock mode.
+- In API mode, let the user select a backend `User` by id or handle.
+- Store the selected active API user in localStorage.
+- Fetch the selected user's feed with `GET /api/feed?user_id=...`.
+- Display PostgreSQL seed-data-backed feed content through the FastAPI backend.
+- Keep the frontend disconnected from PostgreSQL; all backend data access goes through FastAPI.
+
+API user entry is not authentication:
+
+- Do not add passwords.
+- Do not add JWT.
+- Do not add session cookies.
+- Do not add OAuth.
+- Do not add authorization or permission checks.
+- Do not treat API user selection as secure account login.
+- If an id or handle does not exist in the backend DB, show guidance that API mode only supports existing database users.
+- Do not create users from API mode in MVP6.
+
+MVP6 non-goals:
+
+- Removing frontend mock JSON.
+- Removing MVP4 localStorage local user flows.
+- Real login, signup, authentication, sessions, JWT, OAuth, or authorization.
+- Write APIs, follow/unfollow APIs, post/account create/update/delete, or frontend file writes.
+- File upload, S3 integration, admin UI, comments, likes, bookmarks, search, tag pages, production deployment, or a combined frontend/backend server.
+- Equipment-report-specific core type names, component names, routes, or data flow.
+
+MVP6 completion criteria:
+
+- Mock mode still works as before.
+- API mode can select an existing backend user and persist that selection locally.
+- API mode renders Home Feed from `GET /api/feed?user_id=...`.
+- API mode has understandable loading, error, and empty states.
+- Accounts, Profile, and Post Detail have a read-only API-mode path.
+- `npm run build` passes from `feed-prototype/`.
 
 ## MVP5 Scope: Backend & DB Skeleton
 

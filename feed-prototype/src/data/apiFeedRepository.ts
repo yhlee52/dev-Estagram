@@ -1,0 +1,122 @@
+import { getFeed } from '../api/feedApi';
+import type {
+  ApiAccount,
+  ApiFeedItem,
+  ApiFeedResponse,
+  ApiMetadata,
+  ApiPost,
+  ApiPostAsset,
+} from '../api/types';
+import { getActiveApiUserId } from '../auth/apiActiveUser';
+import type { FeedRepository, GetHomeFeedItemsOptions } from './feedRepositoryTypes';
+import type {
+  Account,
+  FeedItem,
+  MetadataValue,
+  Post,
+  PostAsset,
+  PostAssetType,
+} from '../types/feed';
+
+const supportedAssetTypes: readonly PostAssetType[] = [
+  'image',
+  'plot',
+  'chart',
+  'table',
+  'html',
+  'json',
+  'text',
+];
+
+const isPostAssetType = (value: string): value is PostAssetType =>
+  supportedAssetTypes.includes(value as PostAssetType);
+
+const getStringArray = (
+  metadata: ApiMetadata | null,
+  key: string,
+): string[] => {
+  const value = metadata?.[key];
+
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item): item is string => typeof item === 'string');
+};
+
+const metadataOrUndefined = (
+  metadata: ApiMetadata | null,
+): Record<string, MetadataValue> | undefined => metadata ?? undefined;
+
+export const mapApiAccountToAccount = (account: ApiAccount): Account => ({
+  id: account.id,
+  handle: account.handle,
+  displayName: account.display_name,
+  avatarUrl: account.avatar_url ?? undefined,
+  bio: account.bio ?? undefined,
+  kind:
+    account.kind === 'person' || account.kind === 'bot' || account.kind === 'team'
+      ? account.kind
+      : undefined,
+  metadata: {
+    user_id: account.user_id,
+    created_at: account.created_at,
+    updated_at: account.updated_at,
+  },
+});
+
+export const mapApiAssetToPostAsset = (asset: ApiPostAsset): PostAsset => ({
+  id: asset.id,
+  type: isPostAssetType(asset.type) ? asset.type : 'text',
+  title: asset.title ?? undefined,
+  description: asset.description ?? undefined,
+  src: asset.src,
+  url: asset.src,
+  alt: asset.title ?? undefined,
+  content: asset.metadata_json?.content,
+  metadata: {
+    ...(asset.metadata_json ?? {}),
+    post_id: asset.post_id,
+    mime_type: asset.mime_type,
+    sort_order: asset.sort_order,
+    created_at: asset.created_at,
+    updated_at: asset.updated_at,
+  },
+});
+
+export const mapApiPostToPost = (
+  post: ApiPost,
+  assets: ApiPostAsset[],
+): Post => ({
+  id: post.id,
+  accountId: post.account_id,
+  title: post.title,
+  caption: post.text,
+  createdAt: post.created_at,
+  tags: getStringArray(post.metadata_json, 'tags'),
+  assets: assets.map(mapApiAssetToPostAsset),
+  metadata: metadataOrUndefined(post.metadata_json),
+});
+
+export const mapApiFeedItemToFeedItem = (item: ApiFeedItem): FeedItem => ({
+  account: mapApiAccountToAccount(item.account),
+  post: mapApiPostToPost(item.post, item.assets),
+});
+
+export const mapApiFeedResponseToFeedItems = (
+  response: ApiFeedResponse,
+): FeedItem[] => response.items.map(mapApiFeedItemToFeedItem);
+
+export const apiFeedRepository: FeedRepository = {
+  async getHomeFeedItems(options: GetHomeFeedItemsOptions = {}) {
+    const userId = options.activeUserId ?? getActiveApiUserId();
+
+    if (!userId) {
+      return [];
+    }
+
+    const response = await getFeed(userId);
+
+    return mapApiFeedResponseToFeedItems(response);
+  },
+};

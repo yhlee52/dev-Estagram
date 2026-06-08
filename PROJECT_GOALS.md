@@ -1,5 +1,111 @@
 # PROJECT_GOALS.md
 
+## MVP6: Frontend API Read Mode with API User Entry
+
+MVP6 moves the frontend one step beyond the completed MVP5 backend skeleton by allowing the Vite/React app to read feed data from the FastAPI read-only API.
+
+The goal is to add an API mode while preserving the existing mock mode:
+
+```text
+mock mode = existing frontend mock JSON + local assets + MVP4 localStorage overlays
+api mode = FastAPI read-only API + PostgreSQL seed data + active API user selection
+```
+
+Mock mode remains in the project. The existing `src/data/*.json` files are not deleted, and the MVP4 local user entry/local registration flow continues to belong to mock mode. API mode is additive: it lets the frontend call backend endpoints and render DB-backed feed data without removing the local/static prototype behavior.
+
+MVP6 API mode should:
+
+```text
+read backend users through the API
+allow selecting an existing backend User by id or handle
+store the selected active API user in localStorage
+call GET /api/feed?user_id=... for that selected User
+display the backend PostgreSQL seed-data-backed feed in the frontend
+keep all backend access behind FastAPI; the frontend never connects directly to PostgreSQL
+```
+
+API user entry is a prototype user-selection flow, not real authentication:
+
+```text
+no password
+no JWT
+no session cookie
+no OAuth
+no authorization or permission checks
+no account-security semantics
+```
+
+If an entered id or handle does not match a backend database user in API mode, the UI should explain that API mode can only use users that already exist in the database. MVP6 should not create a new user from API mode.
+
+MVP6 should not implement:
+
+```text
+removal of frontend mock JSON
+removal of MVP4 localStorage local user flow
+real login
+signup/authentication
+sessions
+JWT
+OAuth
+authorization
+POST/PUT/PATCH/DELETE APIs
+follow/unfollow API
+post create/update/delete
+account create/update/delete
+file upload
+S3 integration
+admin UI
+comments
+likes
+bookmarks
+search
+tag pages
+backend/frontend single-server integration
+production deployment
+equipment-report-specific core naming
+```
+
+MVP6 completion criteria:
+
+```text
+1. A documented frontend data source mode exists for mock mode and API mode.
+2. Mock mode still runs with the existing MVP4 local user entry and registration behavior.
+3. API mode can look up and select an existing backend User by id or handle.
+4. API mode persists the selected active API user locally without implying authentication.
+5. API mode fetches GET /api/feed?user_id=... through FastAPI.
+6. Home Feed renders backend PostgreSQL seed data in API mode.
+7. API mode has clear loading, error, and empty states.
+8. Accounts/Profile/Post Detail have a read-only API-mode extension path.
+9. No MVP6 non-goals are introduced.
+10. TypeScript build passes from feed-prototype/.
+```
+
+MVP6 completed implementation scope:
+
+```text
+frontend env / data source mode setting
+frontend read-only API client
+API user lookup and API user entry
+active API user localStorage storage, separate from mock local user storage
+API feed repository and mock feed repository
+Home Feed API mode connection
+API mode loading/error/empty states
+Accounts/Profile/Post Detail read-only API mode
+mock mode regression and scope check
+MVP6 run/test documentation under feed-prototype/docs/
+frontend .env ignored by Git
+```
+
+MVP6 known follow-up candidates for later MVPs:
+
+```text
+include assets in GET /api/accounts/{account_id}/posts if profile cards need full asset previews
+consider API-backed follow/unfollow only after write API scope is intentionally opened
+consider API-backed user creation only after authentication/authorization goals are explicitly designed
+add automated browser smoke tests for mock mode and API mode
+fill or regenerate missing frontend public/assets files if mock image previews are required
+```
+
 ## MVP5: Backend & DB Skeleton
 
 MVP5 prepares the project for a future API and database-backed version without replacing the completed MVP1-MVP4 local/static frontend behavior.

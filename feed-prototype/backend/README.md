@@ -4,6 +4,14 @@ MVP5 adds a minimal FastAPI backend for the local feed prototype.
 
 The backend now includes `GET /health`, SQLModel database setup, Alembic migrations, and a small demo seed script. It does not add authentication, CRUD APIs, uploads, admin features, or frontend API integration.
 
+## MVP6 Frontend API Read Mode
+
+MVP6 uses this backend as the read-only API source for the frontend's API mode. The frontend should call FastAPI endpoints such as `GET /api/users` and `GET /api/feed?user_id=...` to display PostgreSQL seed-data-backed feed content.
+
+API user entry in MVP6 is only a prototype user-selection flow. A frontend user can select a backend `User` that already exists by id or handle, but the backend still does not provide login, passwords, JWT, session cookies, OAuth, authorization, user creation, follow/unfollow writes, post writes, uploads, or admin features.
+
+Mock mode remains separate in the frontend. Existing frontend mock JSON and MVP4 localStorage-based local user registration are not replaced by this backend.
+
 ## Stack
 
 - FastAPI
