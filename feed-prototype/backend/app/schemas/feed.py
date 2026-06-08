@@ -71,6 +71,17 @@ class FollowRead(BaseModel):
     created_at: datetime
 
 
+class FollowWithAccount(BaseModel):
+    follow: FollowRead
+    account: AccountRead
+
+
+class UserFollowsResponse(BaseModel):
+    user_id: str
+    following_account_ids: list[str]
+    follows: list[FollowWithAccount]
+
+
 class FeedItem(BaseModel):
     post: PostRead
     account: AccountRead

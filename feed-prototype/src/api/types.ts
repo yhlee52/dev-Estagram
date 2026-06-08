@@ -62,3 +62,21 @@ export interface ApiFeedResponse {
   user: ApiUser;
   items: ApiFeedItem[];
 }
+
+export interface ApiFollow {
+  id: string;
+  follower_user_id: string;
+  following_account_id: string;
+  created_at: string;
+}
+
+export interface ApiFollowWithAccount {
+  follow: ApiFollow;
+  account: ApiAccount;
+}
+
+export interface ApiUserFollowsResponse {
+  user_id: string;
+  following_account_ids: string[];
+  follows: ApiFollowWithAccount[];
+}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ApiNetworkError } from '../api/client';
 import { getAccounts } from '../api/accountsApi';
 import { getPosts } from '../api/postsApi';
+import { useActiveApiUser } from '../auth/apiActiveUser';
 import EmptyState from '../components/EmptyState';
 import AccountCard from '../components/AccountCard';
 import postsData from '../data/posts.json';
@@ -9,6 +10,7 @@ import { mapApiAccountToAccount } from '../data/apiFeedRepository';
 import { getApiBaseUrl } from '../config/apiConfig';
 import { getDataSourceMode } from '../config/dataSource';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
+import { useApiFollows } from '../hooks/useApiFollows';
 import { useFollowState } from '../hooks/useFollowState';
 import type { Account, Post } from '../types/feed';
 
@@ -20,9 +22,18 @@ const postCountByAccountId = posts.reduce<Record<string, number>>((counts, post)
   return counts;
 }, {});
 
+function getAccountUserId(account: Account): string {
+  const userId = account.metadata?.user_id;
+
+  return typeof userId === 'string' ? userId : '';
+}
+
 export default function AccountsPage() {
   const mockAccounts = useEffectiveAccounts();
-  const { isFollowing, toggleFollow } = useFollowState();
+  const { isFollowing: isMockFollowing, toggleFollow: toggleMockFollow } =
+    useFollowState();
+  const { activeApiUserId } = useActiveApiUser();
+  const apiFollows = useApiFollows(isApiDataSource ? activeApiUserId : '');
   const [apiAccounts, setApiAccounts] = useState<Account[]>([]);
   const [apiPostCountByAccountId, setApiPostCountByAccountId] = useState<
     Record<string, number>
@@ -119,20 +130,55 @@ export default function AccountsPage() {
         </p>
         {isApiDataSource ? (
           <p className="text-right text-xs font-semibold text-neutral-500">
-            Follow controls read-only
+            Follow changes sync to API
           </p>
         ) : null}
       </div>
 
+      {isApiDataSource && apiFollows.error ? (
+        <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
+          {apiFollows.error}
+        </p>
+      ) : null}
+
       {accounts.map((account) => (
-        <AccountCard
-          key={account.id}
-          account={account}
-          postCount={countsByAccountId[account.id] ?? 0}
-          isFollowing={!isApiDataSource && isFollowing(account.id)}
-          onToggleFollow={toggleFollow}
-          isFollowReadOnly={isApiDataSource}
-        />
+        (() => {
+          const isOwnApiAccount =
+            isApiDataSource && getAccountUserId(account) === activeApiUserId;
+          const isPendingApiAccount =
+            apiFollows.pendingAccountId === account.id;
+          const isApiFollowDisabled =
+            apiFollows.isLoading || apiFollows.isMutating || isOwnApiAccount;
+          const apiFollowing = apiFollows.isFollowing(account.id);
+
+          return (
+            <AccountCard
+              key={account.id}
+              account={account}
+              postCount={countsByAccountId[account.id] ?? 0}
+              isFollowing={
+                isApiDataSource ? apiFollowing : isMockFollowing(account.id)
+              }
+              onToggleFollow={
+                isApiDataSource ? apiFollows.toggleFollow : toggleMockFollow
+              }
+              isFollowDisabled={isApiDataSource && isApiFollowDisabled}
+              followButtonLabel={
+                isOwnApiAccount
+                  ? 'This is your account'
+                  : apiFollows.isLoading
+                  ? 'Loading...'
+                  : isPendingApiAccount
+                  ? 'Saving...'
+                  : isApiDataSource
+                  ? apiFollowing
+                    ? 'Unfollow'
+                    : 'Follow'
+                  : undefined
+              }
+            />
+          );
+        })()
       ))}
     </div>
   );

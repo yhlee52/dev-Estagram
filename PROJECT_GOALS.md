@@ -1,5 +1,96 @@
 # PROJECT_GOALS.md
 
+## MVP7: API Follow/Unfollow
+
+MVP7 builds on the completed MVP6 API read mode by allowing API-mode follow state to be changed through the backend.
+
+The goal is to add a narrow follow/unfollow write path while preserving mock mode:
+
+```text
+mock mode = existing frontend mock JSON + local assets + MVP4 localStorage follow overlays
+api mode = FastAPI + PostgreSQL follows table + active API user selection
+```
+
+MVP7 API mode should:
+
+```text
+allow the active API User to follow an Account
+allow the active API User to unfollow an Account
+store follow/unfollow results in the PostgreSQL follows table
+refresh Home Feed after successful follow/unfollow
+make Accounts screen follow/unfollow buttons work in API mode
+make Account Profile follow/unfollow buttons work in API mode
+keep mock mode localStorage follow/unfollow behavior in place
+```
+
+MVP7 adds these backend API endpoints:
+
+```text
+POST /api/users/{user_id}/follows/{account_id}
+DELETE /api/users/{user_id}/follows/{account_id}
+GET /api/users/{user_id}/follows
+```
+
+MVP7 follow API policy:
+
+```text
+follow should be idempotent where practical
+re-following an already-followed account must not create duplicate rows
+unfollowing an already-unfollowed account should not break the frontend
+prefer API success followed by refetch over optimistic update
+hide or disable follow controls for the active user's own account if needed
+```
+
+API user entry remains a prototype user-selection flow, not real authentication:
+
+```text
+no password
+no JWT
+no session cookie
+no OAuth
+no authorization or permission checks
+no account-security semantics
+```
+
+MVP7 should not implement:
+
+```text
+new API user creation
+new API account creation
+post create/update/delete
+asset upload
+file upload
+S3 integration
+comments
+likes
+bookmarks
+search
+tag pages
+real login
+passwords
+JWT
+sessions
+OAuth
+authorization or permission system
+admin UI
+removal of frontend mock JSON
+removal of MVP4/MVP6 mock mode
+equipment-report-specific core naming
+```
+
+MVP7 completion criteria:
+
+```text
+1. POST follow creates or preserves one follow relationship for a user/account pair.
+2. DELETE follow removes or preserves the absence of that relationship without frontend failure.
+3. GET user follows returns the selected API user's followed accounts or account ids.
+4. API mode Accounts and Account Profile can follow/unfollow after API success.
+5. API mode Home Feed refetches and reflects changed follow state.
+6. Mock mode follow/unfollow still uses localStorage and continues to work.
+7. No MVP7 non-goals are introduced.
+8. TypeScript build passes from feed-prototype/.
+```
+
 ## MVP6: Frontend API Read Mode with API User Entry
 
 MVP6 moves the frontend one step beyond the completed MVP5 backend skeleton by allowing the Vite/React app to read feed data from the FastAPI read-only API.
