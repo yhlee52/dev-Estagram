@@ -25,6 +25,8 @@ interface RegistrationFormState {
 }
 
 const API_HANDLE_PATTERN = /^[a-z0-9_-]{3,32}$/;
+const API_HANDLE_REQUIREMENTS =
+  'Use 3-32 lowercase letters, numbers, underscores, or hyphens.';
 
 function getUserEntryErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
@@ -36,6 +38,18 @@ function getUserEntryErrorMessage(error: unknown): string {
 
 function normalizeApiHandleCandidate(input: string): string {
   return input.trim().toLowerCase();
+}
+
+function getApiHandleValidationError(handle: string): string {
+  if (!handle) {
+    return 'Handle is required.';
+  }
+
+  if (!API_HANDLE_PATTERN.test(handle)) {
+    return 'Handle must be 3-32 characters and use only lowercase letters, numbers, underscores, or hyphens.';
+  }
+
+  return '';
 }
 
 function getDisplayNameFromHandle(handle: string): string {
@@ -121,6 +135,10 @@ export default function ApiUserEntry() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (isSubmitting) {
+      return;
+    }
+
     const trimmedValue = entryValue.trim();
 
     setError('');
@@ -192,22 +210,20 @@ export default function ApiUserEntry() {
   ) => {
     event.preventDefault();
 
+    if (isRegistering) {
+      return;
+    }
+
     const handle = normalizeApiHandleCandidate(registrationForm.handle);
     const displayName = registrationForm.displayName.trim() || handle;
     const bio = registrationForm.bio.trim();
+    const handleValidationError = getApiHandleValidationError(handle);
 
     setRegistrationError('');
     setRegistrationResult(null);
 
-    if (!handle) {
-      setRegistrationError('Handle is required.');
-      return;
-    }
-
-    if (!API_HANDLE_PATTERN.test(handle)) {
-      setRegistrationError(
-        'Handle must be 3-32 characters and use only lowercase letters, numbers, underscores, or hyphens.',
-      );
+    if (handleValidationError) {
+      setRegistrationError(handleValidationError);
       return;
     }
 
@@ -239,10 +255,11 @@ export default function ApiUserEntry() {
     const normalizedRegistrationHandle = normalizeApiHandleCandidate(
       registrationForm.handle,
     );
-    const isRegistrationHandleValid =
-      API_HANDLE_PATTERN.test(normalizedRegistrationHandle);
+    const registrationHandleError = getApiHandleValidationError(
+      normalizedRegistrationHandle,
+    );
     const isRegistrationSubmitDisabled =
-      isRegistering || !normalizedRegistrationHandle || !isRegistrationHandleValid;
+      isRegistering || Boolean(registrationHandleError);
 
     return (
       <div className="min-h-screen bg-neutral-200 text-neutral-950">
@@ -277,12 +294,12 @@ export default function ApiUserEntry() {
 
               <p
                 className={`text-xs font-medium ${
-                  normalizedRegistrationHandle && !isRegistrationHandleValid
+                  registrationHandleError
                     ? 'text-red-600'
                     : 'text-neutral-500'
                 }`}
               >
-                Use 3-32 lowercase letters, numbers, underscores, or hyphens.
+                {registrationHandleError || API_HANDLE_REQUIREMENTS}
               </p>
 
               <label className="block space-y-2">
@@ -375,7 +392,11 @@ export default function ApiUserEntry() {
                 placeholder="demo-user-ari or ari"
                 autoComplete="off"
                 disabled={isSubmitting}
-                onChange={(event) => setEntryValue(event.target.value)}
+                onChange={(event) => {
+                  setEntryValue(event.target.value);
+                  setMissingUserPrompt(null);
+                  setError('');
+                }}
               />
             </label>
 
@@ -450,7 +471,11 @@ export default function ApiUserEntry() {
                     key={user.id}
                     type="button"
                     className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-left transition hover:bg-neutral-100"
-                    onClick={() => setEntryValue(user.handle)}
+                    onClick={() => {
+                      setEntryValue(user.handle);
+                      setMissingUserPrompt(null);
+                      setError('');
+                    }}
                   >
                     <p className="truncate text-sm font-bold text-neutral-950">
                       {user.display_name}
