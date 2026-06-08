@@ -35,17 +35,22 @@ def get_feed(
         ).all()
     )
 
-    if not followed_account_ids:
+    own_account = session.exec(select(Account).where(Account.user_id == user_id)).first()
+    feed_account_ids = list(dict.fromkeys(
+        followed_account_ids + ([own_account.id] if own_account is not None else [])
+    ))
+
+    if not feed_account_ids:
         return FeedResponse(user=UserRead.model_validate(user), items=[])
 
     accounts = session.exec(
-        select(Account).where(Account.id.in_(followed_account_ids))
+        select(Account).where(Account.id.in_(feed_account_ids))
     ).all()
     accounts_by_id = {account.id: account for account in accounts}
 
     posts = session.exec(
         select(Post)
-        .where(Post.account_id.in_(followed_account_ids))
+        .where(Post.account_id.in_(feed_account_ids))
         .order_by(Post.created_at.desc())
     ).all()
 
