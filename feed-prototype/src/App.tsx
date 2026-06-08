@@ -4,6 +4,7 @@ import AccountProfile from './pages/AccountProfile';
 import AccountsPage from './pages/AccountsPage';
 import HomeFeed from './pages/HomeFeed';
 import MePage from './pages/MePage';
+import EditPostPage from './pages/EditPostPage';
 import NewPostPage from './pages/NewPostPage';
 import PostDetail from './pages/PostDetail';
 
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: 'posts/:postId',
         element: <PostDetail />,
+      },
+      {
+        path: 'posts/:postId/edit',
+        element: <EditPostPage />,
       },
     ],
   },

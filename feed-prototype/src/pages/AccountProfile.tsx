@@ -106,8 +106,7 @@ export default function AccountProfile() {
           setApiAccountPosts(
             postsResponse.map((post) => ({
               account: mappedAccount,
-              // TODO(MVP6): /api/accounts/{account_id}/posts does not include assets yet.
-              post: mapApiPostToPost(post, []),
+              post: mapApiPostToPost(post, post.assets),
             })),
           );
         }

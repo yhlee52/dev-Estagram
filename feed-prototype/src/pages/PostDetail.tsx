@@ -231,14 +231,22 @@ export default function PostDetail() {
         </button>
         <div className="flex items-center gap-2">
           {isOwnApiPost ? (
-            <button
-              type="button"
-              className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:text-red-300"
-              disabled={isDeleting}
-              onClick={handleDeletePost}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
+            <>
+              <Link
+                className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700 transition hover:bg-neutral-100"
+                to={`/posts/${post.id}/edit`}
+              >
+                Edit
+              </Link>
+              <button
+                type="button"
+                className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:text-red-300"
+                disabled={isDeleting}
+                onClick={handleDeletePost}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </>
           ) : null}
           <Link
             className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"

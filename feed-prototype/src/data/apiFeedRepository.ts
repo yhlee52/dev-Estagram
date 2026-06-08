@@ -21,11 +21,9 @@ import type {
 const supportedAssetTypes: readonly PostAssetType[] = [
   'image',
   'plot',
-  'chart',
   'table',
-  'html',
-  'json',
-  'text',
+  'file',
+  'link',
 ];
 
 const isPostAssetType = (value: string): value is PostAssetType =>
@@ -71,7 +69,7 @@ export const mapApiAssetToPostAsset = (asset: ApiPostAsset): PostAsset => ({
   title: asset.title ?? undefined,
   description: asset.description ?? undefined,
   src: asset.src,
-  url: asset.src,
+  url: asset.url ?? asset.src,
   alt: asset.title ?? undefined,
   content: asset.metadata_json?.content,
   metadata: {
@@ -89,12 +87,18 @@ export const mapApiPostToPost = (
   assets: ApiPostAsset[],
 ): Post => ({
   id: post.id,
+  account_id: post.account_id,
   accountId: post.account_id,
   title: post.title,
+  text: post.text,
   caption: post.text,
+  created_at: post.created_at,
   createdAt: post.created_at,
-  tags: getStringArray(post.metadata_json, 'tags'),
+  updated_at: post.updated_at,
+  updatedAt: post.updated_at,
+  tags: post.tags ?? getStringArray(post.metadata_json, 'tags'),
   assets: assets.map(mapApiAssetToPostAsset),
+  metadata_json: metadataOrUndefined(post.metadata_json),
   metadata: metadataOrUndefined(post.metadata_json),
 });
 

@@ -135,5 +135,21 @@ export const apiPost = async <T>(
         }),
   });
 
+export const apiPatch = async <T>(
+  path: string,
+  body?: unknown,
+): Promise<T> =>
+  apiRequest<T>(path, {
+    method: "PATCH",
+    ...(body === undefined
+      ? {}
+      : {
+          body: JSON.stringify(body),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }),
+  });
+
 export const apiDelete = async <T>(path: string): Promise<T> =>
   apiRequest<T>(path, { method: "DELETE" });
