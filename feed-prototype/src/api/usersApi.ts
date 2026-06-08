@@ -1,10 +1,19 @@
-import { apiGet } from "./client";
-import type { ApiUser } from "./types";
+import { apiGet, apiPost } from "./client";
+import type {
+  ApiUser,
+  ApiUserCreatePayload,
+  ApiUserRegistrationResponse,
+} from "./types";
 
 export const getUsers = (): Promise<ApiUser[]> => apiGet<ApiUser[]>("/api/users");
 
 export const getUser = (userId: string): Promise<ApiUser> =>
   apiGet<ApiUser>(`/api/users/${encodeURIComponent(userId)}`);
+
+export const registerApiUser = (
+  payload: ApiUserCreatePayload,
+): Promise<ApiUserRegistrationResponse> =>
+  apiPost<ApiUserRegistrationResponse>("/api/users", payload);
 
 export const findUserByIdOrHandle = async (
   input: string,

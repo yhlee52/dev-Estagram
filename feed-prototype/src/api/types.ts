@@ -12,6 +12,12 @@ export interface ApiUser {
   updated_at: string;
 }
 
+export interface ApiUserCreatePayload {
+  handle: string;
+  display_name?: string | null;
+  bio?: string | null;
+}
+
 export interface ApiAccount {
   id: string;
   user_id: string;
@@ -22,6 +28,11 @@ export interface ApiAccount {
   kind: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface ApiUserRegistrationResponse {
+  user: ApiUser;
+  account: ApiAccount;
 }
 
 export interface ApiPostAsset {

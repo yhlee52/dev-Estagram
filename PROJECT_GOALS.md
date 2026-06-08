@@ -1,5 +1,108 @@
 # PROJECT_GOALS.md
 
+## MVP7.5: API Local User/Account Registration
+
+MVP7.5 builds on the completed MVP6 API read mode and MVP7 API follow/unfollow management by allowing API mode to create a new backend `User` and its corresponding `Account`.
+
+The goal is to add a narrow API-mode registration path while preserving mock mode:
+
+```text
+mock mode = existing frontend mock JSON + local assets + MVP4 localStorage user/follow overlays
+api mode = FastAPI + PostgreSQL users/accounts tables + active API user selection
+```
+
+MVP7.5 API mode should:
+
+```text
+offer registration when API user entry receives a handle that does not match an existing backend User
+create a new backend User when the user chooses registration
+create exactly one corresponding Account for that User during the same registration flow
+store the created User as the active API user in localStorage
+enter Home Feed after successful registration
+treat an empty Home Feed as normal when the new User follows no Accounts
+allow the new User to use the existing MVP7 Accounts follow/unfollow flow
+keep mock mode local registration in place
+```
+
+MVP7.5 adds this backend API endpoint:
+
+```text
+POST /api/users
+```
+
+`POST /api/users` policy:
+
+```text
+accept handle
+accept display_name
+accept optional bio
+normalize handle by trimming surrounding whitespace and lowercasing it
+require handle uniqueness
+create User and Account in one transaction
+set account.handle to the user handle by default
+set account.display_name to the user display name by default
+allow account.bio to mirror user.bio
+default account.kind to person
+```
+
+API local user/account registration is not real authentication:
+
+```text
+no password
+no real signup/login security semantics
+no JWT
+no session cookie
+no OAuth
+no authorization or permission checks
+no email verification
+```
+
+MVP7.5 should not implement:
+
+```text
+passwords
+real signup/login
+JWT
+sessions
+OAuth
+authorization or permission system
+email verification
+user deletion
+account deletion
+user profile edit
+account edit
+post create/update/delete
+asset upload
+file upload
+S3 integration
+admin UI
+removal of frontend mock JSON
+removal of existing mock local registration
+removal of MVP4/MVP6/MVP7 mock mode behavior
+equipment-report-specific core naming
+```
+
+MVP7.5 completion criteria:
+
+```text
+1. API user entry can offer registration for a missing handle.
+2. POST /api/users creates one User and one 1:1 Account transactionally.
+3. Created handles are normalized and unique.
+4. The created User becomes the active API user in localStorage.
+5. The app enters Home Feed after registration.
+6. Empty Home Feed is treated as a valid state for a new User with no follows.
+7. Existing MVP7 follow/unfollow works for the newly created User.
+8. Mock mode local registration still works.
+9. No MVP7.5 non-goals are introduced.
+10. TypeScript build passes from feed-prototype/.
+```
+
+MVP8 connection:
+
+```text
+MVP8 is expected to add post creation/deletion for API-mode accounts created or selected through the existing User/Account model.
+```
+
 ## MVP7: API Follow/Unfollow
 
 MVP7 builds on the completed MVP6 API read mode by allowing API-mode follow state to be changed through the backend.

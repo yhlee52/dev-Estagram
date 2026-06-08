@@ -104,8 +104,21 @@ const apiRequest = async <T>(
 
 export const apiGet = async <T>(path: string): Promise<T> => apiRequest<T>(path);
 
-export const apiPost = async <T>(path: string): Promise<T> =>
-  apiRequest<T>(path, { method: "POST" });
+export const apiPost = async <T>(
+  path: string,
+  body?: unknown,
+): Promise<T> =>
+  apiRequest<T>(path, {
+    method: "POST",
+    ...(body === undefined
+      ? {}
+      : {
+          body: JSON.stringify(body),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }),
+  });
 
 export const apiDelete = async <T>(path: string): Promise<T> =>
   apiRequest<T>(path, { method: "DELETE" });

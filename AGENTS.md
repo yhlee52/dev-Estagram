@@ -31,7 +31,7 @@ When equipment-report-specific information is needed, represent it as `post.meta
 
 ## Current Implementation Scope
 
-MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skeleton. MVP6 adds a frontend API read mode while preserving the mock mode. MVP7 adds an API-mode follow/unfollow write path while keeping mock mode follow state local.
+MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skeleton. MVP6 adds a frontend API read mode while preserving the mock mode. MVP7 adds an API-mode follow/unfollow write path while keeping mock mode follow state local. MVP7.5 adds API-mode local user/account registration while keeping it separate from real authentication.
 
 - Use static JSON data.
 - Keep static assets under `public/assets`.
@@ -41,6 +41,7 @@ MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skele
 - MVP5 introduces the direction for a FastAPI + PostgreSQL + SQLModel + Alembic backend skeleton under `feed-prototype/backend/`. It does not convert the frontend to API-backed data.
 - MVP6 introduces API mode so the frontend can read backend seed data through FastAPI. Mock mode and the MVP4 localStorage-based local user flow must remain available.
 - MVP7 introduces API-mode follow/unfollow writes through FastAPI and stores those changes in the PostgreSQL `follows` table. Mock mode must keep using localStorage follow state.
+- MVP7.5 introduces API-mode local user/account registration through FastAPI. It creates backend `User` and 1:1 `Account` records, stores the created active API user in localStorage, and still does not add passwords, login, sessions, tokens, or authorization.
 - A `User` represents the local viewer of the app. An `Account` represents an entity that publishes Posts.
 - During the MVP stage, each local `User` should have exactly one corresponding `Account`.
 - Active user state should be stored in `localStorage` under `local-feed-active-user-id`.
@@ -50,6 +51,68 @@ MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skele
 - Local users should be stored under `local-feed-local-users`; local accounts should be stored under `local-feed-local-accounts`.
 - Clearing browser localStorage can remove locally registered users, accounts, and follow changes.
 - The `/me` route should show the active user's local personal area, including connected Accounts and their Posts.
+
+## MVP7.5 Scope: API Local User/Account Registration
+
+MVP7.5 lets API mode create a new backend `User` and a corresponding 1:1 `Account`.
+
+MVP7.5 goals:
+
+- In API mode, if user entry receives a handle that does not match an existing backend `User`, offer new API user registration.
+- When the user chooses registration, create a backend `User`.
+- Create exactly one corresponding backend `Account` in the same registration flow.
+- Store the created `User` as the active API user in localStorage.
+- Enter Home Feed after registration.
+- Treat an empty Home Feed as valid for a newly created user with no followed accounts.
+- Keep existing MVP7 Accounts follow/unfollow behavior available for the newly created user.
+- Keep mock mode and the existing mock local registration flow available.
+
+MVP7.5 backend API:
+
+- `POST /api/users`
+
+`POST /api/users` policy:
+
+- Accept `handle`.
+- Accept `display_name`.
+- Accept optional `bio`.
+- Normalize `handle` by trimming surrounding whitespace and lowercasing it.
+- Require `handle` to be unique.
+- Create `User` and `Account` in one transaction.
+- Set `account.handle` to the user handle by default.
+- Set `account.display_name` to the user display name by default.
+- Let `account.bio` mirror `user.bio` if provided.
+- Default `account.kind` to `"person"`.
+
+API local user/account registration is not authentication:
+
+- Do not add passwords.
+- Do not add real signup/login security semantics.
+- Do not add JWT.
+- Do not add session cookies.
+- Do not add OAuth.
+- Do not add authorization or permission checks.
+- Do not add email verification.
+
+MVP7.5 non-goals:
+
+- Passwords.
+- Real signup/login.
+- JWT, sessions, OAuth, authorization, or permission systems.
+- Email verification.
+- User deletion.
+- Account deletion.
+- User profile edit.
+- Account edit.
+- Post create/update/delete.
+- Asset upload, file upload, or S3.
+- Admin UI.
+- Removing frontend mock JSON.
+- Removing existing mock local registration.
+- Removing MVP4/MVP6/MVP7 mock mode behavior.
+- Equipment-report-specific core type names, component names, routes, or data flow.
+
+MVP8 is expected to build on MVP7.5 by adding post creation/deletion for created API users and accounts.
 
 ## MVP7 Scope: API Follow/Unfollow
 

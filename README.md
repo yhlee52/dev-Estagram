@@ -22,6 +22,47 @@ MVP7 follow/unfollow setup and test steps are documented in:
 
 - `feed-prototype/docs/MVP7_TEST_PROCEDURE.md`
 
+MVP7.5 API local user/account registration setup and test steps are documented in:
+
+- `feed-prototype/docs/MVP7_5_TEST_PROCEDURE.md`
+
+## MVP7.5: API Local User/Account Registration
+
+MVP7.5 adds API-mode local user/account registration while preserving the existing mock mode and MVP7 follow/unfollow behavior.
+
+MVP7.5 goals:
+
+- In API mode, if user entry receives a handle that does not match an existing backend `User`, the UI can offer new API user registration.
+- When the user chooses registration, the backend creates a new `User` in PostgreSQL.
+- During this MVP stage, creating a `User` also creates exactly one corresponding `Account`.
+- The frontend stores the created user as the active API user in localStorage.
+- After registration, the app enters Home Feed.
+- A newly created user may have no followed accounts, so an empty Home Feed is a valid state.
+- The new user can use the existing MVP7 follow/unfollow flow from the Accounts screen.
+
+MVP7.5 is not real signup, login, authentication, authorization, or account security. It is a prototype API-mode registration flow for creating local backend `User` and `Account` records and selecting the created user locally.
+
+MVP7.5 adds this backend API endpoint:
+
+- `POST /api/users`
+
+`POST /api/users` policy:
+
+- Accept `handle`.
+- Accept `display_name`.
+- Accept optional `bio`.
+- Normalize `handle` by trimming surrounding whitespace and lowercasing it.
+- Require `handle` to be unique.
+- Create the `User` and 1:1 `Account` in one transaction.
+- Use the user handle as the default account handle.
+- Use the user display name as the default account display name.
+- The account bio may mirror the user bio.
+- Default `account.kind` to `person`.
+
+MVP7.5 does not add passwords, real signup/login, JWT, sessions, OAuth, authorization, email verification, user deletion, account deletion, user profile edit, account edit, post create/update/delete, asset upload, file upload, S3, admin UI, mock mode removal, existing mock local registration removal, or equipment-report-specific core naming.
+
+MVP8 is expected to build on the created API `User` and `Account` records by adding post creation/deletion for those accounts.
+
 ## MVP7: API Follow/Unfollow
 
 MVP7 opens a small, intentional write surface for follow state in API mode while preserving the existing mock mode behavior.
