@@ -4,6 +4,7 @@ import AccountProfile from './pages/AccountProfile';
 import AccountsPage from './pages/AccountsPage';
 import HomeFeed from './pages/HomeFeed';
 import MePage from './pages/MePage';
+import NewPostPage from './pages/NewPostPage';
 import PostDetail from './pages/PostDetail';
 
 const router = createBrowserRouter([
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
       {
         path: 'me',
         element: <MePage />,
+      },
+      {
+        path: 'posts/new',
+        element: <NewPostPage />,
       },
       {
         path: 'posts/:postId',

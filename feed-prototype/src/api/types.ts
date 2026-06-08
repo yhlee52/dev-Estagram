@@ -59,6 +59,13 @@ export interface ApiPost {
   updated_at: string;
 }
 
+export interface ApiPostCreatePayload {
+  user_id: string;
+  title: string;
+  text: string;
+  metadata_json?: ApiMetadata | null;
+}
+
 export interface ApiPostWithAssets extends ApiPost {
   assets: ApiPostAsset[];
 }
