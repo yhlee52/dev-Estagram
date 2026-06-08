@@ -91,6 +91,26 @@ class PostRead(BaseModel):
     updated_at: datetime
 
 
+class PostCreate(BaseModel):
+    user_id: str
+    title: str = Field(max_length=200)
+    text: str = Field(max_length=5000)
+    metadata_json: dict[str, Any] | None = None
+
+    @field_validator("user_id", "title", "text")
+    @classmethod
+    def trim_text(cls, value: str) -> str:
+        return value.strip()
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str) -> str:
+        if not value:
+            raise ValueError("Title is required.")
+
+        return value
+
+
 class PostWithAssets(PostRead):
     assets: list[PostAssetRead] = Field(default_factory=list)
 
