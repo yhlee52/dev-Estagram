@@ -66,6 +66,18 @@ def create_user_with_account(
         display_name=display_name,
         bio=user_create.bio,
     )
+    session.add(user)
+
+    try:
+        # Flush the user first so PostgreSQL can satisfy accounts.user_id FK.
+        session.flush()
+    except IntegrityError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail=f"User handle '{handle}' is already in use.",
+        ) from error
+
     account = Account(
         id=f"account-{uuid4()}",
         user_id=user.id,
@@ -74,8 +86,6 @@ def create_user_with_account(
         bio=user_create.bio,
         kind="person",
     )
-
-    session.add(user)
     session.add(account)
 
     try:
