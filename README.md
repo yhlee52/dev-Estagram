@@ -18,6 +18,10 @@ Detailed MVP6 setup and test steps are documented in:
 
 - `feed-prototype/docs/MVP6_TEST_PROCEDURE.md`
 
+MVP7 follow/unfollow setup and test steps are documented in:
+
+- `feed-prototype/docs/MVP7_TEST_PROCEDURE.md`
+
 ## MVP7: API Follow/Unfollow
 
 MVP7 opens a small, intentional write surface for follow state in API mode while preserving the existing mock mode behavior.
