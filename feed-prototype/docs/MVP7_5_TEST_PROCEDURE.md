@@ -501,3 +501,36 @@ admin UI
 mock mode removal
 existing mock local registration removal
 ```
+
+## 12. Next step: MVP8 Personal Post Create/Delete
+
+MVP8 is expected to add API-mode personal post creation and deletion.
+
+MVP8 should keep using the generic domain model:
+
+```text
+User
+Account
+Post
+Feed
+Follow
+Asset
+Metadata
+```
+
+MVP8 direction:
+
+```text
+active API User
+-> that User's 1:1 Account
+-> create Post with that account_id
+```
+
+Candidate backend APIs:
+
+```text
+POST /api/posts
+DELETE /api/posts/{post_id}
+```
+
+MVP8 should not add real authentication, JWT, sessions, OAuth, a permission system, post edit, asset upload, file upload, S3, rich text editing, comments, likes, bookmarks, admin UI, post moderation, mock mode removal, or equipment-specific core naming.

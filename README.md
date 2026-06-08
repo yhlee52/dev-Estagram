@@ -26,6 +26,57 @@ MVP7.5 API local user/account registration setup and test steps are documented i
 
 - `feed-prototype/docs/MVP7_5_TEST_PROCEDURE.md`
 
+## MVP8: Personal Post Create/Delete
+
+MVP8 adds a narrow API-mode post write surface while preserving the existing mock mode behavior.
+
+MVP8 goals:
+
+- In API mode, the active API user can create a new `Post`.
+- The new post is created through the active API user's 1:1 `Account`.
+- The frontend does not let the user choose an `account_id` for post creation in MVP8.
+- The created post is stored in the backend PostgreSQL `posts` table.
+- A created post can be checked from Home Feed, Account Profile, and Post Detail when those views include or navigate to that post.
+- In API mode, posts written by the active API user's own account show a delete button.
+- The active API user can delete posts written by their own 1:1 account.
+- After deletion, Home Feed, Account Profile, and Post Detail should refetch, update, or safely navigate away.
+- Mock mode keeps the existing frontend mock JSON and localStorage behavior.
+
+MVP8 adds these backend API endpoints:
+
+- `POST /api/posts`
+- `DELETE /api/posts/{post_id}`
+
+`POST /api/posts` policy:
+
+- Accept `user_id`.
+- Accept `title`.
+- Accept `text`.
+- Accept optional `metadata_json`.
+- Normalize text inputs by trimming surrounding whitespace.
+- Require non-empty `title` and `text`.
+- Find the `User` by `user_id`.
+- Find that user's 1:1 `Account`.
+- Create the `Post` with that account's `account_id`.
+- Do not accept frontend account selection for post creation in MVP8.
+
+`DELETE /api/posts/{post_id}` policy:
+
+- Accept `user_id` as a query parameter or request body value.
+- Find the `User` by `user_id`.
+- Find that user's 1:1 `Account`.
+- Delete only if the target post was written by that account.
+- Use a hard delete for MVP8.
+
+MVP8 ownership checking is a prototype ownership check, not real authentication or authorization. API mode still selects an active backend user locally; MVP8 does not add passwords, sessions, JWT, OAuth, permission systems, or account-security semantics.
+
+MVP8 does not add post edit/update, asset upload, local file upload, S3, rich text editing, complex metadata editing, drafts, comments, likes, bookmarks, search, tag pages, formal auth/JWT/session/OAuth, a permission system, multiple account selection, admin UI, post moderation, mock mode removal, or equipment-report-specific core naming.
+
+MVP9 candidates:
+
+- Asset attach/upload skeleton.
+- Post edit.
+
 ## MVP7.5: API Local User/Account Registration
 
 MVP7.5 adds API-mode local user/account registration while preserving the existing mock mode and MVP7 follow/unfollow behavior.
@@ -61,7 +112,7 @@ MVP7.5 adds this backend API endpoint:
 
 MVP7.5 does not add passwords, real signup/login, JWT, sessions, OAuth, authorization, email verification, user deletion, account deletion, user profile edit, account edit, post create/update/delete, asset upload, file upload, S3, admin UI, mock mode removal, existing mock local registration removal, or equipment-report-specific core naming.
 
-MVP8 is expected to build on the created API `User` and `Account` records by adding post creation/deletion for those accounts.
+MVP8 builds on the created API `User` and `Account` records by adding API-mode personal post creation/deletion for the active user's 1:1 account.
 
 ## MVP7: API Follow/Unfollow
 

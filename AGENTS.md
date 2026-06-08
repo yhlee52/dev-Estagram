@@ -31,7 +31,7 @@ When equipment-report-specific information is needed, represent it as `post.meta
 
 ## Current Implementation Scope
 
-MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skeleton. MVP6 adds a frontend API read mode while preserving the mock mode. MVP7 adds an API-mode follow/unfollow write path while keeping mock mode follow state local. MVP7.5 adds API-mode local user/account registration while keeping it separate from real authentication.
+MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skeleton. MVP6 adds a frontend API read mode while preserving the mock mode. MVP7 adds an API-mode follow/unfollow write path while keeping mock mode follow state local. MVP7.5 adds API-mode local user/account registration while keeping it separate from real authentication. MVP8 adds API-mode personal post creation/deletion for the active user's 1:1 account while keeping mock mode unchanged.
 
 - Use static JSON data.
 - Keep static assets under `public/assets`.
@@ -42,6 +42,7 @@ MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skele
 - MVP6 introduces API mode so the frontend can read backend seed data through FastAPI. Mock mode and the MVP4 localStorage-based local user flow must remain available.
 - MVP7 introduces API-mode follow/unfollow writes through FastAPI and stores those changes in the PostgreSQL `follows` table. Mock mode must keep using localStorage follow state.
 - MVP7.5 introduces API-mode local user/account registration through FastAPI. It creates backend `User` and 1:1 `Account` records, stores the created active API user in localStorage, and still does not add passwords, login, sessions, tokens, or authorization.
+- MVP8 introduces API-mode personal post create/delete through FastAPI. It creates posts for the active API user's 1:1 `Account`, deletes only posts written by that account, and still does not add real authentication, authorization, account selection, edit flows, or upload flows.
 - A `User` represents the local viewer of the app. An `Account` represents an entity that publishes Posts.
 - During the MVP stage, each local `User` should have exactly one corresponding `Account`.
 - Active user state should be stored in `localStorage` under `local-feed-active-user-id`.
@@ -50,7 +51,82 @@ MVP1-MVP4 are intentionally local and static. MVP5 adds a backend/database skele
 - Runtime data should be treated as effective data composed from static JSON data plus localStorage overlays.
 - Local users should be stored under `local-feed-local-users`; local accounts should be stored under `local-feed-local-accounts`.
 - Clearing browser localStorage can remove locally registered users, accounts, and follow changes.
-- The `/me` route should show the active user's local personal area, including connected Accounts and their Posts.
+- The `/me` route should show the active user's personal area, including their connected Account and Posts. In API mode, MVP8 uses this area for personal post create/delete.
+
+## MVP8 Scope: Personal Post Create/Delete
+
+MVP8 lets API mode create and delete Posts for the active API user's 1:1 `Account`.
+
+MVP8 goals:
+
+- In API mode, the active API user can create a new `Post`.
+- The backend creates the post through the active API user's 1:1 `Account`.
+- The frontend does not offer account selection for post creation.
+- Created posts are stored in the backend PostgreSQL `posts` table.
+- Created posts can be checked from Home Feed, Account Profile, and Post Detail when those views include or navigate to the post.
+- In API mode, posts written by the active API user's own account show a delete button.
+- The active API user can delete posts written by their own account.
+- After deletion, Home Feed, Account Profile, and Post Detail should refetch, update, or safely navigate away.
+- Mock mode and existing mock local user/follow behavior remain available.
+
+MVP8 backend API:
+
+- `POST /api/posts`
+- `DELETE /api/posts/{post_id}`
+
+`POST /api/posts` policy:
+
+- Accept `user_id`.
+- Accept `title`.
+- Accept `text`.
+- Accept optional `metadata_json`.
+- Trim surrounding whitespace from `title` and `text`.
+- Require non-empty `title` and `text`.
+- Find the backend `User` by `user_id`.
+- Find that user's 1:1 `Account`.
+- Create the post with the resolved `account_id`.
+- Do not accept frontend account selection as part of MVP8 post creation.
+
+`DELETE /api/posts/{post_id}` policy:
+
+- Accept `user_id` as a query parameter or request body value.
+- Find the backend `User` by `user_id`.
+- Find that user's 1:1 `Account`.
+- Delete only when the target post was written by that account.
+- Use hard delete for MVP8.
+
+MVP8 ownership checking is not real authentication:
+
+- API mode still uses local active API user selection.
+- The ownership check only compares the selected user's 1:1 account with the target post's `account_id`.
+- Do not add passwords.
+- Do not add JWT.
+- Do not add session cookies.
+- Do not add OAuth.
+- Do not add a formal authorization or permission system.
+
+MVP8 non-goals:
+
+- Post edit/update.
+- Asset upload.
+- Local file upload.
+- S3 integration.
+- Rich text editor.
+- Complex metadata editor.
+- Draft saving.
+- Comments, likes, or bookmarks.
+- Search or tag pages.
+- Formal authentication, JWT, sessions, OAuth, authorization, or permission systems.
+- Multiple account selection.
+- Admin UI.
+- Post moderation.
+- Removing mock mode.
+- Equipment-report-specific core type names, component names, routes, or data flow.
+
+MVP9 candidates:
+
+- Asset attach/upload skeleton.
+- Post edit.
 
 ## MVP7.5 Scope: API Local User/Account Registration
 
@@ -112,7 +188,7 @@ MVP7.5 non-goals:
 - Removing MVP4/MVP6/MVP7 mock mode behavior.
 - Equipment-report-specific core type names, component names, routes, or data flow.
 
-MVP8 is expected to build on MVP7.5 by adding post creation/deletion for created API users and accounts.
+MVP8 builds on MVP7.5 by adding personal post creation/deletion for API users through their 1:1 accounts.
 
 ## MVP7 Scope: API Follow/Unfollow
 
