@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
@@ -125,10 +126,23 @@ export default function HomeFeed() {
 
   const emptyState =
     isApiDataSource ? (
-      <EmptyState
-        title="No feed to display"
-        description="This backend user has no followed account posts in the API feed yet."
-      />
+      <section className="rounded-md border border-dashed border-neutral-300 bg-white px-5 py-12 text-center">
+        <div className="mx-auto mb-4 flex size-10 items-center justify-center rounded-full bg-neutral-100 text-sm font-semibold text-neutral-400">
+          --
+        </div>
+        <h2 className="text-base font-semibold text-neutral-950">
+          No followed accounts yet
+        </h2>
+        <p className="mx-auto mt-2 max-w-[280px] text-sm leading-6 text-neutral-500">
+          Follow accounts from Accounts to start filling this API feed.
+        </p>
+        <Link
+          to="/accounts"
+          className="mt-4 inline-flex h-10 items-center rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800"
+        >
+          Browse Accounts
+        </Link>
+      </section>
     ) : feedScope === 'following' ? (
       <EmptyState
         title="Your feed is empty"

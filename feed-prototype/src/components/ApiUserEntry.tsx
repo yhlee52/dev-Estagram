@@ -226,6 +226,8 @@ export default function ApiUserEntry() {
         bio: result.user.bio ?? '',
       });
       setRegistrationResult(result);
+      setActiveApiUser(result.user);
+      navigate('/');
     } catch (registrationErrorValue) {
       setRegistrationError(getRegistrationErrorMessage(registrationErrorValue));
     } finally {
