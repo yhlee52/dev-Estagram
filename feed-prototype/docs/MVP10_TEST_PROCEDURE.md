@@ -35,6 +35,157 @@ DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/feed_dev
 
 `.env` 파일은 Git에 올리지 않습니다.
 
+## 2-1. 어떤 DB로 테스트할지 선택하기
+
+MVP10 import 테스트는 크게 두 가지 방식으로 할 수 있습니다.
+
+```text
+방식 A: 기존 DB로 테스트
+- backend/.env.example의 기본 DB 이름인 feed_prototype을 사용
+- 기존 seed data와 MVP 기능 테스트용 data가 같이 들어갈 수 있음
+- 빠른 smoke test에 적합
+
+방식 B: 새 DB로 내 데이터 테스트
+- 예: feed_ops 또는 feed_import_test 같은 새 DB 생성
+- 외부 post import와 UI 확인을 기존 개발 DB와 분리
+- 실제 운영/갱신 flow에 더 가까움
+```
+
+중요한 원칙:
+
+- backend와 import script는 `backend/.env`의 `DATABASE_URL`을 읽습니다.
+- `$env:DATABASE_URL`을 현재 PowerShell session에 설정하면 그 값이 우선 사용될 수 있습니다.
+- `--database-url`을 import command에 넘기면 해당 명령에서만 DB URL을 override합니다.
+- 새 DB를 한 번 만들어 놓은 뒤 `backend/.env`의 `DATABASE_URL`을 그 DB로 바꾸면 됩니다.
+- DB를 새로 만들면 반드시 `alembic upgrade head`를 다시 실행해야 table/migration이 준비됩니다.
+- 필요하면 `python -m app.services.seed`로 seed data를 넣습니다. 외부 import만 확인할 DB라면 seed는 선택 사항입니다.
+
+## 2-2. 방식 A: 기존 DB로 테스트하기
+
+`.env.example` 기본값을 사용하는 절차입니다. 기본 DB 이름은 `feed_prototype`입니다.
+
+1. PostgreSQL에서 `feed_prototype` DB를 준비합니다.
+2. `.env.example`을 복사해 `backend/.env`를 만듭니다.
+
+```powershell
+cd C:\...\feed-prototype
+copy backend\.env.example backend\.env
+```
+
+3. `backend/.env`가 아래처럼 되어 있는지 확인합니다.
+
+```text
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/feed_prototype
+```
+
+4. migration과 seed를 실행합니다.
+
+```powershell
+cd backend
+pip install -r requirements.txt
+alembic upgrade head
+python -m app.services.seed
+```
+
+5. sample JSON을 dry-run합니다.
+
+```powershell
+python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json --dry-run
+```
+
+6. 문제가 없으면 actual import를 실행합니다.
+
+```powershell
+python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json
+```
+
+7. backend와 frontend를 실행해 UI에서 확인합니다.
+
+```powershell
+python -m uvicorn app.main:app --reload
+```
+
+다른 terminal:
+
+```powershell
+cd C:\...\feed-prototype
+$env:VITE_DATA_SOURCE="api"
+npm run dev
+```
+
+## 2-3. 방식 B: 새 DB에 내 데이터 올려 테스트하기
+
+기존 개발 DB와 분리해 외부 import용 DB를 새로 만드는 절차입니다. 예시는 `feed_ops`를 사용합니다.
+
+1. PostgreSQL에서 새 DB를 만듭니다.
+
+```text
+feed_ops
+```
+
+pgAdmin, psql, DBeaver 등 편한 도구로 만들면 됩니다. psql을 쓴다면 예시는 다음과 같습니다.
+
+```powershell
+createdb -U postgres feed_ops
+```
+
+2. `backend/.env`의 `DATABASE_URL`을 새 DB로 바꿉니다.
+
+```text
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/feed_ops
+```
+
+3. 새 DB에 migration을 적용합니다.
+
+```powershell
+cd C:\...\feed-prototype\backend
+alembic upgrade head
+```
+
+4. seed data가 필요하면 넣습니다.
+
+```powershell
+python -m app.services.seed
+```
+
+seed는 선택 사항입니다. 다만 UI에서 기존 demo user로 login-like selection을 하거나 follow를 테스트하려면 넣는 편이 편합니다.
+
+5. 내 batch package를 `incoming`에 둡니다.
+
+```text
+feed-prototype/data/external_posts/incoming/batch_2026-06-09_090000/
+  feed_posts.json
+  assets/
+```
+
+6. 먼저 dry-run합니다.
+
+```powershell
+python -m app.services.import_external_posts --input ../data/external_posts/incoming/batch_2026-06-09_090000/feed_posts.json --dry-run
+```
+
+7. count와 validation 결과가 맞으면 actual import를 실행합니다.
+
+```powershell
+python -m app.services.import_external_posts --input ../data/external_posts/incoming/batch_2026-06-09_090000/feed_posts.json
+```
+
+8. backend와 frontend를 실행해 UI에서 확인합니다.
+
+```powershell
+python -m uvicorn app.main:app --reload
+```
+
+다른 terminal:
+
+```powershell
+cd C:\...\feed-prototype
+$env:VITE_DATA_SOURCE="api"
+npm run dev
+```
+
+정리하면, 새 DB를 한 번 만든 뒤에는 `backend/.env`의 `DATABASE_URL`만 그 DB로 연결하면 됩니다. 단, 새 DB마다 migration은 반드시 적용해야 합니다.
+
 ## 3. 외부 post package 구조
 
 권장 package 구조:
