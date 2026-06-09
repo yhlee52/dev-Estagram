@@ -58,6 +58,7 @@ export interface ApiPost {
   text: string;
   tags?: string[];
   metadata_json: ApiMetadata | null;
+  imported_at?: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -62,6 +62,8 @@ export interface Post {
   createdAt: string;
   updated_at?: string;
   updatedAt?: string;
+  imported_at?: string;
+  importedAt?: string;
   tags: string[];
   assets: PostAsset[];
   metadata_json?: PostMetadata;

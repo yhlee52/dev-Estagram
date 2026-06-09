@@ -218,6 +218,35 @@ Recommended workflow for each new batch:
 7. Run actual import.
 8. Check the UI in Home Feed, Account Profile, and Post Detail.
 
+## UI Visibility And Edit/Delete Policy
+
+Imported posts use the same generic `Account`, `Post`, `Asset`, and `Metadata` structures as posts created from the UI.
+
+Home Feed behavior:
+
+- The API Home Feed shows posts from the active API user's own account and followed accounts.
+- Imported accounts are not automatically followed by every active user.
+- If an imported account is not followed, its posts may not appear in Home Feed for that active user.
+- Imported content can still be checked through Account Profile and Post Detail API routes.
+
+Account Profile behavior:
+
+- Imported account `handle`, `display_name`, `bio`, and `avatar_url` are shown with existing profile UI.
+- Imported posts for that account are listed latest-first.
+
+Post Detail behavior:
+
+- `title`, `text`, `tags`, `metadata_json`, `created_at`, `updated_at`, and `imported_at` use existing post detail UI.
+- Image assets render as image previews when the URL is browser-accessible.
+- Plot, table, file, and link assets render through the existing MVP asset placeholder/link-card UI.
+
+Edit/delete behavior:
+
+- Imported posts follow the existing MVP ownership policy.
+- Edit/delete buttons are shown only when the active API user owns the post's account.
+- A normal active API user will not see edit/delete for posts owned by an imported account.
+- If the generated import User for an imported account is selected as the active API user, edit/delete may appear. This is acceptable for the MVP stage and is still prototype ownership checking, not formal authentication or authorization.
+
 Commands:
 
 ```bash

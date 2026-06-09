@@ -140,6 +140,7 @@ export default function PostDetail() {
   const postTags = post?.tags ?? [];
   const postCreatedAt = post?.createdAt ?? post?.created_at ?? '';
   const postUpdatedAt = post?.updatedAt ?? post?.updated_at ?? '';
+  const postImportedAt = post?.importedAt ?? post?.imported_at ?? '';
   const shouldShowUpdatedAt =
     postUpdatedAt && postCreatedAt && postUpdatedAt !== postCreatedAt;
   const isOwnApiPost =
@@ -328,6 +329,18 @@ export default function PostDetail() {
               dateTime={postUpdatedAt}
             >
               {formatDateTime(postUpdatedAt)}
+            </time>
+          </div>
+        ) : null}
+
+        {postImportedAt ? (
+          <div className="rounded-md bg-neutral-50 px-3 py-2">
+            <p className="text-xs font-bold uppercase text-neutral-400">Imported</p>
+            <time
+              className="mt-1 block text-sm font-semibold text-neutral-700"
+              dateTime={postImportedAt}
+            >
+              {formatDateTime(postImportedAt)}
             </time>
           </div>
         ) : null}
