@@ -2,13 +2,13 @@
 
 ## Project Identity
 
-This project is `feed-prototype`, a Vite + React + TypeScript prototype for a general-purpose, Instagram-like local feed.
+이 프로젝트는 `feed-prototype`입니다. Vite + React + TypeScript 기반의 범용 Instagram-like local feed prototype입니다.
 
-The codebase should stay generic enough to support personal feeds, bot feeds, project feeds, and a future company-internal equipment-report feed. The core product model is not equipment-specific.
+이 codebase는 personal feed, bot feed, project feed, 향후 회사 내부 설비 리포트 feed를 지원할 수 있을 만큼 generic해야 합니다. core product model은 설비 전용이 아닙니다.
 
 ## Core Domain
 
-Use these generic concepts for core types, shared components, routes, and data flow:
+core type, shared component, route, data flow에는 다음 generic concept를 사용합니다.
 
 - User
 - Account
@@ -18,7 +18,7 @@ Use these generic concepts for core types, shared components, routes, and data f
 - Asset
 - Metadata
 
-Do not introduce equipment-report-specific terms into core type names or primary component names. Avoid names such as:
+core type name 또는 primary component name에 설비 리포트 전용 용어를 넣지 않습니다. 피해야 할 이름:
 
 - Equipment
 - Chamber
@@ -27,25 +27,25 @@ Do not introduce equipment-report-specific terms into core type names or primary
 - Severity
 - Report
 
-When equipment-report-specific information is needed, represent it as `post.metadata`, `metadata_json`, or asset metadata. Keep domain-specific values as data, not as the foundation of the app architecture.
+설비 리포트 관련 정보가 필요하면 `post.metadata`, `metadata_json`, asset metadata로 표현합니다. domain-specific value는 data로 유지하고 app architecture의 기반으로 삼지 않습니다.
 
 ## Current Implementation Scope
 
-MVP1-MVP4 are local/static. MVP5 added a backend/database skeleton. MVP6 added frontend API read mode while preserving mock mode. MVP7 added API-mode follow/unfollow writes. MVP7.5 added API-mode local user/account registration. MVP8 added API-mode personal post create/delete. MVP9 added post asset + metadata management.
+MVP1-MVP4는 local/static입니다. MVP5는 backend/database skeleton을 추가했습니다. MVP6는 mock mode를 유지하면서 frontend API read mode를 추가했습니다. MVP7은 API-mode follow/unfollow write를 추가했습니다. MVP7.5는 API-mode local user/account registration을 추가했습니다. MVP8은 API-mode personal post create/delete를 추가했습니다. MVP9는 post asset + metadata management를 추가했습니다. MVP10은 external post ingestion pipeline을 추가했습니다.
 
-Current constraints:
+현재 제약:
 
-- Mock mode remains available.
-- Static frontend mock data remains under `feed-prototype/src/data`.
-- Static browser assets remain under `feed-prototype/public/assets`.
-- Runtime mock-mode overlays are stored in localStorage.
-- API mode uses FastAPI and backend PostgreSQL data.
-- The frontend must not connect directly to PostgreSQL.
-- During the MVP stage, each `User` has exactly one corresponding `Account`.
-- An active API user is selected from backend DB users and stored locally.
-- Active API user selection is not real login, authentication, authorization, or account security.
+- Mock mode는 계속 사용 가능합니다.
+- static frontend mock data는 `feed-prototype/src/data` 아래에 유지합니다.
+- static browser asset은 `feed-prototype/public/assets` 아래에 유지합니다.
+- runtime mock-mode overlay는 localStorage에 저장합니다.
+- API mode는 FastAPI와 backend PostgreSQL data를 사용합니다.
+- frontend는 PostgreSQL에 직접 연결하지 않습니다.
+- MVP 단계에서는 각 `User`에 정확히 하나의 `Account`가 대응합니다.
+- active API user는 backend DB user 중에서 선택하고 local에 저장합니다.
+- active API user selection은 real login, authentication, authorization, account security가 아닙니다.
 
-Important localStorage keys:
+중요 localStorage key:
 
 - `local-feed-active-user-id`
 - `local-feed-following-by-user`
@@ -56,120 +56,84 @@ Important localStorage keys:
 
 MVP5 backend/database skeleton:
 
-- FastAPI backend under `feed-prototype/backend/`.
+- `feed-prototype/backend/` 아래 FastAPI backend.
 - PostgreSQL target database.
 - SQLModel ORM / DB layer.
-- Alembic migrations.
-- Tables for `users`, `accounts`, `posts`, `post_assets`, and `follows`.
-- Backend seed data separate from frontend mock JSON.
+- Alembic migration.
+- `users`, `accounts`, `posts`, `post_assets`, `follows` table.
+- frontend mock JSON과 분리된 backend seed data.
 
 MVP6 frontend API read mode:
 
-- Frontend data source mode for `mock` and `api`.
+- frontend data source mode: `mock`, `api`.
 - API-mode user selection by id or handle.
-- API-mode feed read through `GET /api/feed?user_id=...`.
-- Accounts, Account Profile, and Post Detail have API-mode read paths.
+- `GET /api/feed?user_id=...` 기반 API-mode feed read.
+- Accounts, Account Profile, Post Detail에 API-mode read path.
 
 MVP7 API follow/unfollow:
 
 - `POST /api/users/{user_id}/follows/{account_id}`
 - `DELETE /api/users/{user_id}/follows/{account_id}`
 - `GET /api/users/{user_id}/follows`
-- Follow state is stored in the backend `follows` table in API mode.
-- Mock mode keeps localStorage follow state.
+- API mode follow state는 backend `follows` table에 저장합니다.
+- mock mode는 localStorage follow state를 유지합니다.
 
 MVP7.5 API local user/account registration:
 
 - `POST /api/users`
-- Creates one backend `User` and one corresponding `Account`.
-- Stores the created active API user in localStorage.
-- Does not add passwords, login, sessions, tokens, OAuth, or authorization.
+- backend `User`와 대응 `Account`를 하나씩 생성합니다.
+- 생성된 active API user를 localStorage에 저장합니다.
+- password, login, session, token, OAuth, authorization은 추가하지 않습니다.
 
 MVP8 personal post create/delete:
 
 - `POST /api/posts`
 - `DELETE /api/posts/{post_id}`
-- Creates posts through the active API user's 1:1 `Account`.
-- Deletes only posts written by the active API user's own account.
-- Does not allow frontend account selection.
-- Uses prototype ownership checking, not real authentication or authorization.
+- active API user의 1:1 `Account`를 통해 post를 생성합니다.
+- active API user own account가 작성한 post만 삭제합니다.
+- frontend account selection을 허용하지 않습니다.
+- prototype ownership checking만 사용하며 real authentication/authorization은 아닙니다.
 
 MVP9 post asset + metadata management:
 
-- Adds `assets`, `tags`, `metadata_json`, and `updated_at` structure to Posts.
-- Lets API-mode post creation include tags, metadata, and asset URL/path descriptors.
-- Lets the active API user edit Posts written by their own 1:1 `Account`.
-- Shows created/edited content, asset previews, and metadata in Home Feed, Account Profile, and Post Detail.
-- Keeps mock mode behavior unchanged.
+- Post에 `assets`, `tags`, `metadata_json`, `updated_at` 구조를 추가합니다.
+- API-mode post creation이 tags, metadata, asset URL/path descriptor를 포함할 수 있습니다.
+- active API user가 own 1:1 `Account`로 작성한 Post를 edit할 수 있습니다.
+- Home Feed, Account Profile, Post Detail에서 created/edited content, asset preview, metadata를 표시합니다.
+- mock mode behavior는 유지합니다.
 
 ## Previous MVP9 Scope: Post Asset + Metadata Management
 
-MVP9 combines the previously separate MVP9 and MVP10 candidates:
+MVP9는 기존의 두 후보를 통합했습니다.
 
-- Previous MVP9: asset attach/upload skeleton.
-- Previous MVP10: post edit/update + metadata editor.
-- Integrated MVP9: Post Asset + Metadata Management.
+- 기존 MVP9: asset attach/upload skeleton.
+- 기존 MVP10: post edit/update + metadata editor.
+- 통합 MVP9: Post Asset + Metadata Management.
 
-MVP9 goals:
+MVP9 goal:
 
-- Add `assets`, `tags`, `metadata`, and `updated_at` structure to Posts.
-- In API mode, let the active API user include asset information when creating a Post.
-- In API mode, let the active API user include tags and metadata when creating a Post.
-- In API mode, let the active API user edit Posts written by their own 1:1 `Account`.
-- Allow editing `title`, `text`, `tags`, `assets`, and `metadata`.
-- Store created and edited content in backend PostgreSQL.
-- Show created/edited content in Home Feed, Account Profile, and Post Detail.
-- Show asset previews and metadata in PostCard, Post Detail, and Account Profile.
-- Display image assets as actual image previews.
-- Display plot, table, file, and link assets as placeholders or link cards for MVP9.
-- Keep mock mode behavior unchanged.
-
-MVP9 backend API direction:
-
-- Extend `POST /api/posts`.
-- Add `PATCH /api/posts/{post_id}`.
-- Keep `DELETE /api/posts/{post_id}` from MVP8.
+- Post에 `assets`, `tags`, `metadata`, `updated_at` 구조 추가.
+- API mode에서 active API user가 Post 생성 시 asset 정보를 포함할 수 있게 함.
+- API mode에서 active API user가 Post 생성 시 tags와 metadata를 포함할 수 있게 함.
+- API mode에서 active API user가 own 1:1 `Account`로 작성한 Post를 edit할 수 있게 함.
+- `title`, `text`, `tags`, `assets`, `metadata` 수정 허용.
+- 생성/수정 content를 backend PostgreSQL에 저장.
+- Home Feed, Account Profile, Post Detail에 content 표시.
+- PostCard, Post Detail, Account Profile에 asset preview와 metadata 표시.
+- image asset은 actual image preview로 표시.
+- plot, table, file, link asset은 MVP9 범위에서 placeholder 또는 link card로 표시.
+- mock mode behavior 유지.
 
 MVP9 API policy:
 
-- `POST /api/posts` should accept `user_id`, `title`, `text`, optional `metadata_json`, optional `tags`, and optional `assets`.
-- `PATCH /api/posts/{post_id}` should accept `user_id` and a payload for `title`, `text`, `tags`, `assets`, and `metadata_json`.
-- The backend must resolve the selected `User` from `user_id`.
-- The backend must find that user's 1:1 `Account`.
-- Post create and edit must use the resolved account; the frontend must not choose `account_id`.
-- Post edit must only update posts whose `post.account_id` matches the selected user's 1:1 account.
-- This is MVP ownership checking only. Do not add real authentication or a formal permission system.
-- Assets are URL/local path descriptors only. Do not implement real upload in MVP9.
-
-Recommended `Asset` fields:
-
-- `id`
-- `post_id`
-- `type`
-- `url`
-- `title`
-- `description`
-- `created_at`
-
-Recommended asset types:
-
-- `image`
-- `plot`
-- `table`
-- `file`
-- `link`
-
-Recommended `Post` fields:
-
-- `id`
-- `account_id`
-- `title`
-- `text`
-- `created_at`
-- `updated_at`
-- `tags`
-- `metadata_json`
-- `assets`
+- `POST /api/posts`는 `user_id`, `title`, `text`, optional `metadata_json`, optional `tags`, optional `assets`를 받습니다.
+- `PATCH /api/posts/{post_id}`는 `user_id`와 `title`, `text`, `tags`, `assets`, `metadata_json` update payload를 받습니다.
+- backend는 selected `User`를 `user_id`로 resolve합니다.
+- backend는 해당 user의 1:1 `Account`를 찾습니다.
+- post create/edit은 resolved account를 사용해야 하며 frontend는 `account_id`를 선택하지 않습니다.
+- post edit은 `post.account_id`가 selected user's 1:1 account와 일치할 때만 허용합니다.
+- 이것은 MVP ownership checking입니다. real authentication 또는 formal permission system을 추가하지 않습니다.
+- assets는 URL/local path descriptor입니다. MVP9에서는 real upload를 구현하지 않습니다.
 
 MVP9 non-goals:
 
@@ -180,56 +144,48 @@ MVP9 non-goals:
 - Image compression or resizing.
 - Rich text editor.
 - Complex metadata schema validation.
-- Metadata search or filtering.
+- Metadata search/filtering.
 - Advanced asset viewer.
 - Report template generation.
 - Bot account auto posting.
 - Draft saving.
-- Edit history or version history.
-- Comments, likes, or bookmarks.
-- Formal authentication, JWT, sessions, or OAuth.
+- Edit history/version history.
+- Comments, likes, bookmarks.
+- Formal authentication, JWT, sessions, OAuth.
 - Permission system.
 - Multiple account selection.
 - Admin UI.
 - Post moderation.
 - Mock mode removal.
-- Equipment-report-specific core type names, component names, routes, or data flow.
-
-Next MVP candidates:
-
-- Metadata filter/search.
-- Advanced asset viewer.
-- Report-style post template.
-- Local file import/drop-in.
-- Bot account auto post generation.
+- Equipment-report-specific core type names, component names, routes, data flow.
 
 ## Current MVP10 Scope: External Post Ingestion Pipeline
 
-MVP10 is named **External Post Ingestion Pipeline**.
+MVP10 이름은 **External Post Ingestion Pipeline**입니다.
 
-MVP10 is not a UI post creation feature. The goal is to let an external analysis program or post generation program create a JSON-based post package, then import that package into the backend DB so the UI can display imported Posts like ordinary Posts.
+MVP10은 UI post creation feature가 아닙니다. 외부 분석 프로그램 또는 post 생성 프로그램이 JSON 기반 post package를 만들고, import script가 package를 backend DB에 넣어서 UI가 import된 Post를 일반 Post처럼 표시하게 하는 것이 목표입니다.
 
 MVP10 flow:
 
-- External program generates post JSON.
-- External program generates image, plot, table, or file assets.
-- The package is placed under `feed-prototype/data/external_posts/incoming`.
-- An import script reads the JSON.
-- The import script validates the package, with `--dry-run` support before DB writes.
-- The import script upserts `Account`, `Post`, `Asset`, and `metadata_json` data into the backend PostgreSQL DB.
-- UI reads imported data through existing API-mode paths and displays it like normal feed content.
+- 외부 프로그램이 post JSON을 생성합니다.
+- 외부 프로그램이 image, plot, table, file asset을 생성합니다.
+- package를 `feed-prototype/data/external_posts/incoming` 아래에 둡니다.
+- import script가 JSON을 읽습니다.
+- import script가 package를 검증하며 `--dry-run`을 지원합니다.
+- import script가 `Account`, `Post`, `Asset`, `metadata_json`을 backend PostgreSQL DB에 upsert합니다.
+- UI는 기존 API-mode path를 통해 imported data를 읽고 일반 feed content처럼 표시합니다.
 
 MVP10 data policy:
 
-- Use generic core concepts: User, Account, Post, Feed, Follow, Asset, Metadata.
-- Use `external_id` based upsert for imported accounts, posts, and assets.
-- Re-importing the same JSON must not keep creating duplicate Posts.
-- Store only UI-accessible asset URLs or paths in the DB.
-- Do not copy asset files in MVP10.
-- Test DB and operational/update DB can be separated by changing `.env` or `DATABASE_URL`.
-- Keep domain-specific values such as recipe, chamber, severity, equipment state, or analysis result inside `metadata_json` or asset metadata.
+- generic core concept만 사용합니다: User, Account, Post, Feed, Follow, Asset, Metadata.
+- imported accounts, posts, assets는 `external_id` 기반 upsert를 사용합니다.
+- 같은 JSON을 다시 import해도 duplicate Post가 계속 생기면 안 됩니다.
+- DB에는 UI가 접근 가능한 asset URL/path만 저장합니다.
+- MVP10에서는 asset file을 복사하지 않습니다.
+- test DB와 operational/update DB는 `.env` 또는 `DATABASE_URL` 변경으로 분리할 수 있습니다.
+- recipe, chamber, severity, equipment state, analysis result 같은 domain-specific value는 `metadata_json` 또는 asset metadata에 넣습니다.
 
-Recommended MVP10 directory structure:
+MVP10 directory:
 
 ```text
 feed-prototype/
@@ -245,15 +201,15 @@ feed-prototype/
 
 MVP10 JSON package shape:
 
-- `batch.external_id` is required.
-- `batch.source` and `batch.created_at` are optional.
-- `accounts[].external_id` is the account upsert key.
-- `accounts[].handle` and `accounts[].display_name` are the UI-facing account fields.
-- `posts[].external_id` is the post upsert key.
-- `posts[].account_external_id` connects a post to an imported account.
-- `posts[].metadata_json` stores domain-specific values.
-- `posts[].assets[]` stores asset URL/path descriptors.
-- Allowed asset types are `image`, `plot`, `table`, `file`, and `link`.
+- `batch.external_id`는 필수입니다.
+- `batch.source`, `batch.created_at`은 optional입니다.
+- `accounts[].external_id`는 account upsert key입니다.
+- `accounts[].handle`, `accounts[].display_name`은 UI-facing account field입니다.
+- `posts[].external_id`는 post upsert key입니다.
+- `posts[].account_external_id`는 post를 imported account에 연결합니다.
+- `posts[].metadata_json`은 domain-specific value를 저장합니다.
+- `posts[].assets[]`는 asset URL/path descriptor를 저장합니다.
+- allowed asset type은 `image`, `plot`, `table`, `file`, `link`입니다.
 
 MVP10 non-goals:
 
@@ -263,33 +219,33 @@ MVP10 non-goals:
 - Asset file automatic copy.
 - Folder watch.
 - Scheduler or Airflow integration.
-- Bot account automatic analysis or generation logic.
+- Bot account automatic analysis/generation logic.
 - Metadata filter/search.
 - Advanced asset viewer.
 - Chart/table parsing.
 - Batch management UI.
 - Import result dashboard.
-- Formal authentication, JWT, sessions, or OAuth.
+- Formal authentication, JWT, sessions, OAuth.
 - Mock mode removal.
 
 ## Development Guidelines
 
-- Keep the TypeScript build passing.
-- Prefer small, focused changes.
-- Avoid unnecessary large refactors.
-- Follow existing project patterns before adding new abstractions.
-- Keep components and types reusable for general feeds and future company-internal report feeds.
-- Treat equipment-report examples as one possible data scenario, not as the core domain.
-- Do not remove mock mode while implementing API-mode features.
-- Do not add passwords, JWT, sessions, OAuth, or a formal authorization system unless a future MVP explicitly changes scope.
-- Do not implement frontend file write logic or actual upload flows in MVP10.
+- TypeScript build를 통과시킵니다.
+- 작고 집중된 변경을 선호합니다.
+- 불필요한 큰 refactor를 피합니다.
+- 새 abstraction을 추가하기 전에 기존 project pattern을 따릅니다.
+- component와 type은 general feed와 향후 회사 내부 report feed 모두에 재사용 가능하게 유지합니다.
+- equipment-report example은 가능한 data scenario 중 하나로만 취급하고 core domain으로 삼지 않습니다.
+- API-mode feature를 구현하면서 mock mode를 제거하지 않습니다.
+- future MVP가 명시적으로 범위를 바꾸기 전에는 password, JWT, session, OAuth, formal authorization system을 추가하지 않습니다.
+- MVP10에서는 frontend file write logic 또는 actual upload flow를 구현하지 않습니다.
 
 ## Verification
 
-After code changes, run the project build from the Vite app directory:
+code change 후 Vite app directory에서 build를 실행합니다.
 
 ```bash
 npm run build
 ```
 
-The build should pass before handing work back after implementation changes.
+handoff 전 build가 통과해야 합니다.

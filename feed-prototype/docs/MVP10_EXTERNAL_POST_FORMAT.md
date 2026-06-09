@@ -1,12 +1,12 @@
 # MVP10 External Post Format
 
-MVP10 is **External Post Ingestion Pipeline**. External analysis programs or post generation programs create JSON-based post packages. The import service reads those packages, upserts generic feed data into the backend DB, and the UI displays imported posts like ordinary posts.
+MVP10은 **External Post Ingestion Pipeline**입니다. 외부 분석 프로그램 또는 post 생성 프로그램이 JSON 기반 post package를 만들고, import service가 그 package를 읽어 generic feed data를 backend DB에 upsert합니다. UI는 import된 post를 일반 post처럼 표시합니다.
 
-MVP10 is not a UI post creation, file upload, S3 upload, folder watch, scheduler, metadata search, or advanced asset viewer feature.
+MVP10은 UI post creation, file upload, S3 upload, folder watch, scheduler, metadata search, advanced asset viewer 기능이 아닙니다.
 
-## Package Structure
+## Package 구조
 
-Recommended package layout:
+권장 package layout:
 
 ```text
 batch_YYYY-MM-DD_HHMMSS/
@@ -16,7 +16,7 @@ batch_YYYY-MM-DD_HHMMSS/
     table_files.csv
 ```
 
-Repository locations:
+repository 위치:
 
 ```text
 data/external_posts/
@@ -32,11 +32,11 @@ data/external_posts/
   failed/
 ```
 
-Use `examples` as a reference. Use `incoming` for packages waiting to be imported. `archive` and `failed` are optional manual holding areas in MVP10.
+`examples`는 참고용입니다. `incoming`은 import 대기 package를 두는 곳입니다. `archive`와 `failed`는 MVP10에서 수동 보관용으로 사용할 수 있는 optional folder입니다.
 
-## Basic feed_posts.json
+## 기본 feed_posts.json
 
-Minimal top-level shape:
+최소 top-level shape:
 
 ```json
 {
@@ -50,25 +50,25 @@ Minimal top-level shape:
 }
 ```
 
-Top-level fields:
+top-level field:
 
-- `batch`: metadata for the generated package.
-- `accounts`: imported accounts that can own imported posts.
-- `posts`: imported posts to create or update.
+- `batch`: generated package의 metadata입니다.
+- `accounts`: imported post를 소유할 account 목록입니다.
+- `posts`: create 또는 update할 imported post 목록입니다.
 
-Unknown fields are allowed by the schema, but the import service only stores the documented fields.
+schema는 unknown field를 허용할 수 있지만, import service는 문서화된 field만 저장합니다.
 
 ## Account Format
 
-Recommended fields:
+권장 field:
 
-- `external_id`: required import/upsert key.
-- `handle`: required UI-facing handle.
-- `display_name`: required UI-facing name.
-- `bio`: optional account description.
-- `avatar_url`: optional browser-accessible avatar URL/path.
+- `external_id`: 필수 import/upsert key입니다.
+- `handle`: 필수 UI-facing handle입니다.
+- `display_name`: 필수 UI-facing name입니다.
+- `bio`: optional account description입니다.
+- `avatar_url`: optional browser-accessible avatar URL/path입니다.
 
-Example:
+예:
 
 ```json
 {
@@ -80,7 +80,7 @@ Example:
 }
 ```
 
-During the MVP stage, each `Account` must have one corresponding `User`. The import service automatically creates a generic paired import User for each imported Account:
+MVP 단계에서는 각 `Account`에 대응하는 `User`가 하나 필요합니다. import service는 imported Account마다 generic paired import User를 자동 생성합니다.
 
 ```text
 user id: import-user-{normalized-account-external-id}
@@ -91,18 +91,18 @@ account kind: bot
 
 ## Post Format
 
-Recommended fields:
+권장 field:
 
-- `external_id`: required post import/upsert key.
-- `account_external_id`: required account reference.
-- `title`: required post title.
-- `text`: optional post body text.
-- `created_at`: optional post creation timestamp.
-- `tags`: optional list of strings.
-- `metadata_json`: optional object for domain-specific values.
-- `assets`: optional list of asset descriptors.
+- `external_id`: 필수 post import/upsert key입니다.
+- `account_external_id`: 필수 account reference입니다.
+- `title`: 필수 post title입니다.
+- `text`: optional post body text입니다.
+- `created_at`: optional post creation timestamp입니다.
+- `tags`: optional string list입니다.
+- `metadata_json`: optional object입니다. domain-specific value를 넣습니다.
+- `assets`: optional asset descriptor list입니다.
 
-Example:
+예:
 
 ```json
 {
@@ -122,19 +122,19 @@ Example:
 }
 ```
 
-Keep the core feed model generic. Domain-specific values such as recipe, chamber, status, severity, equipment state, or analysis result belong in `metadata_json` or asset metadata, not in core model/component names.
+core feed model은 generic하게 유지합니다. recipe, chamber, status, severity, equipment state, analysis result 같은 domain-specific value는 core model/component name이 아니라 `metadata_json` 또는 asset metadata에 넣습니다.
 
 ## Asset Format
 
-Recommended fields:
+권장 field:
 
-- `external_id`: recommended stable asset key.
-- `type`: required asset type.
-- `url`: required browser-accessible URL/path.
-- `title`: optional asset title.
-- `description`: optional asset description.
+- `external_id`: 권장 stable asset key입니다.
+- `type`: 필수 asset type입니다.
+- `url`: 필수 browser-accessible URL/path입니다.
+- `title`: optional asset title입니다.
+- `description`: optional asset description입니다.
 
-Allowed asset types:
+허용 asset type:
 
 ```text
 image
@@ -144,7 +144,7 @@ file
 link
 ```
 
-Example:
+예:
 
 ```json
 {
@@ -158,14 +158,14 @@ Example:
 
 Asset replacement policy:
 
-- If a post includes `assets`, the list is treated as the latest complete asset list for that post.
-- Existing assets for that post are deleted and replaced with the imported list.
-- If a post omits `assets`, existing assets for that post are left unchanged.
-- Use `assets: []` when the correct imported state is no assets.
+- post에 `assets`가 포함되면 그 list를 해당 post의 최신 전체 asset list로 봅니다.
+- 해당 post의 기존 assets는 삭제되고 imported list로 교체됩니다.
+- post가 `assets`를 생략하면 기존 assets는 유지됩니다.
+- asset이 없는 상태가 정답이면 `assets: []`를 사용합니다.
 
-## external_id Rules
+## external_id 규칙
 
-Recommended naming:
+권장 naming:
 
 ```text
 batch external_id:   batch-YYYY-MM-DD-HHMMSS
@@ -176,78 +176,78 @@ post external_id:    post-{source}-{date}-{serial}
 asset external_id:   asset-{source}-{date}-{serial}
 ```
 
-Important behavior:
+중요 동작:
 
-- If `external_id` is the same, the existing row is updated.
-- If `external_id` changes, the import service treats it as new data and inserts a new row.
-- To update the same post, keep the same `post.external_id`.
-- To create a new post, create a new `post.external_id`.
+- `external_id`가 같으면 기존 row가 update됩니다.
+- `external_id`가 바뀌면 import service는 새 data로 보고 insert합니다.
+- 같은 post를 update하려면 같은 `post.external_id`를 유지합니다.
+- 새 post를 만들려면 새 `post.external_id`를 만듭니다.
 
-This is the most common ingestion mistake: changing `post.external_id` every run when the intent was to update the same post.
+가장 흔한 실수는 같은 post를 update하려는 상황에서 매번 `post.external_id`를 바꾸는 것입니다.
 
-## Asset URL/path Rules
+## Asset URL/path 규칙
 
-MVP10 does not copy asset files. The import service stores only the `url` value from JSON.
+MVP10은 asset 파일을 복사하지 않습니다. import service는 JSON의 `url` 값만 저장합니다.
 
-Use browser-accessible URLs or paths:
+브라우저에서 접근 가능한 URL 또는 path를 사용합니다.
 
 ```text
 /assets/generated/temp_trend_001.png
 https://example.com/assets/temp_trend_001.png
 ```
 
-Avoid:
+피해야 할 값:
 
 ```text
 C:\data\temp_trend_001.png
 feed-prototype/backend/local/temp_trend_001.png
 ```
 
-The frontend UI runs in a browser. A path is valid only if the browser can request it from the frontend/backend/static asset setup.
+frontend UI는 브라우저에서 실행됩니다. path는 frontend/backend/static asset setup을 통해 브라우저가 request할 수 있을 때만 유효합니다.
 
-## Continuous Import Procedure
+## 지속 Import 절차
 
-Recommended workflow for each new batch:
+새 batch마다 권장 workflow:
 
-1. Generate a new package folder, for example `batch_2026-06-09_090000`.
-2. Write `feed_posts.json`.
-3. Save asset files to a static location the UI can access.
-4. Confirm each asset `url` points to that browser-accessible location.
-5. Run dry-run import.
-6. Fix validation errors or wrong counts.
-7. Run actual import.
-8. Check the UI in Home Feed, Account Profile, and Post Detail.
+1. `batch_2026-06-09_090000` 같은 새 package folder를 생성합니다.
+2. `feed_posts.json`을 작성합니다.
+3. asset file을 UI가 접근 가능한 static 위치에 저장합니다.
+4. 각 asset `url`이 해당 browser-accessible 위치를 가리키는지 확인합니다.
+5. dry-run import를 실행합니다.
+6. validation error 또는 예상과 다른 count를 수정합니다.
+7. actual import를 실행합니다.
+8. Home Feed, Account Profile, Post Detail에서 UI를 확인합니다.
 
-## UI Visibility And Edit/Delete Policy
+## UI 표시 및 Edit/Delete 정책
 
-Imported posts use the same generic `Account`, `Post`, `Asset`, and `Metadata` structures as posts created from the UI.
+imported post는 UI에서 작성한 post와 같은 generic `Account`, `Post`, `Asset`, `Metadata` 구조를 사용합니다.
 
 Home Feed behavior:
 
-- The API Home Feed shows posts from the active API user's own account and followed accounts.
-- Imported accounts are not automatically followed by every active user.
-- If an imported account is not followed, its posts may not appear in Home Feed for that active user.
-- Imported content can still be checked through Account Profile and Post Detail API routes.
+- API Home Feed는 active API user의 own account와 followed account의 post를 보여줍니다.
+- imported account는 모든 active user에게 자동 follow되지 않습니다.
+- imported account를 follow하지 않았다면 해당 active user의 Home Feed에는 보이지 않을 수 있습니다.
+- Account Profile과 Post Detail API route에서는 imported content를 확인할 수 있습니다.
 
 Account Profile behavior:
 
-- Imported account `handle`, `display_name`, `bio`, and `avatar_url` are shown with existing profile UI.
-- Imported posts for that account are listed latest-first.
+- imported account의 `handle`, `display_name`, `bio`, `avatar_url`은 기존 profile UI에 표시됩니다.
+- 해당 account의 imported posts는 최신순으로 표시됩니다.
 
 Post Detail behavior:
 
-- `title`, `text`, `tags`, `metadata_json`, `created_at`, `updated_at`, and `imported_at` use existing post detail UI.
-- Image assets render as image previews when the URL is browser-accessible.
-- Plot, table, file, and link assets render through the existing MVP asset placeholder/link-card UI.
+- `title`, `text`, `tags`, `metadata_json`, `created_at`, `updated_at`, `imported_at`은 기존 post detail UI를 사용합니다.
+- image asset은 URL이 browser-accessible이면 image preview로 표시됩니다.
+- plot, table, file, link asset은 기존 MVP asset placeholder/link-card UI로 표시됩니다.
 
 Edit/delete behavior:
 
-- Imported posts follow the existing MVP ownership policy.
-- Edit/delete buttons are shown only when the active API user owns the post's account.
-- A normal active API user will not see edit/delete for posts owned by an imported account.
-- If the generated import User for an imported account is selected as the active API user, edit/delete may appear. This is acceptable for the MVP stage and is still prototype ownership checking, not formal authentication or authorization.
+- imported post도 기존 MVP ownership policy를 따릅니다.
+- active API user가 post account owner일 때만 Edit/Delete button이 표시됩니다.
+- 일반 active API user는 imported account가 소유한 post의 Edit/Delete를 볼 수 없습니다.
+- imported account용 generated import User를 active API user로 선택하면 Edit/Delete가 보일 수 있습니다. MVP 단계에서는 허용되는 prototype ownership checking이며 formal authentication/authorization이 아닙니다.
 
-Commands:
+명령:
 
 ```bash
 cd feed-prototype/backend
@@ -255,11 +255,11 @@ python -m app.services.import_external_posts --input ../data/external_posts/inco
 python -m app.services.import_external_posts --input ../data/external_posts/incoming/batch_2026-06-09_090000/feed_posts.json
 ```
 
-## Test DB And Operational DB
+## Test DB와 Operational DB
 
-MVP development/test DB and external post operational/update DB can be separated.
+MVP 개발/테스트 DB와 external post operational/update DB는 분리할 수 있습니다.
 
-Use the same backend code, but point `DATABASE_URL` to a different database:
+같은 backend code를 사용하되 `DATABASE_URL`만 다른 DB로 지정합니다.
 
 ```text
 feed_dev
@@ -269,42 +269,42 @@ feed_ops
 - external post import and UI confirmation
 ```
 
-Operational guidance:
+운영 지침:
 
-- Keep `.env` out of git.
-- Check the active `DATABASE_URL` before import.
-- Run `--dry-run` before importing into the operational DB.
-- Use `--database-url` only when you intentionally want a one-command override.
+- `.env`는 git에 올리지 않습니다.
+- import 전에 active `DATABASE_URL`을 확인합니다.
+- operational DB에 import하기 전에는 `--dry-run`을 먼저 실행합니다.
+- `--database-url`은 의도적으로 한 명령만 override할 때 사용합니다.
 
-Example:
+예:
 
 ```bash
 python -m app.services.import_external_posts --input ../data/external_posts/incoming/batch_2026-06-09_090000/feed_posts.json --database-url postgresql+psycopg://postgres:postgres@localhost:5432/feed_ops --dry-run
 ```
 
-## Common Mistakes
+## 자주 하는 실수
 
-- Changing `external_id` every run and creating duplicate posts.
-- Changing `post.external_id` when the intent was to update the same post.
-- Referencing an `account_external_id` that is not in the payload and not already in the DB.
-- Using an asset `url` the browser cannot access.
-- Using a Windows local path as if it were a browser URL.
-- Putting a backend-only local file path in `asset.url`.
-- Putting very complex nested objects into `metadata_json` too early.
-- Breaking JSON syntax with a missing or extra comma.
-- Importing directly into the operational DB without `--dry-run`.
-- Pointing `DATABASE_URL` at the operational DB when you meant to use the test DB.
+- 매번 `external_id`를 바꿔 duplicate post를 만듭니다.
+- 같은 post를 update하려는데 `post.external_id`를 바꿉니다.
+- payload와 DB 어디에도 없는 `account_external_id`를 참조합니다.
+- 브라우저가 접근할 수 없는 asset `url`을 사용합니다.
+- Windows local path를 browser URL처럼 사용합니다.
+- backend-only local file path를 `asset.url`에 넣습니다.
+- 너무 복잡한 nested object를 `metadata_json`에 너무 일찍 넣습니다.
+- JSON comma 누락 또는 trailing comma로 syntax error를 만듭니다.
+- operational DB에 `--dry-run` 없이 바로 import합니다.
+- test DB를 쓰려 했는데 `DATABASE_URL`이 operational DB를 가리킵니다.
 
-## Full Example
+## 전체 예제
 
-See:
+아래 파일을 참고합니다.
 
 ```text
 data/external_posts/examples/feed_import_sample.json
 data/external_posts/examples/batch_2026-06-09_090000/feed_posts.json
 ```
 
-For validation, dry-run, rollback, backend regression, and frontend regression checks, see:
+validation, dry-run, rollback, backend regression, frontend regression check는 아래 문서를 참고합니다.
 
 ```text
 docs/MVP10_TEST_PROCEDURE.md
