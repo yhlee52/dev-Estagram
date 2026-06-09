@@ -335,16 +335,16 @@ export default function PostDetail() {
         <TagList tags={postTags} />
       </header>
 
-      <section className="space-y-3">
-        <div className="flex items-end justify-between px-1">
-          <h2 className="text-sm font-bold text-neutral-950">Assets</h2>
-          <span className="text-xs font-medium text-neutral-400">
-            {postAssets.length} item{postAssets.length === 1 ? '' : 's'}
-          </span>
-        </div>
+      {postAssets.length > 0 ? (
+        <section className="space-y-3">
+          <div className="flex items-end justify-between px-1">
+            <h2 className="text-sm font-bold text-neutral-950">Assets</h2>
+            <span className="text-xs font-medium text-neutral-400">
+              {postAssets.length} item{postAssets.length === 1 ? '' : 's'}
+            </span>
+          </div>
 
-        {postAssets.length > 0 ? (
-          postAssets.map((asset, index) => (
+          {postAssets.map((asset, index) => (
             <section
               key={asset.id ?? `${post.id}-asset-${index}`}
               className="space-y-2 rounded-md border border-neutral-200 bg-white p-3 shadow-sm"
@@ -359,14 +359,9 @@ export default function PostDetail() {
               </div>
               <AssetRenderer asset={asset} variant="full" />
             </section>
-          ))
-        ) : (
-          <EmptyState
-            title="No assets"
-            description="Assets attached to this post will appear here."
-          />
-        )}
-      </section>
+          ))}
+        </section>
+      ) : null}
 
       {post.metadata ? <MetadataTable metadata={post.metadata} /> : null}
     </article>

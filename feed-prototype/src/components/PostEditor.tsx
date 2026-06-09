@@ -56,6 +56,9 @@ const metadataToDrafts = (metadata: Post['metadata']): MetadataDraft[] =>
       typeof value === 'string' ? value : value === null ? '' : JSON.stringify(value),
   }));
 
+const hasDraftInput = (...values: string[]): boolean =>
+  values.some((value) => value.trim().length > 0);
+
 const postAssetsToDrafts = (post: Post | undefined): AssetDraft[] =>
   (post?.assets ?? [])
     .filter((asset) => asset.type === 'image' || asset.type === 'plot' || asset.type === 'table' || asset.type === 'file' || asset.type === 'link')
@@ -144,7 +147,9 @@ export default function PostEditor({
         key,
         value: metadataDraft.value.trim(),
       };
-      const existingIndex = currentDrafts.findIndex((draft) => draft.key === key);
+      const existingIndex = currentDrafts.findIndex(
+        (draft) => draft.key.trim() === key,
+      );
 
       if (existingIndex === -1) {
         return [...currentDrafts, nextDraft];
@@ -172,9 +177,35 @@ export default function PostEditor({
       return;
     }
 
+    if (
+      hasDraftInput(
+        assetDraft.url,
+        assetDraft.title,
+        assetDraft.description,
+      )
+    ) {
+      setLocalError('Add or clear the pending asset before saving.');
+      return;
+    }
+
+    if (hasDraftInput(metadataDraft.key, metadataDraft.value)) {
+      setLocalError('Add or clear the pending metadata before saving.');
+      return;
+    }
+
     const metadataEntries = metadataDrafts
       .map((draft) => [draft.key.trim(), draft.value.trim()] as const)
       .filter(([key]) => key);
+    const metadataKeys = metadataEntries.map(([key]) => key);
+    const duplicateMetadataKey = metadataKeys.find(
+      (key, index) => metadataKeys.indexOf(key) !== index,
+    );
+
+    if (duplicateMetadataKey) {
+      setLocalError(`Metadata key "${duplicateMetadataKey}" is duplicated.`);
+      return;
+    }
+
     const metadata_json =
       metadataEntries.length > 0 ? Object.fromEntries(metadataEntries) : null;
     const assets = assetDrafts
@@ -234,6 +265,9 @@ export default function PostEditor({
           onChange={(event) => setText(event.target.value)}
         />
         <p className="text-xs font-medium text-neutral-400">{text.length}/5000</p>
+        <p className="text-xs leading-5 text-neutral-400">
+          Text can be empty in MVP9; title is the only required text field.
+        </p>
       </div>
 
       <div className="space-y-1.5">
@@ -250,6 +284,9 @@ export default function PostEditor({
           onChange={(event) => setTagsInput(event.target.value)}
           placeholder="daily-report, temperature"
         />
+        <p className="text-xs leading-5 text-neutral-400">
+          Comma-separated tags are trimmed; empty tags and duplicates are removed.
+        </p>
       </div>
 
       <section className="space-y-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
@@ -312,6 +349,9 @@ export default function PostEditor({
             Add asset
           </button>
         </div>
+        <p className="text-xs leading-5 text-neutral-400">
+          Asset type and URL are required. MVP9 stores URL or local path strings only.
+        </p>
 
         {assetDrafts.length > 0 ? (
           <div className="space-y-2">
@@ -380,6 +420,9 @@ export default function PostEditor({
             Add metadata
           </button>
         </div>
+        <p className="text-xs leading-5 text-neutral-400">
+          Metadata keys are required. Adding the same key replaces the existing draft.
+        </p>
 
         {metadataDrafts.length > 0 ? (
           <div className="space-y-2">
