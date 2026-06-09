@@ -26,6 +26,7 @@ Completed MVPs:
 - MVP7: API-mode follow/unfollow writes through FastAPI and the PostgreSQL `follows` table.
 - MVP7.5: API-mode local user/account registration through FastAPI.
 - MVP8: API-mode personal post create/delete for the active API user's 1:1 account.
+- MVP9: post asset + metadata management, including tags, asset descriptors, metadata editing, and owned post editing in API mode.
 
 API mode uses a locally selected backend `User`. This is not real login or authentication. During the MVP stage, each `User` has exactly one corresponding `Account`, and post ownership checks compare the selected user's 1:1 account with the target post's `account_id`.
 
@@ -136,11 +137,74 @@ Next MVP candidates:
 - Local file import/drop-in
 - Bot account auto post generation
 
+## MVP10: External Post Ingestion Pipeline
+
+MVP10 is named **External Post Ingestion Pipeline**.
+
+MVP10 is not a UI feature for directly creating Posts. Its goal is to let an external analysis program or post generation program create a JSON-based post package, then import that package into the backend database so the existing UI can display imported Posts like ordinary Posts.
+
+MVP10 target flow:
+
+```text
+external analysis/post generation program
+  -> post JSON package
+  -> image/plot/table/file assets written by that program
+  -> import package placed under data/external_posts/incoming
+  -> import script reads JSON
+  -> backend DB upserts accounts, posts, assets, and metadata
+  -> UI reads the DB and displays imported posts like normal posts
+```
+
+MVP10 goals:
+
+- Define an external post import JSON format.
+- Let an import script read JSON and upsert `Account`, `Post`, `Asset`, and `metadata_json` data into the backend database.
+- Use `external_id` based upsert so importing the same JSON repeatedly does not keep creating duplicate Posts.
+- Provide `--dry-run` validation before writing to the database.
+- Keep test databases and operational/update databases separable by changing `.env` or `DATABASE_URL`.
+- Store only UI-accessible asset URLs or paths from JSON.
+- Do not copy asset files in MVP10.
+- Keep imported Posts in the same generic DB structure as Posts created through the UI.
+- Keep equipment-, recipe-, chamber-, or severity-like scenario values inside `metadata_json`, not in core model or component names.
+
+Recommended external post package directory:
+
+```text
+feed-prototype/
+  data/
+    external_posts/
+      README.md
+      examples/
+        feed_import_sample.json
+      incoming/
+      archive/
+      failed/
+```
+
+MVP10 non-goals:
+
+- UI file upload
+- multipart/form-data upload
+- S3 upload
+- asset file auto-copy
+- folder watch
+- scheduler or Airflow integration
+- bot account automatic analysis or generation logic
+- metadata filter/search
+- advanced asset viewer
+- chart/table parsing
+- batch management UI
+- import result dashboard
+- formal authentication, JWT, sessions, or OAuth
+- mock mode removal
+
 ## Data And Storage
 
 Frontend mock data lives under `feed-prototype/src/data`.
 
 Static browser assets live under `feed-prototype/public/assets`.
+
+External post import packages for MVP10 live under `feed-prototype/data/external_posts`.
 
 Important localStorage keys:
 

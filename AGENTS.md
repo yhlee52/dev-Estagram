@@ -31,7 +31,7 @@ When equipment-report-specific information is needed, represent it as `post.meta
 
 ## Current Implementation Scope
 
-MVP1-MVP4 are local/static. MVP5 added a backend/database skeleton. MVP6 added frontend API read mode while preserving mock mode. MVP7 added API-mode follow/unfollow writes. MVP7.5 added API-mode local user/account registration. MVP8 added API-mode personal post create/delete.
+MVP1-MVP4 are local/static. MVP5 added a backend/database skeleton. MVP6 added frontend API read mode while preserving mock mode. MVP7 added API-mode follow/unfollow writes. MVP7.5 added API-mode local user/account registration. MVP8 added API-mode personal post create/delete. MVP9 added post asset + metadata management.
 
 Current constraints:
 
@@ -94,7 +94,15 @@ MVP8 personal post create/delete:
 - Does not allow frontend account selection.
 - Uses prototype ownership checking, not real authentication or authorization.
 
-## Current MVP9 Scope: Post Asset + Metadata Management
+MVP9 post asset + metadata management:
+
+- Adds `assets`, `tags`, `metadata_json`, and `updated_at` structure to Posts.
+- Lets API-mode post creation include tags, metadata, and asset URL/path descriptors.
+- Lets the active API user edit Posts written by their own 1:1 `Account`.
+- Shows created/edited content, asset previews, and metadata in Home Feed, Account Profile, and Post Detail.
+- Keeps mock mode behavior unchanged.
+
+## Previous MVP9 Scope: Post Asset + Metadata Management
 
 MVP9 combines the previously separate MVP9 and MVP10 candidates:
 
@@ -195,6 +203,75 @@ Next MVP candidates:
 - Local file import/drop-in.
 - Bot account auto post generation.
 
+## Current MVP10 Scope: External Post Ingestion Pipeline
+
+MVP10 is named **External Post Ingestion Pipeline**.
+
+MVP10 is not a UI post creation feature. The goal is to let an external analysis program or post generation program create a JSON-based post package, then import that package into the backend DB so the UI can display imported Posts like ordinary Posts.
+
+MVP10 flow:
+
+- External program generates post JSON.
+- External program generates image, plot, table, or file assets.
+- The package is placed under `feed-prototype/data/external_posts/incoming`.
+- An import script reads the JSON.
+- The import script validates the package, with `--dry-run` support before DB writes.
+- The import script upserts `Account`, `Post`, `Asset`, and `metadata_json` data into the backend PostgreSQL DB.
+- UI reads imported data through existing API-mode paths and displays it like normal feed content.
+
+MVP10 data policy:
+
+- Use generic core concepts: User, Account, Post, Feed, Follow, Asset, Metadata.
+- Use `external_id` based upsert for imported accounts, posts, and assets.
+- Re-importing the same JSON must not keep creating duplicate Posts.
+- Store only UI-accessible asset URLs or paths in the DB.
+- Do not copy asset files in MVP10.
+- Test DB and operational/update DB can be separated by changing `.env` or `DATABASE_URL`.
+- Keep domain-specific values such as recipe, chamber, severity, equipment state, or analysis result inside `metadata_json` or asset metadata.
+
+Recommended MVP10 directory structure:
+
+```text
+feed-prototype/
+  data/
+    external_posts/
+      README.md
+      examples/
+        feed_import_sample.json
+      incoming/
+      archive/
+      failed/
+```
+
+MVP10 JSON package shape:
+
+- `batch.external_id` is required.
+- `batch.source` and `batch.created_at` are optional.
+- `accounts[].external_id` is the account upsert key.
+- `accounts[].handle` and `accounts[].display_name` are the UI-facing account fields.
+- `posts[].external_id` is the post upsert key.
+- `posts[].account_external_id` connects a post to an imported account.
+- `posts[].metadata_json` stores domain-specific values.
+- `posts[].assets[]` stores asset URL/path descriptors.
+- Allowed asset types are `image`, `plot`, `table`, `file`, and `link`.
+
+MVP10 non-goals:
+
+- UI file upload.
+- Multipart/form-data upload.
+- S3 upload.
+- Asset file automatic copy.
+- Folder watch.
+- Scheduler or Airflow integration.
+- Bot account automatic analysis or generation logic.
+- Metadata filter/search.
+- Advanced asset viewer.
+- Chart/table parsing.
+- Batch management UI.
+- Import result dashboard.
+- Formal authentication, JWT, sessions, or OAuth.
+- Mock mode removal.
+
 ## Development Guidelines
 
 - Keep the TypeScript build passing.
@@ -205,7 +282,7 @@ Next MVP candidates:
 - Treat equipment-report examples as one possible data scenario, not as the core domain.
 - Do not remove mock mode while implementing API-mode features.
 - Do not add passwords, JWT, sessions, OAuth, or a formal authorization system unless a future MVP explicitly changes scope.
-- Do not implement frontend file write logic or actual upload flows in MVP9.
+- Do not implement frontend file write logic or actual upload flows in MVP10.
 
 ## Verification
 

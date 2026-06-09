@@ -67,7 +67,16 @@ MVP8 added API-mode personal post create/delete:
 - Does not let the frontend choose an arbitrary `account_id`.
 - Does not add real authentication or a permission system.
 
-## Current MVP: MVP9
+MVP9 added post asset + metadata management:
+
+- API-mode post creation can include tags, metadata, and asset URL/path descriptors.
+- API-mode post editing can update title, text, tags, metadata, and assets.
+- Assets and metadata are shown in Home Feed, Account Profile, and Post Detail.
+- Image assets render as image previews.
+- Plot, table, file, and link assets render as MVP-level placeholders or link cards.
+- Mock mode remains available.
+
+## Previous MVP: MVP9
 
 MVP9 is named **Post Asset + Metadata Management**.
 
@@ -230,6 +239,152 @@ advanced asset viewer
 report-style post template
 local file import/drop-in
 bot account auto post generation
+```
+
+## Current MVP: MVP10
+
+MVP10 is named **External Post Ingestion Pipeline**.
+
+MVP10 is not a UI flow for directly creating Posts. It is a backend ingestion step that lets an external analysis program or post generation program create a JSON-based post package, then imports that package into the backend database so the existing UI can display the imported Posts like ordinary Posts.
+
+## MVP10 Goals
+
+MVP10 should:
+
+- Define the JSON format for external post import packages.
+- Let external programs generate post JSON and asset files outside the app.
+- Let an import script read JSON and upsert accounts, posts, assets, and metadata into the backend DB.
+- Use `external_id` based upsert for accounts, posts, and assets so repeated imports of the same JSON do not create duplicate Posts.
+- Provide a `--dry-run` mode that validates an import package and reports planned changes without writing to the DB.
+- Summarize import results in logs.
+- Let test databases and operational/update databases be separated by changing `.env` or `DATABASE_URL`.
+- Store only asset URLs or paths that the UI can access.
+- Avoid copying asset files in MVP10.
+- Keep imported Posts in the same DB shape as Posts created through the UI.
+- Keep the core domain generic: User, Account, Post, Feed, Follow, Asset, and Metadata.
+- Keep domain-specific values such as recipe, chamber, severity, equipment state, or analysis status inside `metadata_json` or asset metadata.
+
+## MVP10 Ingestion Flow
+
+```text
+analysis program / post generation program
+  -> creates post JSON
+  -> creates image / plot / table / file assets
+  -> writes a package under data/external_posts/incoming
+  -> import script reads the package JSON
+  -> import script validates the package
+  -> import script upserts Account / Post / Asset / metadata_json rows
+  -> UI reads the backend DB through existing API paths
+  -> imported Posts appear like normal Posts
+```
+
+The frontend should not connect directly to PostgreSQL. The UI should continue to read data through FastAPI-backed API mode.
+
+## MVP10 External Post Directory
+
+Recommended structure:
+
+```text
+feed-prototype/
+  data/
+    external_posts/
+      README.md
+      examples/
+        feed_import_sample.json
+      incoming/
+      archive/
+      failed/
+```
+
+Directory meanings:
+
+```text
+examples  sample import JSON for humans and external generators
+incoming  location where external programs can place packages before import
+archive   optional place to move successfully imported packages later
+failed    optional place to keep failed packages for manual inspection
+```
+
+MVP10 does not need to automatically move packages into `archive` or `failed`.
+
+## MVP10 JSON Shape
+
+The import package should contain:
+
+```text
+batch.external_id
+batch.source?
+batch.created_at?
+accounts[]
+posts[]
+```
+
+Each account should contain:
+
+```text
+external_id
+handle
+display_name
+bio?
+avatar_url?
+```
+
+Each post should contain:
+
+```text
+external_id
+account_external_id
+title
+text?
+created_at?
+tags?
+metadata_json?
+assets?
+```
+
+Each asset should contain:
+
+```text
+external_id?
+type
+url
+title?
+description?
+```
+
+Allowed MVP asset types remain generic:
+
+```text
+image
+plot
+table
+file
+link
+```
+
+## MVP10 Non-Goals
+
+MVP10 should not implement:
+
+```text
+UI file upload
+multipart/form-data upload
+S3 upload
+asset file automatic copy
+folder watch
+scheduler or Airflow integration
+bot account automatic analysis/generation logic
+metadata filter/search
+advanced asset viewer
+chart/table parsing
+batch management UI
+import result dashboard
+formal authentication
+JWT
+sessions
+OAuth
+mock mode removal
+equipment-report-specific core naming
 ```
 
 ## Development Principles
