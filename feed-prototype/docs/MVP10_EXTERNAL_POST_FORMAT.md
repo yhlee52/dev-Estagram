@@ -303,3 +303,9 @@ See:
 data/external_posts/examples/feed_import_sample.json
 data/external_posts/examples/batch_2026-06-09_090000/feed_posts.json
 ```
+
+For validation, dry-run, rollback, backend regression, and frontend regression checks, see:
+
+```text
+docs/MVP10_TEST_PROCEDURE.md
+```

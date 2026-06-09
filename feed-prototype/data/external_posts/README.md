@@ -31,6 +31,8 @@ MVP10 does not automatically move packages into `archive` or `failed`.
 
 For the full external post JSON format guide, see `feed-prototype/docs/MVP10_EXTERNAL_POST_FORMAT.md`.
 
+For validation, dry-run, rollback, and regression checks, see `feed-prototype/docs/MVP10_TEST_PROCEDURE.md`.
+
 ## Ingestion Flow
 
 ```text

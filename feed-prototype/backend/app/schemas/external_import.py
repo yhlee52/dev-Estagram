@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
@@ -83,7 +84,13 @@ class ExternalImportAsset(BaseModel):
     @field_validator("url")
     @classmethod
     def validate_url(cls, value: str) -> str:
-        return normalize_required_text(value, "asset.url")
+        normalized_value = normalize_required_text(value, "asset.url")
+        if re.match(r"^[a-zA-Z]:[\\/]", normalized_value):
+            raise ValueError(
+                "asset.url must be browser-accessible; do not use a Windows absolute path."
+            )
+
+        return normalized_value
 
 
 class ExternalImportPost(BaseModel):
