@@ -2,7 +2,9 @@
 
 This repository contains `feed-prototype`, a Vite + React + TypeScript prototype for a general-purpose Instagram-like feed.
 
-The core domain stays generic:
+The project is intentionally generic. A future company-internal equipment-report feed is one possible use case, but the core product model is not equipment-specific.
+
+Core domain concepts:
 
 - User
 - Account
@@ -12,257 +14,150 @@ The core domain stays generic:
 - Asset
 - Metadata
 
-Company-internal equipment reports are only one possible future data scenario. Core type names, shared component names, routes, and data flow should not be based on equipment-specific terms such as Equipment, Chamber, Sensor, Recipe, Severity, or Report. Domain-specific values should live in `metadata` or asset metadata.
+Avoid equipment/report-specific names in core models, shared components, routes, and data flow. Do not base core architecture on names such as Equipment, Chamber, Sensor, Recipe, Severity, or Report. When scenario-specific information is needed, keep it as `post.metadata`, `metadata_json`, or asset metadata values.
 
-Detailed MVP6 setup and test steps are documented in:
+## Current Status
 
-- `feed-prototype/docs/MVP6_TEST_PROCEDURE.md`
+Completed MVPs:
 
-MVP7 follow/unfollow setup and test steps are documented in:
+- MVP1-MVP4: local/static feed prototype, local user entry, local registration, active user state, and local follow overlays.
+- MVP5: FastAPI + PostgreSQL + SQLModel + Alembic backend/database skeleton under `feed-prototype/backend/`.
+- MVP6: frontend API read mode while preserving mock mode.
+- MVP7: API-mode follow/unfollow writes through FastAPI and the PostgreSQL `follows` table.
+- MVP7.5: API-mode local user/account registration through FastAPI.
+- MVP8: API-mode personal post create/delete for the active API user's 1:1 account.
 
-- `feed-prototype/docs/MVP7_TEST_PROCEDURE.md`
+API mode uses a locally selected backend `User`. This is not real login or authentication. During the MVP stage, each `User` has exactly one corresponding `Account`, and post ownership checks compare the selected user's 1:1 account with the target post's `account_id`.
 
-MVP7.5 API local user/account registration setup and test steps are documented in:
+Mock mode remains available and continues to use frontend mock JSON, local assets, and localStorage overlays.
 
-- `feed-prototype/docs/MVP7_5_TEST_PROCEDURE.md`
+## MVP9: Post Asset + Metadata Management
 
-## MVP8: Personal Post Create/Delete
+MVP9 combines the previously separate MVP9 and MVP10 candidates:
 
-MVP8 adds a narrow API-mode post write surface while preserving the existing mock mode behavior.
+- previous MVP9: asset attach/upload skeleton
+- previous MVP10: post edit/update + metadata editor
+- integrated MVP9: Post Asset + Metadata Management
 
-MVP8 goals:
+MVP9 builds on MVP8 by adding asset descriptors, tags, metadata editing, `updated_at`, and owned post editing in API mode.
 
-- In API mode, the active API user can create a new `Post`.
-- The new post is created through the active API user's 1:1 `Account`.
-- The frontend does not let the user choose an `account_id` for post creation in MVP8.
-- The created post is stored in the backend PostgreSQL `posts` table.
-- A created post can be checked from Home Feed, Account Profile, and Post Detail when those views include or navigate to that post.
-- In API mode, posts written by the active API user's own account show a delete button.
-- The active API user can delete posts written by their own 1:1 account.
-- After deletion, Home Feed, Account Profile, and Post Detail should refetch, update, or safely navigate away.
-- Mock mode keeps the existing frontend mock JSON and localStorage behavior.
+MVP9 goals:
 
-MVP8 adds these backend API endpoints:
+- Add `assets`, `tags`, `metadata`, and `updated_at` structure to Posts.
+- Let the active API user enter asset information when creating a Post.
+- Let the active API user enter tags and metadata when creating a Post.
+- Let the active API user edit Posts written by their own 1:1 Account.
+- Allow editing `title`, `text`, `tags`, `assets`, and `metadata`.
+- Store created and edited content in the backend PostgreSQL database.
+- Show updated Posts in Home Feed, Account Profile, and Post Detail.
+- Show asset previews and metadata in PostCard, Post Detail, and Account Profile.
+- Render image assets as image previews.
+- Render plot, table, file, and link assets as placeholders or link cards for this MVP.
+- Preserve mock mode behavior.
+
+MVP9 backend API candidates:
+
+- Extend `POST /api/posts`
+- Add `PATCH /api/posts/{post_id}`
+
+Existing MVP8 APIs remain:
 
 - `POST /api/posts`
 - `DELETE /api/posts/{post_id}`
 
-`POST /api/posts` policy:
+Recommended MVP9 API policy:
 
-- Accept `user_id`.
-- Accept `title`.
-- Accept `text`.
-- Accept optional `metadata_json`.
-- Normalize text inputs by trimming surrounding whitespace.
-- Require non-empty `title` and `text`.
-- Find the `User` by `user_id`.
-- Find that user's 1:1 `Account`.
-- Create the `Post` with that account's `account_id`.
-- Do not accept frontend account selection for post creation in MVP8.
+- `POST /api/posts` accepts `user_id`, `title`, `text`, optional `metadata_json`, plus optional `tags` and `assets`.
+- `PATCH /api/posts/{post_id}` accepts `user_id` and an update payload.
+- The backend resolves the selected `User` from `user_id`, finds that user's 1:1 `Account`, and compares it with `post.account_id`.
+- Only Posts written by the selected user's own 1:1 Account can be edited.
+- The frontend must not select or submit an arbitrary `account_id` for post creation or editing.
+- This ownership check is MVP prototype behavior, not formal authentication or authorization.
+- Asset entries store URL or local path strings only; MVP9 does not upload files.
 
-`DELETE /api/posts/{post_id}` policy:
+Recommended asset type values:
 
-- Accept `user_id` as a query parameter or request body value.
-- Find the `User` by `user_id`.
-- Find that user's 1:1 `Account`.
-- Delete only if the target post was written by that account.
-- Use a hard delete for MVP8.
+- `image`
+- `plot`
+- `table`
+- `file`
+- `link`
 
-MVP8 ownership checking is a prototype ownership check, not real authentication or authorization. API mode still selects an active backend user locally; MVP8 does not add passwords, sessions, JWT, OAuth, permission systems, or account-security semantics.
+Recommended `Asset` fields:
 
-MVP8 does not add post edit/update, asset upload, local file upload, S3, rich text editing, complex metadata editing, drafts, comments, likes, bookmarks, search, tag pages, formal auth/JWT/session/OAuth, a permission system, multiple account selection, admin UI, post moderation, mock mode removal, or equipment-report-specific core naming.
+- `id`
+- `post_id`
+- `type`
+- `url`
+- `title`
+- `description`
+- `created_at`
 
-MVP9 candidates:
+Recommended `Post` fields:
 
-- Asset attach/upload skeleton.
-- Post edit.
+- `id`
+- `account_id`
+- `title`
+- `text`
+- `created_at`
+- `updated_at`
+- `tags`
+- `metadata_json`
+- `assets`
 
-## MVP7.5: API Local User/Account Registration
+MVP9 non-goals:
 
-MVP7.5 adds API-mode local user/account registration while preserving the existing mock mode and MVP7 follow/unfollow behavior.
+- Real file upload
+- Local file upload
+- S3 upload
+- Drag and drop upload
+- Image compression or resizing
+- Rich text editor
+- Complex metadata schema validation
+- Metadata search or filtering
+- Advanced asset viewer
+- Report template generation
+- Bot account auto posting
+- Draft saving
+- Edit history or version history
+- Comments, likes, or bookmarks
+- Formal authentication, JWT, sessions, or OAuth
+- Permission system
+- Multiple account selection
+- Admin UI
+- Post moderation
+- Mock mode removal
 
-MVP7.5 goals:
+Next MVP candidates:
 
-- In API mode, if user entry receives a handle that does not match an existing backend `User`, the UI can offer new API user registration.
-- When the user chooses registration, the backend creates a new `User` in PostgreSQL.
-- During this MVP stage, creating a `User` also creates exactly one corresponding `Account`.
-- The frontend stores the created user as the active API user in localStorage.
-- After registration, the app enters Home Feed.
-- A newly created user may have no followed accounts, so an empty Home Feed is a valid state.
-- The new user can use the existing MVP7 follow/unfollow flow from the Accounts screen.
+- Metadata filter/search
+- Advanced asset viewer
+- Report-style post template
+- Local file import/drop-in
+- Bot account auto post generation
 
-MVP7.5 is not real signup, login, authentication, authorization, or account security. It is a prototype API-mode registration flow for creating local backend `User` and `Account` records and selecting the created user locally.
+## Data And Storage
 
-MVP7.5 adds this backend API endpoint:
+Frontend mock data lives under `feed-prototype/src/data`.
 
-- `POST /api/users`
+Static browser assets live under `feed-prototype/public/assets`.
 
-`POST /api/users` policy:
+Important localStorage keys:
 
-- Accept `handle`.
-- Accept `display_name`.
-- Accept optional `bio`.
-- Normalize `handle` by trimming surrounding whitespace and lowercasing it.
-- Require `handle` to be unique.
-- Create the `User` and 1:1 `Account` in one transaction.
-- Use the user handle as the default account handle.
-- Use the user display name as the default account display name.
-- The account bio may mirror the user bio.
-- Default `account.kind` to `person`.
+- `local-feed-active-user-id`
+- `local-feed-following-by-user`
+- `local-feed-local-users`
+- `local-feed-local-accounts`
 
-MVP7.5 does not add passwords, real signup/login, JWT, sessions, OAuth, authorization, email verification, user deletion, account deletion, user profile edit, account edit, post create/update/delete, asset upload, file upload, S3, admin UI, mock mode removal, existing mock local registration removal, or equipment-report-specific core naming.
+Backend code lives under `feed-prototype/backend/`. Backend state should be reproducible from migrations plus seed scripts; do not commit real PostgreSQL database files or dumps.
 
-MVP8 builds on the created API `User` and `Account` records by adding API-mode personal post creation/deletion for the active user's 1:1 account.
+## Development
 
-## MVP7: API Follow/Unfollow
+Run frontend build verification from the Vite app directory:
 
-MVP7 opens a small, intentional write surface for follow state in API mode while preserving the existing mock mode behavior.
-
-MVP7 goals:
-
-- In API mode, the active API user can follow and unfollow accounts.
-- Follow/unfollow changes are stored in the backend PostgreSQL `follows` table through FastAPI.
-- Home Feed refreshes after a successful follow/unfollow API request.
-- Accounts and Account Profile screens support working API-mode follow/unfollow buttons.
-- Mock mode keeps the existing localStorage-based follow/unfollow flow.
-
-MVP7 adds these backend API endpoints:
-
-- `POST /api/users/{user_id}/follows/{account_id}`
-- `DELETE /api/users/{user_id}/follows/{account_id}`
-- `GET /api/users/{user_id}/follows`
-
-MVP7 follow API policy:
-
-- Follow and unfollow should be idempotent where practical.
-- Following an already-followed account must not create duplicate `follows` rows.
-- Unfollowing an already-unfollowed account should not break the frontend.
-- Prefer "API success, then refetch" over optimistic updates for this MVP.
-- The frontend may hide or disable the follow button for the active user's own account.
-
-MVP7 does not add new API user/account creation, post writes, asset or file upload, S3, comments, likes, bookmarks, search, tags, real login, passwords, JWT, sessions, OAuth, authorization, admin UI, mock JSON removal, or removal of the MVP4/MVP6 mock mode.
-
-## MVP6: Frontend API Read Mode with API User Entry
-
-MVP6 connects the `feed-prototype` frontend to the backend read-only API so the app can display PostgreSQL seed-data-backed feed content through FastAPI.
-
-MVP6 adds an API data source mode alongside the existing mock mode.
-
-```text
-mock mode = frontend mock JSON + local assets + MVP4 localStorage overlays
-api mode = FastAPI read-only API + PostgreSQL seed data + active API user selection
+```bash
+cd feed-prototype
+npm run build
 ```
 
-Mock mode remains the local/static experience from MVP1-MVP4. It keeps frontend mock JSON, MVP4 local user entry, local registration, active local user state, and local follow overlays.
-
-API mode is additive. It reads backend data through FastAPI endpoints and does not remove or replace the mock mode data flow.
-
-In API mode, user entry is not real login or authentication. The user enters an id or handle for a `User` that already exists in the backend database. If a matching backend user is found, the frontend stores that selection as the active API user in localStorage and reads that user's feed from the backend API. If no matching backend user exists, the UI explains that API mode can only use users already present in the backend database.
-
-MVP6 does not create users, accounts, posts, follows, or assets. It does not add passwords, JWT, session cookies, OAuth, authorization, write APIs, follow/unfollow APIs, upload APIs, S3, admin UI, comments, likes, bookmarks, search, tags, deployment, or a combined frontend/backend server.
-
-MVP6 completion criteria:
-
-- The frontend can be configured for mock mode or API mode.
-- Mock mode continues to work with existing MVP4 local user entry and local registration.
-- API mode can find an existing backend user by id or handle.
-- API mode stores the selected active API user locally without treating it as an authenticated session.
-- API mode calls the FastAPI read-only feed endpoint for the selected user.
-- Home Feed displays backend PostgreSQL seed data through the API.
-- Loading, error, and empty states are clear in API mode.
-- Accounts, Profile, and Post Detail support read-only API mode within the current backend API surface.
-- The frontend build passes from `feed-prototype/`.
-
-## MVP5: Backend & DB Skeleton
-
-MVP5 prepares the project for a future API/DB-backed version while preserving the completed MVP1-MVP4 local/static frontend behavior.
-
-Backend stack:
-
-```text
-Backend: FastAPI
-Database: PostgreSQL
-ORM / DB layer: SQLModel
-Migration: Alembic
-File storage: feed-prototype/backend/uploads/ local folder
-Backend path: feed-prototype/backend/
-```
-
-Backend tables:
-
-- `users`
-- `accounts`
-- `posts`
-- `post_assets`
-- `follows`
-
-Read-only API surface:
-
-- `GET /health`
-- `GET /api/users`
-- `GET /api/accounts`
-- `GET /api/posts`
-- `GET /api/follows`
-- `GET /api/feed?user_id=...`
-
-MVP5 data policy:
-
-- Keep the existing frontend mock JSON files.
-- Keep the MVP4 localStorage-based local user entry, local registration, active user, and follow flows.
-- Backend seed data is separate from frontend mock JSON and used for PostgreSQL verification.
-- Do not commit a real PostgreSQL database. DB state should be reproducible from migrations plus seed scripts.
-
-MVP5 does not add real login/authentication, write APIs, admin UI, upload APIs, S3 integration, comments, likes, bookmarks, search, tag pages, or equipment-report-specific core naming.
-
-Backend-specific notes are documented in `feed-prototype/backend/README.md`.
-
-## MVP4: Local User Entry & Registration Flow
-
-MVP4 adds a local user entry flow so the app can start from "my id" without adding a backend, database, or authentication system.
-
-Users can enter a local user id or handle. If it matches an existing effective `User`, that user becomes the active user and the app opens the feed shell. If it does not match, the app offers local registration.
-
-Local registration creates a new `User` and a 1:1 corresponding `Account`. These local records are stored in `localStorage`; the app does not write to `src/data/*.json` at runtime. The new user's follow state is initialized in `localStorage`, and the active user remains stored after refresh.
-
-The runtime data model for MVP4 is effective data:
-
-```text
-effective users = static users.json + localStorage user overlay
-effective accounts = static accounts.json + localStorage account overlay
-effective follow state = static follows.json + localStorage follow overlay
-```
-
-MVP4 localStorage keys:
-
-```text
-active user id = local-feed-active-user-id
-local users = local-feed-local-users
-local accounts = local-feed-local-accounts
-user follow state = local-feed-following-by-user
-```
-
-`Logout` and `Switch user` are local prototype actions. They clear the active local user id and return to the local user entry screen; they do not end a secure session. If browser localStorage is cleared, locally registered users, accounts, and follow changes can disappear.
-
-MVP4 still does not implement real login, signup, passwords, auth tokens, secure sessions, authorization, backend APIs, databases, JSON file writes, post creation/editing/deletion, comments, likes, bookmarks, search, tag aggregation, or tag pages.
-
-## Data Files
-
-Initial frontend mock data lives under `feed-prototype/src/data`.
-
-- `users.json`: local `User` records and each user's connected account id
-- `accounts.json`: publishing `Account` records
-- `posts.json`: `Post` records published by accounts
-- `follows.json`: initial per-user follow state
-
-Static browser assets are referenced as public paths such as `/assets/...`. Missing asset files should degrade through UI fallback states rather than changing the core feed model.
-
-## Git Policy
-
-Generated or local-only files should not be committed:
-
-- `node_modules`
-- `dist`
-- backend `.env`
-- frontend `.env`
-- real PostgreSQL DB data or dumps
-- uploaded local files except intentional placeholders
+Backend setup and run notes are documented in `feed-prototype/backend/README.md`.

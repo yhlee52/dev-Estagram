@@ -6,14 +6,16 @@ from sqlmodel import Session, select
 from app.api.deps import get_session
 from app.models.account import Account
 from app.models.asset import PostAsset
-from app.models.post import Post
+from app.models.post import Post, utc_now
 from app.models.user import User
 from app.schemas.feed import (
     AccountRead,
     FeedItem,
+    PostAssetCreate,
     PostAssetRead,
     PostCreate,
     PostRead,
+    PostUpdate,
     PostWithAssets,
 )
 
@@ -21,10 +23,10 @@ from app.schemas.feed import (
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
 
-@router.get("", response_model=list[PostRead])
-def list_posts(session: Session = Depends(get_session)) -> list[Post]:
+@router.get("", response_model=list[PostWithAssets])
+def list_posts(session: Session = Depends(get_session)) -> list[PostWithAssets]:
     posts = session.exec(select(Post).order_by(Post.created_at.desc())).all()
-    return list(posts)
+    return [build_post_with_assets(session, post) for post in posts]
 
 
 def get_user_account(session: Session, user_id: str) -> Account:
@@ -48,6 +50,44 @@ def get_post_assets(session: Session, post_id: str) -> list[PostAsset]:
     return list(assets)
 
 
+def build_post_with_assets(session: Session, post: Post) -> PostWithAssets:
+    assets = get_post_assets(session, post.id)
+    return PostWithAssets(
+        **PostRead.model_validate(post).model_dump(),
+        assets=[PostAssetRead.model_validate(asset) for asset in assets],
+    )
+
+
+def create_post_assets(
+    session: Session,
+    post_id: str,
+    asset_inputs: list[PostAssetCreate],
+) -> None:
+    for sort_order, asset_input in enumerate(asset_inputs):
+        asset = PostAsset(
+            id=f"asset-{uuid4()}",
+            post_id=post_id,
+            type=asset_input.type,
+            title=asset_input.title,
+            description=asset_input.description,
+            url=asset_input.url,
+            src=asset_input.url,
+            sort_order=sort_order,
+        )
+        session.add(asset)
+
+
+def replace_post_assets(
+    session: Session,
+    post_id: str,
+    asset_inputs: list[PostAssetCreate],
+) -> None:
+    for asset in get_post_assets(session, post_id):
+        session.delete(asset)
+
+    create_post_assets(session, post_id, asset_inputs)
+
+
 @router.post("", response_model=FeedItem, status_code=201)
 def create_post(
     post_create: PostCreate,
@@ -60,16 +100,19 @@ def create_post(
         account_id=account.id,
         title=post_create.title,
         text=post_create.text,
+        tags=post_create.tags,
         metadata_json=post_create.metadata_json,
     )
     session.add(post)
+    create_post_assets(session, post.id, post_create.assets)
     session.commit()
     session.refresh(post)
 
+    assets = get_post_assets(session, post.id)
     return FeedItem(
         post=PostRead.model_validate(post),
         account=AccountRead.model_validate(account),
-        assets=[],
+        assets=[PostAssetRead.model_validate(asset) for asset in assets],
     )
 
 
@@ -79,12 +122,40 @@ def get_post(post_id: str, session: Session = Depends(get_session)) -> PostWithA
     if post is None:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    assets = get_post_assets(session, post_id)
+    return build_post_with_assets(session, post)
 
-    return PostWithAssets(
-        **PostRead.model_validate(post).model_dump(),
-        assets=[PostAssetRead.model_validate(asset) for asset in assets],
-    )
+
+@router.patch("/{post_id}", response_model=PostWithAssets)
+def update_post(
+    post_id: str,
+    post_update: PostUpdate,
+    session: Session = Depends(get_session),
+) -> PostWithAssets:
+    post = session.get(Post, post_id)
+    if post is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    account = get_user_account(session, post_update.user_id)
+    if post.account_id != account.id:
+        raise HTTPException(status_code=403, detail="Post is not owned by user")
+
+    if post_update.title is not None:
+        post.title = post_update.title
+    if post_update.text is not None:
+        post.text = post_update.text
+    if post_update.tags is not None:
+        post.tags = post_update.tags
+    if "metadata_json" in post_update.model_fields_set:
+        post.metadata_json = post_update.metadata_json
+    if post_update.assets is not None:
+        replace_post_assets(session, post.id, post_update.assets)
+
+    post.updated_at = utc_now()
+    session.add(post)
+    session.commit()
+    session.refresh(post)
+
+    return build_post_with_assets(session, post)
 
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)

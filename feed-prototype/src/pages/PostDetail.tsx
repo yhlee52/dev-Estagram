@@ -136,6 +136,12 @@ export default function PostDetail() {
     : undefined;
   const post = isApiDataSource ? apiPost : mockPost;
   const account = isApiDataSource ? apiAccount : mockAccount;
+  const postAssets = post?.assets ?? [];
+  const postTags = post?.tags ?? [];
+  const postCreatedAt = post?.createdAt ?? post?.created_at ?? '';
+  const postUpdatedAt = post?.updatedAt ?? post?.updated_at ?? '';
+  const shouldShowUpdatedAt =
+    postUpdatedAt && postCreatedAt && postUpdatedAt !== postCreatedAt;
   const isOwnApiPost =
     isApiDataSource && account ? getAccountUserId(account) === activeApiUserId : false;
 
@@ -231,14 +237,22 @@ export default function PostDetail() {
         </button>
         <div className="flex items-center gap-2">
           {isOwnApiPost ? (
-            <button
-              type="button"
-              className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:text-red-300"
-              disabled={isDeleting}
-              onClick={handleDeletePost}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
+            <>
+              <Link
+                className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700 transition hover:bg-neutral-100"
+                to={`/posts/${post.id}/edit`}
+              >
+                Edit
+              </Link>
+              <button
+                type="button"
+                className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:text-red-300"
+                disabled={isDeleting}
+                onClick={handleDeletePost}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </>
           ) : null}
           <Link
             className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
@@ -301,26 +315,38 @@ export default function PostDetail() {
 
         <div className="rounded-md bg-neutral-50 px-3 py-2">
           <p className="text-xs font-bold uppercase text-neutral-400">Created</p>
-          <time className="mt-1 block text-sm font-semibold text-neutral-700" dateTime={post.createdAt}>
-            {formatDateTime(post.createdAt)}
+          <time className="mt-1 block text-sm font-semibold text-neutral-700" dateTime={postCreatedAt}>
+            {formatDateTime(postCreatedAt)}
           </time>
         </div>
 
-        {post.tags.length > 0 ? <TagList tags={post.tags} /> : null}
+        {shouldShowUpdatedAt ? (
+          <div className="rounded-md bg-neutral-50 px-3 py-2">
+            <p className="text-xs font-bold uppercase text-neutral-400">Updated</p>
+            <time
+              className="mt-1 block text-sm font-semibold text-neutral-700"
+              dateTime={postUpdatedAt}
+            >
+              {formatDateTime(postUpdatedAt)}
+            </time>
+          </div>
+        ) : null}
+
+        <TagList tags={postTags} />
       </header>
 
-      <section className="space-y-3">
-        <div className="flex items-end justify-between px-1">
-          <h2 className="text-sm font-bold text-neutral-950">Assets</h2>
-          <span className="text-xs font-medium text-neutral-400">
-            {post.assets.length} item{post.assets.length === 1 ? '' : 's'}
-          </span>
-        </div>
+      {postAssets.length > 0 ? (
+        <section className="space-y-3">
+          <div className="flex items-end justify-between px-1">
+            <h2 className="text-sm font-bold text-neutral-950">Assets</h2>
+            <span className="text-xs font-medium text-neutral-400">
+              {postAssets.length} item{postAssets.length === 1 ? '' : 's'}
+            </span>
+          </div>
 
-        {post.assets.length > 0 ? (
-          post.assets.map((asset) => (
+          {postAssets.map((asset, index) => (
             <section
-              key={asset.id}
+              key={asset.id ?? `${post.id}-asset-${index}`}
               className="space-y-2 rounded-md border border-neutral-200 bg-white p-3 shadow-sm"
             >
               <div className="flex items-center justify-between gap-3 px-1">
@@ -333,14 +359,9 @@ export default function PostDetail() {
               </div>
               <AssetRenderer asset={asset} variant="full" />
             </section>
-          ))
-        ) : (
-          <EmptyState
-            title="No assets"
-            description="Assets attached to this post will appear here."
-          />
-        )}
-      </section>
+          ))}
+        </section>
+      ) : null}
 
       {post.metadata ? <MetadataTable metadata={post.metadata} /> : null}
     </article>

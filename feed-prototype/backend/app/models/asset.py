@@ -17,6 +17,7 @@ class PostAsset(SQLModel, table=True):
     type: str
     title: str | None = None
     description: str | None = None
+    url: str | None = None
     src: str
     mime_type: str | None = None
     sort_order: int = 0

@@ -3,6 +3,8 @@ export type PostAssetType =
   | "plot"
   | "chart"
   | "table"
+  | "file"
+  | "link"
   | "html"
   | "json"
   | "text";
@@ -38,7 +40,7 @@ export interface Account {
 }
 
 export interface PostAsset {
-  id: string;
+  id?: string;
   type: PostAssetType;
   title?: string;
   description?: string;
@@ -51,12 +53,18 @@ export interface PostAsset {
 
 export interface Post {
   id: string;
+  account_id?: string;
   accountId: string;
   title: string;
+  text?: string;
   caption?: string;
+  created_at?: string;
   createdAt: string;
+  updated_at?: string;
+  updatedAt?: string;
   tags: string[];
   assets: PostAsset[];
+  metadata_json?: PostMetadata;
   metadata?: PostMetadata;
 }
 

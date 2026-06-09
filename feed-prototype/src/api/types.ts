@@ -1,6 +1,7 @@
 import type { MetadataValue } from "../types/feed";
 
 export type ApiMetadata = Record<string, MetadataValue>;
+export type ApiAssetType = "image" | "plot" | "table" | "file" | "link";
 
 export interface ApiUser {
   id: string;
@@ -41,6 +42,7 @@ export interface ApiPostAsset {
   type: string;
   title: string | null;
   description: string | null;
+  url?: string | null;
   src: string;
   mime_type: string | null;
   sort_order: number;
@@ -54,16 +56,35 @@ export interface ApiPost {
   account_id: string;
   title: string;
   text: string;
+  tags?: string[];
   metadata_json: ApiMetadata | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ApiPostAssetPayload {
+  type: ApiAssetType;
+  url: string;
+  title?: string | null;
+  description?: string | null;
 }
 
 export interface ApiPostCreatePayload {
   user_id: string;
   title: string;
   text: string;
+  tags?: string[];
   metadata_json?: ApiMetadata | null;
+  assets?: ApiPostAssetPayload[];
+}
+
+export interface ApiPostUpdatePayload {
+  user_id: string;
+  title?: string;
+  text?: string;
+  tags?: string[];
+  metadata_json?: ApiMetadata | null;
+  assets?: ApiPostAssetPayload[];
 }
 
 export interface ApiPostWithAssets extends ApiPost {

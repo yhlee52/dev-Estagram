@@ -73,6 +73,7 @@ POSTS = [
         "account_id": "demo-account-ari",
         "title": "Morning Walk",
         "text": "A quiet image post for testing the feed card layout.",
+        "tags": ["personal", "image"],
         "metadata_json": {"mood": "calm", "location": "local park"},
     },
     {
@@ -80,6 +81,7 @@ POSTS = [
         "account_id": "demo-account-mika",
         "title": "Weekly Progress Chart",
         "text": "A chart-style asset attached to a generic project update.",
+        "tags": ["project", "progress"],
         "metadata_json": {"status": "on_track", "week": 24},
     },
     {
@@ -87,6 +89,7 @@ POSTS = [
         "account_id": "demo-account-mika",
         "title": "Summary Table",
         "text": "A compact table example for read-only API validation.",
+        "tags": ["project", "table"],
         "metadata_json": {"category": "planning"},
     },
     {
@@ -94,6 +97,7 @@ POSTS = [
         "account_id": "demo-account-nova",
         "title": "Daily Digest",
         "text": "A generated digest example with JSON-style structured data.",
+        "tags": ["digest", "generated"],
         "metadata_json": {"source": "demo", "generated": True},
     },
     {
@@ -101,6 +105,7 @@ POSTS = [
         "account_id": "demo-account-nova",
         "title": "HTML Note",
         "text": "A simple HTML asset example for future renderer checks.",
+        "tags": ["html", "asset"],
         "metadata_json": {"format": "html"},
     },
     {
@@ -108,6 +113,7 @@ POSTS = [
         "account_id": "demo-account-ari",
         "title": "Weekend Plan",
         "text": "Plain text post data to round out the demo feed.",
+        "tags": ["personal", "planning"],
         "metadata_json": {"tags": ["personal", "planning"]},
     },
 ]
@@ -119,6 +125,7 @@ ASSETS = [
         "type": "image",
         "title": "Walk snapshot",
         "description": "Demo image placeholder path.",
+        "url": "/uploads/demo/morning-walk.jpg",
         "src": "/uploads/demo/morning-walk.jpg",
         "mime_type": "image/jpeg",
         "sort_order": 0,
@@ -127,9 +134,10 @@ ASSETS = [
     {
         "id": "demo-asset-progress-chart",
         "post_id": "demo-post-weekly-chart",
-        "type": "chart",
+        "type": "plot",
         "title": "Progress chart",
         "description": "Demo chart placeholder path.",
+        "url": "/uploads/demo/sample-chart.png",
         "src": "/uploads/demo/sample-chart.png",
         "mime_type": "image/png",
         "sort_order": 0,
@@ -141,6 +149,7 @@ ASSETS = [
         "type": "table",
         "title": "Planning table",
         "description": "Small table represented as a local JSON asset.",
+        "url": "/uploads/demo/summary-table.json",
         "src": "/uploads/demo/summary-table.json",
         "mime_type": "application/json",
         "sort_order": 0,
@@ -149,9 +158,10 @@ ASSETS = [
     {
         "id": "demo-asset-digest-json",
         "post_id": "demo-post-daily-digest",
-        "type": "json",
+        "type": "file",
         "title": "Digest payload",
         "description": "Structured payload example.",
+        "url": "/uploads/demo/digest.json",
         "src": "/uploads/demo/digest.json",
         "mime_type": "application/json",
         "sort_order": 0,
@@ -160,9 +170,10 @@ ASSETS = [
     {
         "id": "demo-asset-html-note",
         "post_id": "demo-post-html-note",
-        "type": "html",
+        "type": "link",
         "title": "HTML preview",
         "description": "HTML placeholder path.",
+        "url": "/uploads/demo/html-note.html",
         "src": "/uploads/demo/html-note.html",
         "mime_type": "text/html",
         "sort_order": 0,

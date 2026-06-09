@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import { createPost } from '../api/postsApi';
@@ -6,6 +6,7 @@ import { useActiveApiUser } from '../auth/apiActiveUser';
 import { getApiBaseUrl } from '../config/apiConfig';
 import { isApiMode } from '../config/dataSource';
 import EmptyState from '../components/EmptyState';
+import PostEditor, { type PostEditorValues } from '../components/PostEditor';
 
 function getCreatePostErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
@@ -22,8 +23,6 @@ function getCreatePostErrorMessage(error: unknown): string {
 export default function NewPostPage() {
   const navigate = useNavigate();
   const { activeApiUserId } = useActiveApiUser();
-  const [title, setTitle] = useState('');
-  const [text, setText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -45,18 +44,8 @@ export default function NewPostPage() {
     );
   }
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const handleSubmit = async (values: PostEditorValues) => {
     if (isSubmitting) {
-      return;
-    }
-
-    const trimmedTitle = title.trim();
-    const normalizedText = text.trim();
-
-    if (!trimmedTitle) {
-      setError('Title is required.');
       return;
     }
 
@@ -66,11 +55,11 @@ export default function NewPostPage() {
     try {
       const createdItem = await createPost({
         user_id: activeApiUserId,
-        title: trimmedTitle,
-        text: normalizedText,
-        metadata_json: {
-          source: 'manual',
-        },
+        title: values.title,
+        text: values.text,
+        tags: values.tags,
+        metadata_json: values.metadata_json,
+        assets: values.assets,
       });
 
       navigate(`/posts/${createdItem.post.id}`);
@@ -95,63 +84,13 @@ export default function NewPostPage() {
         </p>
       </nav>
 
-      <form
-        className="space-y-4 rounded-md border border-neutral-200 bg-white p-4 shadow-sm"
+      <PostEditor
+        mode="create"
+        isSubmitting={isSubmitting}
+        error={error}
+        onCancel={() => navigate('/')}
         onSubmit={handleSubmit}
-      >
-        <div className="space-y-1.5">
-          <label
-            className="block text-xs font-bold uppercase text-neutral-400"
-            htmlFor="post-title"
-          >
-            Title
-          </label>
-          <input
-            id="post-title"
-            className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-950 outline-none transition focus:border-neutral-400"
-            maxLength={200}
-            aria-invalid={Boolean(error && !title.trim())}
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-          />
-          <p className="text-xs font-medium text-neutral-400">
-            {title.length}/200
-          </p>
-        </div>
-
-        <div className="space-y-1.5">
-          <label
-            className="block text-xs font-bold uppercase text-neutral-400"
-            htmlFor="post-text"
-          >
-            Text
-          </label>
-          <textarea
-            id="post-text"
-            className="min-h-40 w-full resize-y rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm leading-6 text-neutral-950 outline-none transition focus:border-neutral-400"
-            maxLength={5000}
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-          />
-          <p className="text-xs font-medium text-neutral-400">
-            Optional in MVP8. {text.length}/5000
-          </p>
-        </div>
-
-        {error ? (
-          <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
-            {error}
-          </p>
-        ) : null}
-
-        <button
-          type="submit"
-          className="h-11 w-full rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Publishing...' : 'Publish Post'}
-        </button>
-      </form>
+      />
     </div>
   );
 }
