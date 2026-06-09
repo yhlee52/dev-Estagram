@@ -65,7 +65,7 @@ function Badge({
 
 export default function PostBadges({ post }: PostBadgesProps) {
   const status = getStatusValue(post.metadata?.status);
-  const representativeAssetType = post.assets[0]?.type;
+  const representativeAssetType = post.assets?.[0]?.type;
 
   if (!status && !representativeAssetType) {
     return null;

@@ -76,6 +76,15 @@ function getAssetUrl(asset: RenderableAsset): string | undefined {
   return asset.url ?? asset.src;
 }
 
+function isLikelyImageUrl(value: string | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const path = value.split('?')[0]?.toLowerCase() ?? '';
+  return /\.(apng|avif|gif|jpe?g|png|svg|webp)$/.test(path);
+}
+
 function getTableRows(content: MetadataValue | undefined): TableRow[] {
   if (!Array.isArray(content)) {
     return [];
@@ -200,7 +209,11 @@ export default function AssetRenderer({
   const assetUrl = getAssetUrl(asset);
   const shouldShowFull = variant === 'full';
   const imageLikeTypes = new Set(['image', 'plot', 'chart']);
-  const canShowImage = imageLikeTypes.has(type) && assetUrl && !hasImageError;
+  const canShowImage =
+    imageLikeTypes.has(type) &&
+    assetUrl &&
+    !hasImageError &&
+    (type === 'image' || isLikelyImageUrl(assetUrl));
 
   if (canShowImage) {
     return (
@@ -227,6 +240,45 @@ export default function AssetRenderer({
         {type === 'plot' || type === 'chart' ? <AssetBadge label={type} /> : null}
         <MissingAsset label={`${title} preview unavailable`} />
       </div>
+    );
+  }
+
+  if (type === 'file' || type === 'link') {
+    const label = type === 'link' ? 'Open link' : 'Open asset';
+
+    return (
+      <AssetShell>
+        <div className="space-y-4 p-4">
+          <CardHeader
+            type={type}
+            title={title}
+            description={
+              asset.description ??
+              (type === 'link' ? 'External link asset.' : 'File asset.')
+            }
+          />
+          {assetUrl ? (
+            <a
+              className="inline-flex rounded-md bg-neutral-950 px-3 py-2 text-xs font-bold text-white"
+              href={assetUrl}
+              rel="noreferrer"
+              target="_blank"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {label}
+            </a>
+          ) : (
+            <p className="text-sm leading-6 text-neutral-500">
+              No asset link is available.
+            </p>
+          )}
+          {assetUrl ? (
+            <p className="break-all text-xs font-medium text-neutral-400">
+              Source: {assetUrl}
+            </p>
+          ) : null}
+        </div>
+      </AssetShell>
     );
   }
 
@@ -269,15 +321,29 @@ export default function AssetRenderer({
               </table>
             </div>
           ) : (
-            <p className="text-sm leading-6 text-neutral-500">
-              Table data is not available in this asset.
-            </p>
+            <div className="rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-3 py-4">
+              <p className="text-sm font-bold text-neutral-700">Table asset</p>
+              <p className="mt-1 text-sm leading-6 text-neutral-500">
+                Preview is not implemented yet.
+              </p>
+            </div>
           )}
 
           {assetUrl ? (
-            <p className="break-all text-xs font-medium text-neutral-400">
-              Source: {assetUrl}
-            </p>
+            <div className="space-y-2">
+              <a
+                className="inline-flex rounded-md bg-neutral-950 px-3 py-2 text-xs font-bold text-white"
+                href={assetUrl}
+                rel="noreferrer"
+                target="_blank"
+                onClick={(event) => event.stopPropagation()}
+              >
+                Open asset
+              </a>
+              <p className="break-all text-xs font-medium text-neutral-400">
+                Source: {assetUrl}
+              </p>
+            </div>
           ) : null}
         </div>
       </AssetShell>

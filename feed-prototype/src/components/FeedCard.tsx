@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import type { FeedItem } from '../types/feed';
 import { formatDateTime } from '../utils/format';
 import AssetRenderer from './AssetRenderer';
+import MetadataSummary from './MetadataSummary';
 import PostBadges from './PostBadges';
 import TagList from './TagList';
 
@@ -35,6 +36,13 @@ function Avatar({ src, name }: { src?: string; name: string }) {
 export default function FeedCard({ item }: FeedCardProps) {
   const navigate = useNavigate();
   const { account, post } = item;
+  const postAssets = post.assets ?? [];
+  const postTags = post.tags ?? [];
+  const previewAssets = postAssets.slice(0, 2);
+  const postCreatedAt = post.createdAt ?? post.created_at ?? '';
+  const postUpdatedAt = post.updatedAt ?? post.updated_at ?? '';
+  const shouldShowUpdatedAt =
+    postUpdatedAt && postCreatedAt && postUpdatedAt !== postCreatedAt;
 
   const goToPost = () => {
     navigate(`/posts/${post.id}`);
@@ -78,7 +86,22 @@ export default function FeedCard({ item }: FeedCardProps) {
       </button>
 
       <div className="space-y-4 px-4 pb-4">
-        <AssetRenderer asset={post.assets[0]} />
+        {previewAssets.length > 0 ? (
+          <div className="space-y-2">
+            {previewAssets.map((asset, index) => (
+              <AssetRenderer
+                key={asset.id ?? `${post.id}-asset-${index}`}
+                asset={asset}
+              />
+            ))}
+            {postAssets.length > previewAssets.length ? (
+              <p className="rounded-md bg-neutral-50 px-3 py-2 text-xs font-bold text-neutral-500">
+                +{postAssets.length - previewAssets.length} more asset
+                {postAssets.length - previewAssets.length === 1 ? '' : 's'}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="space-y-3">
           <div className="space-y-1.5">
@@ -93,11 +116,20 @@ export default function FeedCard({ item }: FeedCardProps) {
             ) : null}
           </div>
 
-          <TagList tags={post.tags} />
+          <TagList tags={postTags} />
 
-          <time className="block text-xs font-medium text-neutral-400" dateTime={post.createdAt}>
-            {formatDateTime(post.createdAt)}
-          </time>
+          <MetadataSummary metadata={post.metadata} />
+
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-neutral-400">
+            <time dateTime={postCreatedAt}>
+              Created: {formatDateTime(postCreatedAt)}
+            </time>
+            {shouldShowUpdatedAt ? (
+              <time dateTime={postUpdatedAt}>
+                Updated: {formatDateTime(postUpdatedAt)}
+              </time>
+            ) : null}
+          </div>
         </div>
       </div>
     </article>

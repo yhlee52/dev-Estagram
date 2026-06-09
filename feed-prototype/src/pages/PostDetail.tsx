@@ -136,6 +136,12 @@ export default function PostDetail() {
     : undefined;
   const post = isApiDataSource ? apiPost : mockPost;
   const account = isApiDataSource ? apiAccount : mockAccount;
+  const postAssets = post?.assets ?? [];
+  const postTags = post?.tags ?? [];
+  const postCreatedAt = post?.createdAt ?? post?.created_at ?? '';
+  const postUpdatedAt = post?.updatedAt ?? post?.updated_at ?? '';
+  const shouldShowUpdatedAt =
+    postUpdatedAt && postCreatedAt && postUpdatedAt !== postCreatedAt;
   const isOwnApiPost =
     isApiDataSource && account ? getAccountUserId(account) === activeApiUserId : false;
 
@@ -309,26 +315,38 @@ export default function PostDetail() {
 
         <div className="rounded-md bg-neutral-50 px-3 py-2">
           <p className="text-xs font-bold uppercase text-neutral-400">Created</p>
-          <time className="mt-1 block text-sm font-semibold text-neutral-700" dateTime={post.createdAt}>
-            {formatDateTime(post.createdAt)}
+          <time className="mt-1 block text-sm font-semibold text-neutral-700" dateTime={postCreatedAt}>
+            {formatDateTime(postCreatedAt)}
           </time>
         </div>
 
-        {post.tags.length > 0 ? <TagList tags={post.tags} /> : null}
+        {shouldShowUpdatedAt ? (
+          <div className="rounded-md bg-neutral-50 px-3 py-2">
+            <p className="text-xs font-bold uppercase text-neutral-400">Updated</p>
+            <time
+              className="mt-1 block text-sm font-semibold text-neutral-700"
+              dateTime={postUpdatedAt}
+            >
+              {formatDateTime(postUpdatedAt)}
+            </time>
+          </div>
+        ) : null}
+
+        <TagList tags={postTags} />
       </header>
 
       <section className="space-y-3">
         <div className="flex items-end justify-between px-1">
           <h2 className="text-sm font-bold text-neutral-950">Assets</h2>
           <span className="text-xs font-medium text-neutral-400">
-            {post.assets.length} item{post.assets.length === 1 ? '' : 's'}
+            {postAssets.length} item{postAssets.length === 1 ? '' : 's'}
           </span>
         </div>
 
-        {post.assets.length > 0 ? (
-          post.assets.map((asset) => (
+        {postAssets.length > 0 ? (
+          postAssets.map((asset, index) => (
             <section
-              key={asset.id}
+              key={asset.id ?? `${post.id}-asset-${index}`}
               className="space-y-2 rounded-md border border-neutral-200 bg-white p-3 shadow-sm"
             >
               <div className="flex items-center justify-between gap-3 px-1">
