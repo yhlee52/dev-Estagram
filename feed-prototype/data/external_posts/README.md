@@ -45,6 +45,22 @@ The import script should use the backend database connection configured through 
 
 Use different database URLs to separate a test import database from an operational/update database. The frontend should keep reading through FastAPI; it should not connect directly to PostgreSQL.
 
+## CLI Usage
+
+Run commands from the backend directory:
+
+```bash
+cd feed-prototype/backend
+python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json
+```
+
+An optional database URL override is available:
+
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json --database-url postgresql+psycopg://postgres:postgres@localhost:5432/feed_prototype_import_test
+```
+
 ## JSON Package Shape
 
 Top-level fields:
@@ -107,6 +123,26 @@ Expected keys:
 - Asset id/reference: `asset.external_id`
 
 Asset files are not copied by MVP10. The JSON stores only URLs or paths that the UI can access.
+
+## Import Account User Policy
+
+During the MVP stage, each `Account` must have exactly one corresponding `User`. The import script therefore creates one generic import `User` for each imported `Account`.
+
+Rules:
+
+- Imported account key: `account.external_id`
+- Generated user id: `import-user-{normalized-account-external-id}`
+- Generated user handle: `import.{normalized-account-external-id}`
+- Generated account id: `import-account-{normalized-account-external-id}`
+- Imported account kind: `bot`
+
+`User` does not have an `external_id` field in MVP10. The deterministic `id` and `handle` rules keep this policy stable without adding equipment- or report-specific core concepts.
+
+## Asset Replacement Policy
+
+When a post payload includes an `assets` field, that list is treated as the latest complete asset list for the post. Existing assets for that post are deleted and replaced with the imported list.
+
+When a post payload omits the `assets` field, existing assets for that post are left unchanged. External generators should include `assets: []` when the correct imported state is no assets.
 
 ## Domain Policy
 
