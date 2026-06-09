@@ -12,6 +12,7 @@ class Account(SQLModel, table=True):
     __tablename__: ClassVar[str] = "accounts"
 
     id: str = Field(primary_key=True)
+    external_id: str | None = Field(default=None, index=True, unique=True)
     user_id: str = Field(foreign_key="users.id", unique=True)
     handle: str = Field(index=True, unique=True)
     display_name: str
