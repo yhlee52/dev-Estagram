@@ -161,6 +161,53 @@ Multi visual asset authoring:
 - `table`, `file`, and `link` assets are displayed as separate sections/cards.
 - Add `sort_order` when the display order must be stable.
 
+## MVP12 Sample Package
+
+MVP12 includes a focused external import package for manual viewer testing:
+
+```text
+data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json
+data/external_posts/examples/batch_mvp12_asset_viewer/assets/README.md
+data/external_posts/examples/batch_mvp12_asset_viewer/assets/sample_summary.csv
+```
+
+Import commands:
+
+```bash
+cd feed-prototype/backend
+python -m app.services.import_external_posts --input ../data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json
+```
+
+Included test posts:
+
+- Multi image/plot post: two `image` assets and two `plot` assets.
+- Table post: one `table` asset pointing to `sample_summary.csv`.
+- File/link post: one `file` path and one external `link`.
+- Broken fallback post: missing image and missing CSV URLs.
+
+CSV preview setup:
+
+```text
+copy data/external_posts/examples/batch_mvp12_asset_viewer/assets/sample_summary.csv
+to   public/assets/generated/sample_summary.csv
+```
+
+The sample image, plot, and file URLs are browser path examples. Large binary
+sample assets should not be committed. Add small local files under
+`public/assets/generated/` when you want successful image/file open tests.
+
+Sort order test:
+
+- `mvp12_plot_02.png` has `sort_order: 1`.
+- `mvp12_image_01.png` has `sort_order: 2`.
+- Viewer order should follow `sort_order`, not filename order.
+
+Fallback test:
+
+- `/assets/generated/missing_mvp12_image.png` should show image fallback.
+- `/assets/generated/missing_mvp12_table.csv` should show CSV preview fallback.
+
 ## Non-Goals
 
 MVP12 does not implement:

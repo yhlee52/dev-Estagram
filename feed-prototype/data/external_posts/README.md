@@ -15,6 +15,11 @@ data/external_posts/
       feed_posts.json
       assets/
         README.md
+    batch_mvp12_asset_viewer/
+      feed_posts.json
+      assets/
+        README.md
+        sample_summary.csv
   incoming/
   archive/
   failed/
@@ -69,6 +74,23 @@ batch package 형태의 예제:
 python -m app.services.import_external_posts --input ../data/external_posts/examples/batch_2026-06-09_090000/feed_posts.json --dry-run
 python -m app.services.import_external_posts --input ../data/external_posts/examples/batch_2026-06-09_090000/feed_posts.json
 ```
+
+MVP12 asset viewer 전용 예제:
+
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json
+```
+
+CSV preview를 성공 케이스로 확인하려면 sample CSV를 browser-accessible static 위치로 복사합니다.
+
+```text
+from: data/external_posts/examples/batch_mvp12_asset_viewer/assets/sample_summary.csv
+to:   public/assets/generated/sample_summary.csv
+url:  /assets/generated/sample_summary.csv
+```
+
+이미지, plot, PDF/HTML 같은 큰 binary sample은 repo에 넣지 않습니다. 필요하면 작은 local file을 `public/assets/generated/` 아래에 직접 두고 sample JSON의 URL과 맞춥니다.
 
 특정 DB URL을 명령에서 직접 지정할 수도 있습니다.
 
@@ -207,6 +229,32 @@ MVP12 asset viewer 정책:
   ]
 }
 ```
+
+MVP12 viewer sample package:
+
+```text
+data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json
+```
+
+포함된 테스트 post:
+
+- multi image/plot post: image 2개, plot 2개, `sort_order` 1-4
+- table post: `sample_summary.csv`를 참조하는 table asset
+- file/link post: HTML/PDF-like file path와 외부 link card
+- broken fallback post: 존재하지 않는 image URL과 CSV URL
+
+sort_order 테스트:
+
+- `mvp12_plot_02.png`가 `sort_order: 1`입니다.
+- `mvp12_image_01.png`가 `sort_order: 2`입니다.
+- 파일명 순서가 아니라 `sort_order` 순서로 viewer가 표시되는지 확인합니다.
+
+broken URL fallback 테스트:
+
+- `/assets/generated/missing_mvp12_image.png`
+- `/assets/generated/missing_mvp12_table.csv`
+
+위 두 URL은 의도적으로 존재하지 않습니다. UI는 crash 대신 fallback preview를 보여야 합니다.
 
 ## Upsert 정책
 
