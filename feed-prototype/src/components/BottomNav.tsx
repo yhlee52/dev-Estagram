@@ -2,6 +2,7 @@ import { NavLink } from 'react-router';
 
 const navItems = [
   { to: '/', label: 'Home', end: true },
+  { to: '/posts', label: 'Posts' },
   { to: '/accounts', label: 'Accounts' },
   { to: '/me', label: 'Me' },
 ];
@@ -9,7 +10,7 @@ const navItems = [
 export default function BottomNav() {
   return (
     <nav className="sticky bottom-0 z-10 border-t border-neutral-200 bg-neutral-50/95 px-3 py-2 backdrop-blur">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         {navItems.map((item) => (
           <NavLink
             key={item.to}

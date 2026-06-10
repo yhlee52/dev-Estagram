@@ -7,6 +7,7 @@ import MePage from './pages/MePage';
 import EditPostPage from './pages/EditPostPage';
 import NewPostPage from './pages/NewPostPage';
 import PostDetail from './pages/PostDetail';
+import PostsBrowsePage from './pages/PostsBrowsePage';
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
       {
         path: 'me',
         element: <MePage />,
+      },
+      {
+        path: 'posts',
+        element: <PostsBrowsePage />,
       },
       {
         path: 'posts/new',

@@ -3,6 +3,11 @@ import { Link } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
+import PostFilterPanel, {
+  emptyPostFilters,
+  getPostFilterValidationError,
+  hasActivePostFilters,
+} from '../components/PostFilterPanel';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import { getApiBaseUrl } from '../config/apiConfig';
 import { getDataSourceMode } from '../config/dataSource';
@@ -11,7 +16,7 @@ import { API_FOLLOWS_CHANGE_EVENT } from '../hooks/useApiFollows';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useFollowState } from '../hooks/useFollowState';
 import type { FeedItem } from '../types/feed';
-import type { PostAssetFilterType, PostFilters } from '../types/filters';
+import type { PostFilters } from '../types/filters';
 
 const dataSourceMode = getDataSourceMode();
 const isApiDataSource = dataSourceMode === 'api';
@@ -43,41 +48,6 @@ const feedScopeOptions: Array<{
   { value: 'following', label: 'Following' },
   { value: 'all', label: 'All' },
 ];
-
-const assetTypeOptions: Array<{
-  value: PostAssetFilterType;
-  label: string;
-}> = [
-  { value: '', label: 'All' },
-  { value: 'image', label: 'image' },
-  { value: 'plot', label: 'plot' },
-  { value: 'table', label: 'table' },
-  { value: 'file', label: 'file' },
-  { value: 'link', label: 'link' },
-];
-
-const emptyPostFilters: PostFilters = {
-  keyword: '',
-  tag: '',
-  metadataKey: '',
-  metadataValue: '',
-  assetType: '',
-  accountHandle: '',
-  myPostsOnly: false,
-};
-
-function hasActivePostFilters(filters: PostFilters): boolean {
-  return Boolean(
-    filters.keyword?.trim() ||
-      filters.tag?.trim() ||
-      filters.metadataKey?.trim() ||
-      filters.metadataValue?.trim() ||
-      filters.assetType ||
-      filters.accountId ||
-      filters.accountHandle?.trim() ||
-      filters.myPostsOnly,
-  );
-}
 
 export default function HomeFeed() {
   const [feedScope, setFeedScope] = useState<FeedScope>('following');
@@ -167,11 +137,6 @@ export default function HomeFeed() {
   ]);
 
   const hasAppliedFilters = hasActivePostFilters(appliedFilters);
-  const resultsSummary = hasAppliedFilters
-    ? `Filters applied · Showing ${feedItems.length} ${
-        feedItems.length === 1 ? 'post' : 'posts'
-      }`
-    : `Showing ${feedItems.length} ${feedItems.length === 1 ? 'post' : 'posts'}`;
 
   const emptyState =
     isApiDataSource && hasAppliedFilters ? (
@@ -243,155 +208,37 @@ export default function HomeFeed() {
             </button>
           </div>
 
-          <form
-            className="grid gap-2 md:grid-cols-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (
-                draftFilters.metadataValue?.trim() &&
-                !draftFilters.metadataKey?.trim()
-              ) {
-                setFilterError('Metadata key is required when metadata value is set.');
+          <PostFilterPanel
+            filters={draftFilters}
+            onChange={(nextFilters) => {
+              if (nextFilters.metadataKey?.trim()) {
+                setFilterError('');
+              }
+
+              setDraftFilters(nextFilters);
+            }}
+            onApply={() => {
+              const validationError = getPostFilterValidationError(draftFilters);
+              if (validationError) {
+                setFilterError(validationError);
                 return;
               }
 
               setFilterError('');
               setAppliedFilters(draftFilters);
             }}
-          >
-            <input
-              aria-label="Keyword"
-              type="search"
-              value={draftFilters.keyword ?? ''}
-              onChange={(event) => {
-                setDraftFilters((currentFilters) => ({
-                  ...currentFilters,
-                  keyword: event.target.value,
-                }));
-              }}
-              placeholder="Keyword"
-              className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
-            />
-            <input
-              aria-label="Tag"
-              type="text"
-              value={draftFilters.tag ?? ''}
-              onChange={(event) => {
-                setDraftFilters((currentFilters) => ({
-                  ...currentFilters,
-                  tag: event.target.value,
-                }));
-              }}
-              placeholder="Tag"
-              className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
-            />
-            <input
-              aria-label="Metadata key"
-              type="text"
-              value={draftFilters.metadataKey ?? ''}
-              onChange={(event) => {
-                if (event.target.value.trim()) {
-                  setFilterError('');
-                }
-
-                setDraftFilters((currentFilters) => ({
-                  ...currentFilters,
-                  metadataKey: event.target.value,
-                }));
-              }}
-              placeholder="Metadata key e.g. severity"
-              className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
-            />
-            <input
-              aria-label="Metadata value"
-              type="text"
-              value={draftFilters.metadataValue ?? ''}
-              onChange={(event) => {
-                setDraftFilters((currentFilters) => ({
-                  ...currentFilters,
-                  metadataValue: event.target.value,
-                }));
-              }}
-              placeholder="Metadata value e.g. high"
-              className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
-            />
-            <select
-              aria-label="Asset type"
-              value={draftFilters.assetType ?? ''}
-              onChange={(event) => {
-                setDraftFilters((currentFilters) => ({
-                  ...currentFilters,
-                  assetType: event.target.value as PostAssetFilterType,
-                }));
-              }}
-              className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 outline-none transition focus:border-neutral-400"
-            >
-              {assetTypeOptions.map((option) => (
-                <option key={option.value || 'any'} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <input
-              aria-label="Account handle"
-              type="text"
-              value={draftFilters.accountHandle ?? ''}
-              onChange={(event) => {
-                setDraftFilters((currentFilters) => ({
-                  ...currentFilters,
-                  accountHandle: event.target.value,
-                }));
-              }}
-              placeholder="Account handle"
-              className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
-            />
-            <label className="flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 has-[:disabled]:text-neutral-400">
-              <input
-                type="checkbox"
-                checked={Boolean(draftFilters.myPostsOnly)}
-                disabled={!activeApiUserId}
-                onChange={(event) => {
-                  setDraftFilters((currentFilters) => ({
-                    ...currentFilters,
-                    myPostsOnly: event.target.checked,
-                  }));
-                }}
-                className="size-4 accent-neutral-950"
-              />
-              My posts only
-            </label>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="h-9 flex-1 rounded-md bg-neutral-950 px-3 text-sm font-bold text-white shadow-sm transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-400"
-                disabled={isLoading}
-              >
-                Apply
-              </button>
-              <button
-                type="button"
-                className="h-9 flex-1 rounded-md border border-neutral-200 bg-white px-3 text-sm font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-400"
-                disabled={isLoading}
-                onClick={() => {
-                  setDraftFilters(emptyPostFilters);
-                  setAppliedFilters(emptyPostFilters);
-                  setFilterError('');
-                }}
-              >
-                Reset
-              </button>
-            </div>
-            {filterError ? (
-              <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 md:col-span-2">
-                {filterError}
-              </p>
-            ) : null}
-            {!isLoading && !error && activeApiUserId ? (
-              <p className="text-xs font-semibold text-neutral-500 md:col-span-2">
-                {resultsSummary}
-              </p>
-            ) : null}
-          </form>
+            onReset={() => {
+              setDraftFilters(emptyPostFilters);
+              setAppliedFilters(emptyPostFilters);
+              setFilterError('');
+            }}
+            isLoading={isLoading}
+            resultCount={!isLoading && !error && activeApiUserId ? feedItems.length : undefined}
+            mode="feed"
+            activeUserId={activeApiUserId}
+            error={filterError}
+            hasAppliedFilters={hasAppliedFilters}
+          />
         </div>
       ) : (
         <div className="grid grid-cols-2 rounded-md border border-neutral-200 bg-neutral-100 p-1">
