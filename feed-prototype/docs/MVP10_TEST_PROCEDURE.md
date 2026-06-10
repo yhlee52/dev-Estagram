@@ -294,6 +294,7 @@ feed-prototype/data/external_posts/incoming/
 - `url`: 필수. UI 브라우저에서 접근 가능한 URL/path입니다.
 - `title`: optional. asset 제목입니다.
 - `description`: optional. asset 설명입니다.
+- `sort_order`: optional integer. 한 post 안에서 asset 표시 순서를 정합니다.
 
 예:
 
@@ -303,9 +304,22 @@ feed-prototype/data/external_posts/incoming/
   "type": "image",
   "url": "/assets/generated/temp_trend_001.png",
   "title": "Temperature trend",
-  "description": "Generated temperature trend plot."
+  "description": "Generated temperature trend plot.",
+  "sort_order": 1
 }
 ```
+
+MVP12 multi visual asset 작성 규칙:
+
+- 한 post에 여러 image/plot을 넣고 싶으면 기존 `assets` 배열에 여러 asset을 넣습니다.
+- `gallery`, `images`, `plots` 같은 별도 field를 만들지 않습니다.
+- `image`와 `plot`은 viewer에서 visual asset group으로 묶입니다.
+- `table`, `file`, `link`는 별도 section/card로 표시됩니다.
+- `sort_order`는 optional integer이며 image/plot gallery 순서에도 사용됩니다.
+- `sort_order`가 없으면 기존 order/id/created_at 기준 fallback을 사용합니다.
+- 같은 `sort_order`가 여러 개면 fallback 기준으로 보조 정렬합니다.
+- 기존 asset에 `sort_order`가 없어도 import와 UI는 동작해야 합니다.
+- 안정적인 표시 순서가 필요하면 `sort_order`를 추가하는 것을 권장합니다.
 
 ## 5. backend 실행 절차
 
@@ -362,11 +376,11 @@ Accounts:
 - create: 1
 - update: 0
 Posts:
-- create: 2
+- create: 3
 - update: 0
 Assets:
-- replace target posts: 2
-- create: 5
+- replace target posts: 3
+- create: 9
 Errors:
 - 0
 ```
@@ -395,8 +409,8 @@ External post import completed
 Batch: batch-2026-06-09-090000
 Users created: 1
 Accounts created: 1
-Posts created: 2
-Assets created: 5
+Posts created: 3
+Assets created: 9
 ```
 
 ## 8. 중복 import 테스트

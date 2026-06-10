@@ -64,6 +64,7 @@ Visual asset display order:
 ```text
 sort_order ascending
 fallback to existing array order, created_at, or id when sort_order is missing
+fallback to created_at or id when multiple assets share the same sort_order
 ```
 
 `sort_order` is added so external import packages and post asset lists can keep
@@ -147,7 +148,18 @@ Import format policy:
 - Lower values are displayed first.
 - External generators should provide stable `sort_order` values for related
   image/plot galleries.
+- Existing assets without `sort_order` remain valid and should still import and
+  render.
 - Same-JSON reimport should not create duplicate posts.
+
+Multi visual asset authoring:
+
+- Keep the existing post JSON structure.
+- Put multiple `image` and `plot` descriptors in the existing `assets` array.
+- Do not add `gallery`, `images`, or `plots` fields.
+- The viewer groups `image` and `plot` assets as visual assets.
+- `table`, `file`, and `link` assets are displayed as separate sections/cards.
+- Add `sort_order` when the display order must be stable.
 
 ## Non-Goals
 
