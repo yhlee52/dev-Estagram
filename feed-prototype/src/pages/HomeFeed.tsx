@@ -48,12 +48,12 @@ const assetTypeOptions: Array<{
   value: PostAssetFilterType;
   label: string;
 }> = [
-  { value: '', label: 'Any asset' },
-  { value: 'image', label: 'Image' },
-  { value: 'plot', label: 'Plot' },
-  { value: 'table', label: 'Table' },
-  { value: 'file', label: 'File' },
-  { value: 'link', label: 'Link' },
+  { value: '', label: 'All' },
+  { value: 'image', label: 'image' },
+  { value: 'plot', label: 'plot' },
+  { value: 'table', label: 'table' },
+  { value: 'file', label: 'file' },
+  { value: 'link', label: 'link' },
 ];
 
 const emptyPostFilters: PostFilters = {
@@ -87,6 +87,7 @@ export default function HomeFeed() {
   const [draftFilters, setDraftFilters] = useState<PostFilters>(emptyPostFilters);
   const [appliedFilters, setAppliedFilters] =
     useState<PostFilters>(emptyPostFilters);
+  const [filterError, setFilterError] = useState('');
   const accounts = useEffectiveAccounts();
   const { activeUserId, followingIds } = useFollowState();
   const { activeApiUserId } = useActiveApiUser();
@@ -166,12 +167,17 @@ export default function HomeFeed() {
   ]);
 
   const hasAppliedFilters = hasActivePostFilters(appliedFilters);
+  const resultsSummary = hasAppliedFilters
+    ? `Filters applied · Showing ${feedItems.length} ${
+        feedItems.length === 1 ? 'post' : 'posts'
+      }`
+    : `Showing ${feedItems.length} ${feedItems.length === 1 ? 'post' : 'posts'}`;
 
   const emptyState =
     isApiDataSource && hasAppliedFilters ? (
       <EmptyState
-        title="No matching posts"
-        description="Reset the filters or try a broader keyword, tag, metadata value, asset type, or account."
+        title="No posts match these filters"
+        description="Try resetting filters or changing the search terms."
       />
     ) : isApiDataSource ? (
       <section className="rounded-md border border-dashed border-neutral-300 bg-white px-5 py-12 text-center">
@@ -241,10 +247,20 @@ export default function HomeFeed() {
             className="grid gap-2 md:grid-cols-2"
             onSubmit={(event) => {
               event.preventDefault();
+              if (
+                draftFilters.metadataValue?.trim() &&
+                !draftFilters.metadataKey?.trim()
+              ) {
+                setFilterError('Metadata key is required when metadata value is set.');
+                return;
+              }
+
+              setFilterError('');
               setAppliedFilters(draftFilters);
             }}
           >
             <input
+              aria-label="Keyword"
               type="search"
               value={draftFilters.keyword ?? ''}
               onChange={(event) => {
@@ -257,6 +273,7 @@ export default function HomeFeed() {
               className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
             />
             <input
+              aria-label="Tag"
               type="text"
               value={draftFilters.tag ?? ''}
               onChange={(event) => {
@@ -269,18 +286,24 @@ export default function HomeFeed() {
               className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
             />
             <input
+              aria-label="Metadata key"
               type="text"
               value={draftFilters.metadataKey ?? ''}
               onChange={(event) => {
+                if (event.target.value.trim()) {
+                  setFilterError('');
+                }
+
                 setDraftFilters((currentFilters) => ({
                   ...currentFilters,
                   metadataKey: event.target.value,
                 }));
               }}
-              placeholder="Metadata key"
+              placeholder="Metadata key e.g. severity"
               className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
             />
             <input
+              aria-label="Metadata value"
               type="text"
               value={draftFilters.metadataValue ?? ''}
               onChange={(event) => {
@@ -289,10 +312,11 @@ export default function HomeFeed() {
                   metadataValue: event.target.value,
                 }));
               }}
-              placeholder="Metadata value"
+              placeholder="Metadata value e.g. high"
               className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
             />
             <select
+              aria-label="Asset type"
               value={draftFilters.assetType ?? ''}
               onChange={(event) => {
                 setDraftFilters((currentFilters) => ({
@@ -309,6 +333,7 @@ export default function HomeFeed() {
               ))}
             </select>
             <input
+              aria-label="Account handle"
               type="text"
               value={draftFilters.accountHandle ?? ''}
               onChange={(event) => {
@@ -320,10 +345,11 @@ export default function HomeFeed() {
               placeholder="Account handle"
               className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
             />
-            <label className="flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700">
+            <label className="flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 has-[:disabled]:text-neutral-400">
               <input
                 type="checkbox"
                 checked={Boolean(draftFilters.myPostsOnly)}
+                disabled={!activeApiUserId}
                 onChange={(event) => {
                   setDraftFilters((currentFilters) => ({
                     ...currentFilters,
@@ -349,11 +375,22 @@ export default function HomeFeed() {
                 onClick={() => {
                   setDraftFilters(emptyPostFilters);
                   setAppliedFilters(emptyPostFilters);
+                  setFilterError('');
                 }}
               >
                 Reset
               </button>
             </div>
+            {filterError ? (
+              <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 md:col-span-2">
+                {filterError}
+              </p>
+            ) : null}
+            {!isLoading && !error && activeApiUserId ? (
+              <p className="text-xs font-semibold text-neutral-500 md:col-span-2">
+                {resultsSummary}
+              </p>
+            ) : null}
           </form>
         </div>
       ) : (
