@@ -157,6 +157,79 @@ MVP10 non-goals:
 - formal authentication, JWT, sessions, OAuth
 - mock mode removal
 
+## MVP11: Metadata / Tag / Asset Filter & Search
+
+MVP11 name: **Metadata / Tag / Asset Filter & Search**.
+
+MVP11 builds on MVP10. External programs can now keep importing posts into the
+backend DB, and users need a simple way to find the posts they want. MVP11 adds
+basic API-mode filtering for post lists and feeds. It is not a search-engine
+project.
+
+MVP11 goals:
+
+- Add filter query parameters to API-mode post list/feed read APIs.
+- Let users filter by keyword, tag, metadata key-value, asset type, and account.
+- Add a simple filter/search panel at the top of API-mode Home Feed.
+- Let users enter keyword, tag, metadata key/value, and asset type, then Apply or Reset.
+- Keep metadata filtering generic: users may enter keys such as `severity`, but the core model and UI must not hard-code domain fields such as severity, recipe, chamber, equipment, or report.
+- Use posts imported by MVP10 as practical test data for filtering.
+- Keep mock mode behavior unchanged.
+
+MVP11 backend API candidates:
+
+```text
+GET /api/posts
+GET /api/feed
+```
+
+Recommended query parameters:
+
+```text
+keyword
+tag
+metadata_key
+metadata_value
+asset_type
+account_id
+account_handle
+user_id
+my_posts_only
+```
+
+Example requests:
+
+```text
+GET /api/posts?keyword=temperature
+GET /api/posts?tag=daily-report
+GET /api/posts?metadata_key=source&metadata_value=analysis-program
+GET /api/posts?asset_type=image
+GET /api/posts?account_handle=temp_report_bot
+GET /api/feed?user_id=1&tag=daily-report&asset_type=image
+```
+
+MVP11 non-goals:
+
+- Elasticsearch
+- Advanced PostgreSQL full-text search
+- Semantic search
+- Vector search
+- Saved search
+- Advanced query builder
+- Complex AND/OR condition UI
+- Exclude filter
+- Advanced multi-select
+- Advanced date range filtering
+- Pagination/infinite scroll overhaul
+- Dashboard
+- Analytics
+- Chart/table parsing
+- Advanced asset viewer
+- Import pipeline changes
+- Bot account auto generation
+- Formal authentication, JWT, sessions, OAuth
+- Mock mode removal
+
 ## Data And Storage
 
 Frontend mock data는 `feed-prototype/src/data` 아래에 있습니다.

@@ -228,6 +228,82 @@ MVP10 non-goals:
 - Formal authentication, JWT, sessions, OAuth.
 - Mock mode removal.
 
+## Current MVP11 Scope: Metadata / Tag / Asset Filter & Search
+
+MVP11 name: **Metadata / Tag / Asset Filter & Search**.
+
+MVP11 builds on MVP10. External post packages can now be imported into backend
+PostgreSQL as generic `Account`, `Post`, `Asset`, and `Metadata` records.
+MVP11 makes those accumulated posts easier to find with simple API-mode filters.
+
+MVP11 goal:
+
+- Add filter query parameters to backend list/read APIs.
+- Support filtering `GET /api/posts` and `GET /api/feed`.
+- Support keyword search over post title, post text, account handle, and account display name.
+- Support tag filtering over `post.tags`.
+- Support generic `metadata_key` + `metadata_value` filtering over `metadata_json`.
+- Support asset type filtering when a post has an asset of the requested type.
+- Support account filtering by `account_id` or `account_handle`.
+- Support `my_posts_only` for the active API user's 1:1 `Account`.
+- Add a simple API-mode Home Feed filter/search panel with Apply and Reset.
+- Show an empty state when filter results are empty.
+- Keep mock mode behavior unchanged.
+
+MVP11 recommended query parameters:
+
+```text
+keyword
+tag
+metadata_key
+metadata_value
+asset_type
+account_id
+account_handle
+user_id
+my_posts_only
+```
+
+MVP11 example requests:
+
+```text
+GET /api/posts?keyword=temperature
+GET /api/posts?tag=daily-report
+GET /api/posts?metadata_key=source&metadata_value=analysis-program
+GET /api/posts?asset_type=image
+GET /api/posts?account_handle=temp_report_bot
+GET /api/feed?user_id=1&tag=daily-report&asset_type=image
+GET /api/posts?user_id=1&my_posts_only=true
+```
+
+MVP11 metadata policy:
+
+- Metadata filter UI and API must remain generic key-value filtering.
+- Do not hard-code severity, recipe, chamber, equipment, report, or other domain-specific fields into core models, shared components, route names, or data flow.
+- It is valid for a user to enter `metadata_key=severity` and `metadata_value=high`; those remain data values inside `metadata_json`.
+
+MVP11 non-goals:
+
+- Elasticsearch.
+- Advanced PostgreSQL full-text search.
+- Semantic search.
+- Vector search.
+- Saved search.
+- Advanced query builder.
+- Complex AND/OR condition UI.
+- Exclude filter.
+- Advanced multi-select.
+- Advanced date range filtering.
+- Pagination/infinite scroll overhaul.
+- Dashboard.
+- Analytics.
+- Chart/table parsing.
+- Advanced asset viewer.
+- Import pipeline changes.
+- Bot account auto generation.
+- Formal authentication, JWT, sessions, OAuth.
+- Mock mode removal.
+
 ## Development Guidelines
 
 - TypeScript build를 통과시킵니다.
