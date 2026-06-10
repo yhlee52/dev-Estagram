@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.api.deps import get_session
 from app.models.account import Account
@@ -30,7 +30,12 @@ def get_post_assets(session: Session, post_id: str) -> list[PostAsset]:
     assets = session.exec(
         select(PostAsset)
         .where(PostAsset.post_id == post_id)
-        .order_by(PostAsset.sort_order, PostAsset.created_at)
+        .order_by(
+            col(PostAsset.sort_order).is_(None),
+            PostAsset.sort_order,
+            PostAsset.created_at,
+            PostAsset.id,
+        )
     ).all()
     return list(assets)
 

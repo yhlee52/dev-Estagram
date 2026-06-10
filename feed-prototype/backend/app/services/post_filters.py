@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Iterable
 
 from fastapi import HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.models.account import Account
 from app.models.asset import PostAsset
@@ -66,7 +66,12 @@ def get_assets_by_post_id(
     assets = session.exec(
         select(PostAsset)
         .where(PostAsset.post_id.in_(post_id_list))
-        .order_by(PostAsset.sort_order, PostAsset.created_at)
+        .order_by(
+            col(PostAsset.sort_order).is_(None),
+            PostAsset.sort_order,
+            PostAsset.created_at,
+            PostAsset.id,
+        )
     ).all()
 
     for asset in assets:

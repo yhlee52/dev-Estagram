@@ -45,7 +45,7 @@ export interface ApiPostAsset {
   url?: string | null;
   src: string;
   mime_type: string | null;
-  sort_order: number;
+  sort_order: number | null;
   metadata_json: ApiMetadata | null;
   created_at: string;
   updated_at: string;
@@ -68,6 +68,7 @@ export interface ApiPostAssetPayload {
   url: string;
   title?: string | null;
   description?: string | null;
+  sort_order?: number | null;
 }
 
 export interface ApiPostCreatePayload {
