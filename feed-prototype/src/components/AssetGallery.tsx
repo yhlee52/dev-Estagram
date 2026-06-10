@@ -43,7 +43,7 @@ function VisualAssetThumbnail({
         <img
           src={assetUrl}
           alt={alt}
-          className="size-full object-cover transition group-hover:scale-[1.01]"
+          className="size-full object-cover"
           loading="lazy"
           onError={() => setHasImageError(true)}
         />

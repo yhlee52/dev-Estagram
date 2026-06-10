@@ -208,6 +208,13 @@ Fallback test:
 - `/assets/generated/missing_mvp12_image.png` should show image fallback.
 - `/assets/generated/missing_mvp12_table.csv` should show CSV preview fallback.
 
+Detailed loading, fallback, accessibility, and regression checks are documented
+in:
+
+```text
+docs/MVP12_TEST_PROCEDURE.md
+```
+
 ## Non-Goals
 
 MVP12 does not implement:

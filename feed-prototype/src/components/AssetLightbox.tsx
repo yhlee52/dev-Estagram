@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { VisualAsset } from '../utils/assetUtils';
 import { getAssetUrl } from '../utils/assetUtils';
 
@@ -20,6 +20,7 @@ export default function AssetLightbox({
   onClose,
 }: AssetLightboxProps) {
   const [hasImageError, setHasImageError] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const currentAsset = assets[currentIndex];
   const assetUrl = currentAsset ? getAssetUrl(currentAsset) : undefined;
   const hasPrevious = currentIndex > 0;
@@ -28,6 +29,10 @@ export default function AssetLightbox({
   useEffect(() => {
     setHasImageError(false);
   }, [currentIndex, assetUrl]);
+
+  useEffect(() => {
+    dialogRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -54,19 +59,28 @@ export default function AssetLightbox({
 
   return (
     <div
-      aria-label="Asset viewer"
+      aria-labelledby="asset-lightbox-title"
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 p-4"
       role="dialog"
-      onClick={onClose}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-md bg-white shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3">
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-neutral-950">
+            <p
+              id="asset-lightbox-title"
+              className="truncate text-sm font-bold text-neutral-950"
+            >
               {currentAsset.title ?? `${currentAsset.type} asset`}
             </p>
             <p className="text-xs font-semibold text-neutral-400">
