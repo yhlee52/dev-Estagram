@@ -92,6 +92,7 @@ class PostRead(BaseModel):
     text: str
     tags: list[str] = Field(default_factory=list)
     metadata_json: dict[str, Any] | None = None
+    imported_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 

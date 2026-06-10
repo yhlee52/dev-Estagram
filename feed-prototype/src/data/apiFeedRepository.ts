@@ -96,10 +96,15 @@ export const mapApiPostToPost = (
   createdAt: post.created_at,
   updated_at: post.updated_at,
   updatedAt: post.updated_at,
+  imported_at: post.imported_at ?? undefined,
+  importedAt: post.imported_at ?? undefined,
   tags: post.tags ?? getStringArray(post.metadata_json, 'tags'),
   assets: assets.map(mapApiAssetToPostAsset),
   metadata_json: metadataOrUndefined(post.metadata_json),
-  metadata: metadataOrUndefined(post.metadata_json),
+  metadata: {
+    ...(post.metadata_json ?? {}),
+    ...(post.imported_at ? { imported_at: post.imported_at } : {}),
+  },
 });
 
 export const mapApiFeedItemToFeedItem = (item: ApiFeedItem): FeedItem => ({

@@ -1,6 +1,6 @@
 """add mvp9 post asset metadata fields
 
-Revision ID: 0002_add_mvp9_post_assets_metadata
+Revision ID: 0002_mvp9_assets_metadata
 Revises: 0001_create_initial_feed_tables
 Create Date: 2026-06-08
 """
@@ -11,7 +11,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision: str = "0002_add_mvp9_post_assets_metadata"
+revision: str = "0002_mvp9_assets_metadata"
 down_revision: str | None = "0001_create_initial_feed_tables"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None

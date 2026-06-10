@@ -1,29 +1,8 @@
 # Feed Prototype Backend
 
-MVP5 adds a minimal FastAPI backend for the local feed prototype.
+이 폴더는 `feed-prototype`의 FastAPI backend입니다.
 
-The backend now includes `GET /health`, SQLModel database setup, Alembic migrations, and a small demo seed script. It does not add authentication, CRUD APIs, uploads, admin features, or frontend API integration.
-
-## MVP6 Frontend API Read Mode
-
-MVP6 uses this backend as the read-only API source for the frontend's API mode. The frontend should call FastAPI endpoints such as `GET /api/users` and `GET /api/feed?user_id=...` to display PostgreSQL seed-data-backed feed content.
-
-API user entry in MVP6 is only a prototype user-selection flow. A frontend user can select a backend `User` that already exists by id or handle, but the backend still does not provide login, passwords, JWT, session cookies, OAuth, authorization, user creation, post writes, uploads, or admin features.
-
-## MVP7 API Follow/Unfollow
-
-MVP7 adds a narrow write API for API-mode follow state. It stores follow/unfollow changes in the PostgreSQL `follows` table and keeps mock mode localStorage follow behavior separate.
-
-```bash
-curl http://127.0.0.1:8000/api/users/demo-user-ari/follows
-curl -X POST http://127.0.0.1:8000/api/users/demo-user-ari/follows/demo-account-nova
-curl -X DELETE http://127.0.0.1:8000/api/users/demo-user-ari/follows/demo-account-nova
-curl "http://127.0.0.1:8000/api/feed?user_id=demo-user-ari"
-```
-
-Follow is intended to be idempotent: repeating the same follow should not create duplicate rows, and repeating the same unfollow should still return a successful current follow list when the user and account exist.
-
-Mock mode remains separate in the frontend. Existing frontend mock JSON and MVP4 localStorage-based local user registration are not replaced by this backend.
+Backend는 PostgreSQL, SQLModel, Alembic을 사용합니다. MVP5에서 backend/database skeleton이 추가되었고, 이후 MVP를 거치며 API read/write, follow/unfollow, user/account registration, post create/edit/delete, asset/metadata, external post import가 추가되었습니다.
 
 ## Stack
 
@@ -43,27 +22,29 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-Edit `.env` and set `DATABASE_URL` for your local PostgreSQL environment.
+`.env`에서 local PostgreSQL 환경에 맞게 `DATABASE_URL`을 설정합니다.
 
-Example:
+예:
 
 ```text
 DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/feed_prototype
 ```
 
-Do not commit a real `.env` file.
+실제 `.env` 파일은 commit하지 않습니다.
 
 ## PostgreSQL
 
-Create a local PostgreSQL database named:
+local PostgreSQL에 사용할 DB를 생성합니다.
+
+예:
 
 ```text
 feed_prototype
 ```
 
-You can create it with pgAdmin or any local PostgreSQL tool. Real DB data, dumps, and local `.env` files should not be committed.
+pgAdmin 또는 local PostgreSQL 도구를 사용해 생성할 수 있습니다. 실제 DB data, dump, local `.env` file은 commit하지 않습니다.
 
-## Migrate
+## Migration
 
 ```bash
 alembic upgrade head
@@ -75,15 +56,15 @@ alembic upgrade head
 python -m app.services.seed
 ```
 
-The seed script inserts a small generic feed dataset for backend API checks. It is separate from the frontend mock JSON data.
+seed script는 backend API 확인용 generic feed dataset을 DB에 넣습니다. frontend mock JSON과는 별도입니다.
 
-## Run Backend
+## Backend 실행
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-The API will be available at:
+API URL:
 
 ```text
 http://127.0.0.1:8000
@@ -100,25 +81,77 @@ curl http://127.0.0.1:8000/api/follows
 curl "http://127.0.0.1:8000/api/feed?user_id=demo-user-ari"
 ```
 
-If your database has a user with id `1`, this shape also works:
+DB에 id가 `1`인 user가 있다면 아래 형태도 사용할 수 있습니다.
 
 ```bash
 curl "http://127.0.0.1:8000/api/feed?user_id=1"
 ```
 
+## MVP6 Frontend API Read Mode
+
+MVP6부터 frontend API mode가 backend를 read source로 사용합니다. frontend는 `GET /api/users`, `GET /api/feed?user_id=...` 같은 FastAPI endpoint를 호출해 PostgreSQL seed data 기반 feed를 표시합니다.
+
+API user entry는 prototype user selection flow입니다. frontend 사용자는 backend DB에 존재하는 `User`를 id 또는 handle로 선택할 수 있지만, 이것은 login/password/JWT/session/OAuth/authorization이 아닙니다.
+
+## MVP7 API Follow/Unfollow
+
+MVP7은 API mode follow state를 backend DB에 저장합니다.
+
+```bash
+curl http://127.0.0.1:8000/api/users/demo-user-ari/follows
+curl -X POST http://127.0.0.1:8000/api/users/demo-user-ari/follows/demo-account-nova
+curl -X DELETE http://127.0.0.1:8000/api/users/demo-user-ari/follows/demo-account-nova
+curl "http://127.0.0.1:8000/api/feed?user_id=demo-user-ari"
+```
+
+follow는 idempotent하게 동작하도록 설계되어 있습니다. 같은 follow를 반복해도 duplicate row가 계속 생기지 않고, 같은 unfollow를 반복해도 user/account가 존재하면 현재 follow list를 반환합니다.
+
+Mock mode follow state는 frontend localStorage에 별도로 유지됩니다.
+
+## MVP8/MVP9 Post Write
+
+MVP8은 API mode personal post create/delete를 추가했습니다.
+
+MVP9는 tags, metadata, asset descriptor, post edit/update를 추가했습니다.
+
+Post write는 active API user의 1:1 `Account`를 통해 수행합니다. frontend가 임의의 `account_id`를 선택하지 않습니다. ownership check는 MVP prototype 정책이며 formal auth가 아닙니다.
+
+## MVP10 External Post Import
+
+MVP10은 외부 JSON package를 읽어 account/post/assets/metadata를 DB에 upsert하는 import service를 추가했습니다.
+
+Dry-run:
+
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json --dry-run
+```
+
+Actual import:
+
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json
+```
+
+특정 DB URL을 명령에서 override할 수도 있습니다.
+
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json --database-url postgresql+psycopg://postgres:postgres@localhost:5432/feed_ops --dry-run
+```
+
+MVP10은 asset 파일을 복사하지 않습니다. JSON의 `asset.url`에는 UI 브라우저에서 접근 가능한 URL/path를 넣어야 합니다.
+
+자세한 내용:
+
+```text
+../data/external_posts/README.md
+../docs/MVP10_EXTERNAL_POST_FORMAT.md
+../docs/MVP10_TEST_PROCEDURE.md
+```
+
 ## Data Policy
 
-- Existing frontend mock JSON stays in place during MVP5.
-- The frontend is not converted to API-backed data yet.
-- Backend seed data exists separately for DB and read-only API verification.
-- DB state should be reproducible from Alembic migrations plus the seed script.
-- Real PostgreSQL DB data is not committed.
-
-## Not In MVP5
-
-- Authentication or login
-- POST/PUT/PATCH/DELETE APIs
-- Admin UI
-- File upload API
-- S3 integration
-- Frontend API migration
+- frontend mock JSON은 유지합니다.
+- frontend는 PostgreSQL에 직접 연결하지 않습니다.
+- backend DB state는 migration + seed/import script로 재현 가능해야 합니다.
+- 실제 PostgreSQL DB data, dump, `.env`는 commit하지 않습니다.
+- MVP 단계에서 active API user selection은 local prototype state이며 authentication이 아닙니다.

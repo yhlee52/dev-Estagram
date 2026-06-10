@@ -13,6 +13,7 @@ class PostAsset(SQLModel, table=True):
     __tablename__: ClassVar[str] = "post_assets"
 
     id: str = Field(primary_key=True)
+    external_id: str | None = Field(default=None, index=True, unique=True)
     post_id: str = Field(foreign_key="posts.id", index=True)
     type: str
     title: str | None = None
