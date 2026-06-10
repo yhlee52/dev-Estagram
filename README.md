@@ -230,6 +230,65 @@ MVP11 non-goals:
 - Formal authentication, JWT, sessions, OAuth
 - Mock mode removal
 
+## MVP12: Asset Viewer Enhancement
+
+MVP12 name: **Asset Viewer Enhancement**.
+
+MVP12 improves how users view assets attached to posts. It builds on MVP9 asset
+and metadata management, MVP10 external ingestion, and MVP11 filtering. The core
+domain remains generic: User, Account, Post, Feed, Follow, Asset, and Metadata.
+Equipment-report-specific values must remain data in `metadata_json` or asset
+metadata, not core model, route, or component names.
+
+MVP12 goals:
+
+- Treat `image` and `plot` assets as the same visual asset category.
+- Assume `plot` is a saved image file such as PNG or SVG, not an interactive chart.
+- Show image/plot assets as thumbnails.
+- Open image/plot assets in a modal/lightbox when clicked.
+- Let users move prev/next through multiple visual assets attached to one post.
+- Add `asset.sort_order` for stable visual asset display order.
+- Preview `table` assets as CSV files by showing only the first few rows.
+- Show a fallback card and `Open original` action when table preview fails.
+- Show `file` assets as cards with `Open original`; no inline PDF/HTML preview.
+- Show `link` assets as natural hyperlink/cards.
+- Show compact asset previews in PostCard.
+- Show a fuller asset viewer in PostDetail.
+- Prevent broken asset URLs from crashing the app.
+- Update the MVP10 external import JSON format and sample JSON to include `sort_order`.
+- Keep mock mode behavior available.
+
+MVP12 visual asset ordering:
+
+- Visual assets are assets whose `type` is `image` or `plot`.
+- Display order is `sort_order` ascending.
+- If `sort_order` is missing, UI/backend code may fall back to existing array order,
+  creation timestamp, or id.
+
+MVP12 non-goals:
+
+- real file upload
+- S3 upload
+- asset file copy
+- large backend static serving changes
+- folder watch
+- interactive chart rendering
+- Plotly/Vega rendering
+- PDF inline preview
+- HTML iframe preview
+- Excel parser
+- large CSV processing
+- CSV encoding auto-detection
+- image zoom/pan
+- touch swipe carousel
+- fancy animation
+- asset reorder UI
+- advanced asset edit workflow
+- OpenGraph link preview
+- dashboard
+- large import pipeline rewrite
+- mock mode removal
+
 ## Data And Storage
 
 Frontend mock data는 `feed-prototype/src/data` 아래에 있습니다.

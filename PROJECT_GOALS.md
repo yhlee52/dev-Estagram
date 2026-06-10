@@ -379,3 +379,109 @@ OAuth
 mock mode removal
 equipment-report-specific core naming
 ```
+
+## Current MVP: MVP12
+
+MVP12 name: **Asset Viewer Enhancement**.
+
+MVP12 follows MVP9-MVP11. Posts can already store asset descriptors and
+metadata, external programs can import generic post packages, and users can
+filter posts by metadata, tag, asset type, and account. MVP12 focuses on making
+attached assets easier to view while keeping the feed domain generic.
+
+MVP12 does not turn the app into an equipment-report-specific viewer. Core
+concepts remain User, Account, Post, Feed, Follow, Asset, and Metadata. Values
+such as recipe, chamber, severity, equipment state, or analysis result stay in
+`metadata_json` or asset metadata.
+
+## MVP12 Goals
+
+- Treat `image` and `plot` assets as the same visual asset category.
+- Assume `plot` means an externally generated image file such as PNG or SVG.
+- Do not render interactive charts for plot assets in MVP12.
+- Show image/plot assets as thumbnails.
+- Open image/plot assets in a modal/lightbox.
+- Support prev/next navigation across multiple image/plot assets on one post.
+- Add `asset.sort_order` so imported and edited assets have stable display order.
+- Preview `table` assets as UTF-8 CSV files by showing only the first few rows.
+- Show fallback table cards and `Open original` when CSV preview cannot load.
+- Render `file` assets as file cards with `Open original`, without inline preview.
+- Render `link` assets as hyperlink/cards with title, description, URL, and open action.
+- Show compact asset preview in PostCard.
+- Show full asset viewer in PostDetail.
+- Handle broken asset URLs without crashing the app.
+- Update MVP10 external import docs and sample JSON to include `sort_order`.
+- Keep mock mode behavior unchanged.
+
+## MVP12 Asset Policy
+
+Visual assets:
+
+```text
+type = image
+type = plot
+```
+
+Display order:
+
+```text
+sort_order ascending
+fallback to existing order, created_at, or id when sort_order is missing
+```
+
+Table assets:
+
+```text
+type = table
+url points to a browser-accessible CSV
+preview only the first few rows
+provide Open original
+fallback cleanly on fetch or parse failure
+```
+
+File assets:
+
+```text
+type = file
+PDF/HTML or other files may be linked
+no inline PDF viewer
+no HTML iframe preview
+provide Open original
+```
+
+Link assets:
+
+```text
+type = link
+render as a hyperlink/card
+no OpenGraph scraping
+```
+
+## MVP12 Non-Goals
+
+MVP12 does not implement:
+
+```text
+actual file upload
+S3 upload
+asset file copy
+large backend static serving changes
+folder watch
+interactive chart rendering
+Plotly/Vega rendering
+PDF inline preview
+HTML iframe preview
+Excel parser
+large CSV processing
+CSV encoding auto-detection
+image zoom/pan
+touch swipe carousel
+fancy animation
+asset reorder UI
+advanced asset edit workflow
+OpenGraph link preview
+dashboard
+large import pipeline rewrite
+mock mode removal
+equipment-report-specific core naming
+```

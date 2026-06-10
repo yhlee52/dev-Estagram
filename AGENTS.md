@@ -304,6 +304,60 @@ MVP11 non-goals:
 - Formal authentication, JWT, sessions, OAuth.
 - Mock mode removal.
 
+## Current MVP12 Scope: Asset Viewer Enhancement
+
+MVP12 name: **Asset Viewer Enhancement**.
+
+MVP12 makes post assets easier to view. It builds on MVP9 asset/metadata
+management, MVP10 external post ingestion, and MVP11 filter/search. The product
+model remains generic. Do not introduce Equipment, Report, Sensor, Chamber,
+Recipe, Severity, or other equipment-report-specific concepts into core type
+names, primary component names, routes, or data flow. Scenario-specific values
+remain in `metadata_json` or asset metadata.
+
+MVP12 goal:
+
+- Treat `image` and `plot` assets as the same visual asset category.
+- Treat `plot` as a saved image file such as PNG/SVG, not an interactive chart.
+- Show image/plot assets as thumbnails.
+- Open image/plot assets in a modal/lightbox when clicked.
+- Support prev/next navigation when one post has multiple image/plot assets.
+- Add and document `asset.sort_order` for stable visual asset display order.
+- Sort visual assets by `sort_order` ascending, with existing order/created_at/id fallback when missing.
+- Treat `table` assets as CSV files and preview only the first few rows.
+- Provide fallback table cards and an `Open original` action when table preview fails.
+- Render `file` assets as file cards with `Open original`; do not inline preview PDF or HTML.
+- Render `link` assets as natural hyperlink/cards.
+- Show compact asset preview in PostCard.
+- Show full asset viewer in PostDetail.
+- Make broken asset URLs fail gracefully without crashing the app.
+- Update MVP10 external import JSON format and sample JSON to include `sort_order`.
+- Keep mock mode behavior unchanged.
+
+MVP12 non-goals:
+
+- Actual file upload.
+- S3 upload.
+- Asset file copy.
+- Large backend static serving changes.
+- Folder watch.
+- Interactive chart rendering.
+- Plotly/Vega rendering.
+- PDF inline preview.
+- HTML iframe preview.
+- Excel parser.
+- Large CSV processing.
+- CSV encoding auto-detection.
+- Image zoom/pan.
+- Touch swipe carousel.
+- Fancy animation.
+- Asset reorder UI.
+- Advanced asset edit workflow.
+- OpenGraph link preview.
+- Dashboard.
+- Large import pipeline rewrite.
+- Mock mode removal.
+
 ## Development Guidelines
 
 - TypeScript build를 통과시킵니다.

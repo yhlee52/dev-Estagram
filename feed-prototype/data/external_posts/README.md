@@ -1,6 +1,6 @@
 # 외부 Post Import Package
 
-이 폴더는 MVP10 **External Post Ingestion Pipeline**을 위한 외부 post package 작업 공간입니다.
+이 폴더는 MVP10 **External Post Ingestion Pipeline**을 위한 외부 post package 작업 공간입니다. MVP12 **Asset Viewer Enhancement**부터 asset descriptor에 optional `sort_order`를 포함해 viewer 표시 순서를 안정적으로 지정할 수 있습니다.
 
 MVP10은 UI에서 post를 직접 작성하는 기능이 아닙니다. 외부 분석 프로그램 또는 post 생성 프로그램이 JSON 기반 post package를 만들고, import script가 그 package를 backend DB에 넣습니다. import된 post는 기존 UI에서 일반 post처럼 표시되어야 합니다.
 
@@ -130,6 +130,7 @@ python -m app.services.import_external_posts --input ../data/external_posts/exam
 - `url`: 필수. UI 브라우저에서 접근 가능한 URL/path입니다.
 - `title`: optional. asset 제목입니다.
 - `description`: optional. asset 설명입니다.
+- `sort_order`: optional integer. MVP12 viewer에서 asset 표시 순서로 사용합니다.
 
 MVP10에서 허용하는 asset type:
 
@@ -140,6 +141,18 @@ table
 file
 link
 ```
+
+MVP12 asset viewer 정책:
+
+- `image`와 `plot`은 같은 visual asset으로 처리합니다.
+- `plot`은 Plotly/Vega 같은 interactive chart가 아니라 PNG/SVG 등 저장된 image file로 봅니다.
+- visual asset은 `sort_order` 오름차순으로 표시합니다.
+- `sort_order`가 없으면 기존 배열 순서, 생성 시각, id fallback을 사용할 수 있습니다.
+- `table`은 CSV로 보고 앞 몇 행만 preview합니다.
+- table preview 실패 시 fallback card와 원본 열기 action을 제공합니다.
+- `file`은 PDF/HTML 등을 포함할 수 있지만 inline preview 없이 원본 열기 card로 표시합니다.
+- `link`는 hyperlink/card로 표시하며 OpenGraph scraping은 하지 않습니다.
+- 깨진 asset URL은 앱 전체 crash가 아니라 fallback state로 처리해야 합니다.
 
 ## Upsert 정책
 
@@ -274,4 +287,30 @@ MVP10은 다음을 구현하지 않습니다.
 - batch 관리 UI
 - import 결과 dashboard
 - formal authentication, JWT, sessions, OAuth
+- mock mode 제거
+
+## MVP12에서 하지 않는 것
+
+MVP12는 다음을 구현하지 않습니다.
+
+- 실제 file upload
+- S3 upload
+- asset 파일 복사
+- backend static serving 대규모 변경
+- folder watch
+- interactive chart rendering
+- Plotly/Vega rendering
+- PDF inline preview
+- HTML iframe preview
+- Excel parser
+- 대용량 CSV 처리
+- CSV 인코딩 자동 감지
+- image zoom/pan
+- touch swipe carousel
+- fancy animation
+- asset reorder UI
+- asset edit 고도화
+- OpenGraph link preview
+- dashboard
+- import pipeline 대규모 변경
 - mock mode 제거

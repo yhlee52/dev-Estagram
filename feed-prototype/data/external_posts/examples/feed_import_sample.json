@@ -34,14 +34,16 @@
           "type": "image",
           "url": "/assets/generated/temp_trend_001.png",
           "title": "Temperature trend",
-          "description": "Generated temperature trend plot."
+          "description": "Generated temperature trend plot.",
+          "sort_order": 1
         },
         {
           "external_id": "asset-table-2026-06-09-001",
           "type": "table",
           "url": "/assets/generated/summary_table_001.csv",
           "title": "Summary table",
-          "description": "Generated summary table."
+          "description": "Generated summary table.",
+          "sort_order": 2
         }
       ]
     },
@@ -65,21 +67,24 @@
           "type": "plot",
           "url": "/assets/generated/temp_distribution_002.png",
           "title": "Temperature distribution",
-          "description": "Generated distribution plot."
+          "description": "Generated distribution plot.",
+          "sort_order": 1
         },
         {
           "external_id": "asset-file-2026-06-09-002",
           "type": "file",
           "url": "/assets/generated/source_payload_002.json",
           "title": "Source payload",
-          "description": "Original generated payload used for this post."
+          "description": "Original generated payload used for this post.",
+          "sort_order": 2
         },
         {
           "external_id": "asset-link-2026-06-09-002",
           "type": "link",
           "url": "https://example.com/internal/generated/post-temp-2026-06-09-002",
           "title": "Generation record",
-          "description": "External record for the generation run."
+          "description": "External record for the generation run.",
+          "sort_order": 3
         }
       ]
     }

@@ -2,7 +2,7 @@
 
 MVP10은 **External Post Ingestion Pipeline**입니다. 외부 분석 프로그램 또는 post 생성 프로그램이 JSON 기반 post package를 만들고, import service가 그 package를 읽어 generic feed data를 backend DB에 upsert합니다. UI는 import된 post를 일반 post처럼 표시합니다.
 
-MVP10은 UI post creation, file upload, S3 upload, folder watch, scheduler, metadata search, advanced asset viewer 기능이 아닙니다.
+MVP10은 UI post creation, file upload, S3 upload, folder watch, scheduler, metadata search, advanced asset viewer 기능이 아닙니다. MVP12에서는 이 format에 `asset.sort_order`를 추가해 visual asset viewer의 안정적인 표시 순서를 지원합니다.
 
 ## Package 구조
 
@@ -133,6 +133,7 @@ core feed model은 generic하게 유지합니다. recipe, chamber, status, sever
 - `url`: 필수 browser-accessible URL/path입니다.
 - `title`: optional asset title입니다.
 - `description`: optional asset description입니다.
+- `sort_order`: optional integer입니다. MVP12 viewer에서 stable display order로 사용합니다.
 
 허용 asset type:
 
@@ -152,9 +153,20 @@ link
   "type": "image",
   "url": "/assets/generated/temp_trend_001.png",
   "title": "Temperature trend",
-  "description": "Generated temperature trend plot."
+  "description": "Generated temperature trend plot.",
+  "sort_order": 1
 }
 ```
+
+MVP12 asset viewer policy:
+
+- `image`와 `plot`은 같은 visual asset으로 취급합니다.
+- `plot`은 interactive chart가 아니라 PNG/SVG 같은 저장된 image file로 봅니다.
+- 한 post에 여러 visual asset이 있으면 `sort_order` 오름차순으로 표시합니다.
+- `sort_order`가 없으면 기존 배열 순서, created_at, id 같은 fallback을 사용할 수 있습니다.
+- `table`은 CSV preview 대상입니다. preview 실패 시 fallback card와 원본 열기 action을 제공합니다.
+- `file`은 inline preview 없이 원본 열기 card로 표시합니다.
+- `link`는 hyperlink/card로 표시합니다.
 
 Asset replacement policy:
 
@@ -237,8 +249,12 @@ Account Profile behavior:
 Post Detail behavior:
 
 - `title`, `text`, `tags`, `metadata_json`, `created_at`, `updated_at`, `imported_at`은 기존 post detail UI를 사용합니다.
-- image asset은 URL이 browser-accessible이면 image preview로 표시됩니다.
-- plot, table, file, link asset은 기존 MVP asset placeholder/link-card UI로 표시됩니다.
+- image/plot asset은 URL이 browser-accessible이면 visual thumbnail과 lightbox viewer로 표시됩니다.
+- 한 post에 image/plot asset이 여러 개 있으면 `sort_order` 기준으로 prev/next 이동을 제공합니다.
+- table asset은 CSV 앞 몇 행을 preview하고 원본 열기 action을 제공합니다.
+- file asset은 inline preview 없이 원본 열기 card로 표시됩니다.
+- link asset은 hyperlink/card로 표시됩니다.
+- asset URL이 깨져도 fallback state를 표시하고 앱 전체가 crash되지 않아야 합니다.
 
 Edit/delete behavior:
 
