@@ -72,7 +72,7 @@ export default function PostFilterPanel({
   const resultLabel =
     resultCount === undefined
       ? ''
-      : `${hasAppliedFilters ? 'Filters applied · ' : ''}Showing ${resultCount} ${
+      : `${hasAppliedFilters ? 'Filters applied - ' : ''}Showing ${resultCount} ${
           resultCount === 1 ? 'post' : 'posts'
         }`;
 

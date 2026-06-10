@@ -121,6 +121,15 @@ def validate_post_filters(session: Session, filters: PostFilters) -> PostFilters
             ),
         )
 
+    if (
+        normalized_filters.metadata_value is not None
+        and normalized_filters.metadata_key is None
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="metadata_key is required when metadata_value is set",
+        )
+
     if normalized_filters.my_posts_only and normalized_filters.user_id is None:
         raise HTTPException(
             status_code=400,
