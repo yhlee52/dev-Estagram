@@ -124,7 +124,7 @@ export const apiFeedRepository: FeedRepository = {
       return [];
     }
 
-    const response = await getFeed(userId);
+    const response = await getFeed(userId, options.filters);
 
     return mapApiFeedResponseToFeedItems(response);
   },

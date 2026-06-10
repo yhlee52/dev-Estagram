@@ -1,13 +1,25 @@
 import { apiDelete, apiGet, apiPatch, apiPost } from "./client";
+import { buildPostFilterQuery } from "./postFilterQuery";
+import { getActiveApiUserId } from "../auth/apiActiveUser";
 import type {
   ApiFeedItem,
   ApiPostCreatePayload,
   ApiPostUpdatePayload,
   ApiPostWithAssets,
 } from "./types";
+import type { PostFilters } from "../types/filters";
 
-export const getPosts = (): Promise<ApiPostWithAssets[]> =>
-  apiGet<ApiPostWithAssets[]>("/api/posts");
+export const getPosts = (
+  filters?: PostFilters,
+  activeUserId = getActiveApiUserId() ?? undefined,
+): Promise<ApiPostWithAssets[]> => {
+  const searchParams = buildPostFilterQuery(filters, { userId: activeUserId });
+  const queryString = searchParams.toString();
+
+  return apiGet<ApiPostWithAssets[]>(
+    queryString ? `/api/posts?${queryString}` : "/api/posts",
+  );
+};
 
 export const getPost = (postId: string): Promise<ApiPostWithAssets> =>
   apiGet<ApiPostWithAssets>(`/api/posts/${encodeURIComponent(postId)}`);
