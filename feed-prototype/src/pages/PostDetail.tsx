@@ -5,6 +5,7 @@ import { getAccount } from '../api/accountsApi';
 import { deletePost, getPost } from '../api/postsApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import AssetRenderer from '../components/AssetRenderer';
+import AssetGallery from '../components/AssetGallery';
 import EmptyState from '../components/EmptyState';
 import MetadataTable from '../components/MetadataTable';
 import PostBadges from '../components/PostBadges';
@@ -18,6 +19,7 @@ import { getApiBaseUrl } from '../config/apiConfig';
 import { getDataSourceMode } from '../config/dataSource';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import type { Account, Post } from '../types/feed';
+import { isVisualAsset } from '../utils/assetUtils';
 import { formatDateTime } from '../utils/format';
 
 const posts = postsData as unknown as Post[];
@@ -137,6 +139,7 @@ export default function PostDetail() {
   const post = isApiDataSource ? apiPost : mockPost;
   const account = isApiDataSource ? apiAccount : mockAccount;
   const postAssets = post?.assets ?? [];
+  const nonVisualAssets = postAssets.filter((asset) => !isVisualAsset(asset));
   const postTags = post?.tags ?? [];
   const postCreatedAt = post?.createdAt ?? post?.created_at ?? '';
   const postUpdatedAt = post?.updatedAt ?? post?.updated_at ?? '';
@@ -350,29 +353,36 @@ export default function PostDetail() {
 
       {postAssets.length > 0 ? (
         <section className="space-y-3">
-          <div className="flex items-end justify-between px-1">
-            <h2 className="text-sm font-bold text-neutral-950">Assets</h2>
-            <span className="text-xs font-medium text-neutral-400">
-              {postAssets.length} item{postAssets.length === 1 ? '' : 's'}
-            </span>
-          </div>
+          <AssetGallery assets={postAssets} variant="full" />
 
-          {postAssets.map((asset, index) => (
-            <section
-              key={asset.id ?? `${post.id}-asset-${index}`}
-              className="space-y-2 rounded-md border border-neutral-200 bg-white p-3 shadow-sm"
-            >
-              <div className="flex items-center justify-between gap-3 px-1">
-                <h3 className="min-w-0 truncate text-sm font-bold text-neutral-950">
-                  {asset.title ?? `${asset.type} asset`}
-                </h3>
-                <span className="shrink-0 rounded-full bg-neutral-100 px-2 py-1 text-xs font-bold uppercase text-neutral-500">
-                  {asset.type}
+          {nonVisualAssets.length > 0 ? (
+            <section className="space-y-3">
+              <div className="flex items-end justify-between px-1">
+                <h2 className="text-sm font-bold text-neutral-950">Other assets</h2>
+                <span className="text-xs font-medium text-neutral-400">
+                  {nonVisualAssets.length} item
+                  {nonVisualAssets.length === 1 ? '' : 's'}
                 </span>
               </div>
-              <AssetRenderer asset={asset} variant="full" />
+
+              {nonVisualAssets.map((asset, index) => (
+                <section
+                  key={asset.id ?? `${post.id}-asset-${index}`}
+                  className="space-y-2 rounded-md border border-neutral-200 bg-white p-3 shadow-sm"
+                >
+                  <div className="flex items-center justify-between gap-3 px-1">
+                    <h3 className="min-w-0 truncate text-sm font-bold text-neutral-950">
+                      {asset.title ?? `${asset.type} asset`}
+                    </h3>
+                    <span className="shrink-0 rounded-full bg-neutral-100 px-2 py-1 text-xs font-bold uppercase text-neutral-500">
+                      {asset.type}
+                    </span>
+                  </div>
+                  <AssetRenderer asset={asset} variant="full" />
+                </section>
+              ))}
             </section>
-          ))}
+          ) : null}
         </section>
       ) : null}
 
