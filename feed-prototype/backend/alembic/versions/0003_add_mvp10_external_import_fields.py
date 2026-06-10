@@ -1,7 +1,7 @@
 """add mvp10 external import fields
 
-Revision ID: 0003_add_mvp10_external_import_fields
-Revises: 0002_add_mvp9_post_assets_metadata
+Revision ID: 0003_mvp10_import_fields
+Revises: 0002_mvp9_assets_metadata
 Create Date: 2026-06-09
 """
 
@@ -11,8 +11,8 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision: str = "0003_add_mvp10_external_import_fields"
-down_revision: str | None = "0002_add_mvp9_post_assets_metadata"
+revision: str = "0003_mvp10_import_fields"
+down_revision: str | None = "0002_mvp9_assets_metadata"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
