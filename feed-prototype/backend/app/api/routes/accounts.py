@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
 
 from app.api.deps import get_session
@@ -6,6 +6,7 @@ from app.models.account import Account
 from app.models.asset import PostAsset
 from app.models.post import Post
 from app.schemas.feed import AccountRead, PostAssetRead, PostRead, PostWithAssets
+from app.services.post_filters import PostFilters, apply_post_filters
 
 
 router = APIRouter(prefix="/api/accounts", tags=["accounts"])
@@ -47,6 +48,13 @@ def build_post_with_assets(session: Session, post: Post) -> PostWithAssets:
 @router.get("/{account_id}/posts", response_model=list[PostWithAssets])
 def list_account_posts(
     account_id: str,
+    keyword: str | None = Query(default=None),
+    tag: str | None = Query(default=None),
+    metadata_key: str | None = Query(default=None),
+    metadata_value: str | None = Query(default=None),
+    asset_type: str | None = Query(default=None),
+    user_id: str | None = Query(default=None),
+    my_posts_only: bool = Query(default=False),
     session: Session = Depends(get_session),
 ) -> list[PostWithAssets]:
     account = session.get(Account, account_id)
@@ -58,4 +66,18 @@ def list_account_posts(
         .where(Post.account_id == account_id)
         .order_by(Post.created_at.desc())
     ).all()
-    return [build_post_with_assets(session, post) for post in posts]
+    filtered_posts, _, _ = apply_post_filters(
+        session,
+        posts,
+        PostFilters(
+            keyword=keyword,
+            tag=tag,
+            metadata_key=metadata_key,
+            metadata_value=metadata_value,
+            asset_type=asset_type,
+            account_id=account_id,
+            user_id=user_id,
+            my_posts_only=my_posts_only,
+        ),
+    )
+    return [build_post_with_assets(session, post) for post in filtered_posts]

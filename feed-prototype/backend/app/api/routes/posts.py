@@ -18,15 +18,42 @@ from app.schemas.feed import (
     PostUpdate,
     PostWithAssets,
 )
+from app.services.post_filters import PostFilters, apply_post_filters
 
 
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
 
 @router.get("", response_model=list[PostWithAssets])
-def list_posts(session: Session = Depends(get_session)) -> list[PostWithAssets]:
+def list_posts(
+    keyword: str | None = Query(default=None),
+    tag: str | None = Query(default=None),
+    metadata_key: str | None = Query(default=None),
+    metadata_value: str | None = Query(default=None),
+    asset_type: str | None = Query(default=None),
+    account_id: str | None = Query(default=None),
+    account_handle: str | None = Query(default=None),
+    user_id: str | None = Query(default=None),
+    my_posts_only: bool = Query(default=False),
+    session: Session = Depends(get_session),
+) -> list[PostWithAssets]:
     posts = session.exec(select(Post).order_by(Post.created_at.desc())).all()
-    return [build_post_with_assets(session, post) for post in posts]
+    filtered_posts, _, _ = apply_post_filters(
+        session,
+        posts,
+        PostFilters(
+            keyword=keyword,
+            tag=tag,
+            metadata_key=metadata_key,
+            metadata_value=metadata_value,
+            asset_type=asset_type,
+            account_id=account_id,
+            account_handle=account_handle,
+            user_id=user_id,
+            my_posts_only=my_posts_only,
+        ),
+    )
+    return [build_post_with_assets(session, post) for post in filtered_posts]
 
 
 def get_user_account(session: Session, user_id: str) -> Account:

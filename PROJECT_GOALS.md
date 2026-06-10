@@ -275,3 +275,107 @@ equipment-report-specific core naming
 - frontend는 PostgreSQL에 직접 연결하지 않습니다.
 - MVP 단계에서는 `User`와 `Account`를 1:1로 유지합니다.
 - active API user selection은 local prototype state이며 authentication이 아닙니다.
+
+## Current MVP: MVP11
+
+MVP11 name: **Metadata / Tag / Asset Filter & Search**.
+
+MVP11 follows MVP10. MVP10 made it possible for external programs to import
+generic posts, assets, tags, and metadata into the backend DB. MVP11 lets users
+filter those accumulated posts with simple API-mode conditions.
+
+MVP11 is intentionally simple. It should help users find relevant posts without
+introducing a full search platform, saved search system, analytics product, or
+domain-specific report model.
+
+## MVP11 Goals
+
+- Add filter query parameters to the existing `GET /api/posts` and `GET /api/feed` read APIs.
+- Support filtering by keyword, tag, metadata key-value, asset type, and account.
+- Support `my_posts_only` based on the active API user's 1:1 Account.
+- Add a compact filter/search panel at the top of API-mode Home Feed.
+- Let users enter keyword, tag, metadata key/value, and asset type, then Apply or Reset.
+- Show an empty state when filters return no matching posts.
+- Keep mock mode behavior unchanged.
+- Use MVP10 imported posts as useful test data for filter behavior.
+
+Keyword search target fields:
+
+```text
+post.title
+post.text
+account.handle
+account.display_name
+```
+
+Metadata filtering policy:
+
+- Metadata filters are generic key-value filters over `metadata_json`.
+- Domain values such as severity, recipe, chamber, equipment, or analysis status remain data values.
+- Core models, route names, shared component names, and primary UI controls must not hard-code equipment-report-specific fields.
+- A user may search with `metadata_key=severity&metadata_value=high`; that does not make severity a core product concept.
+
+## MVP11 API Candidate
+
+Existing APIs receive optional query parameters:
+
+```text
+GET /api/posts
+GET /api/feed
+```
+
+Recommended query parameters:
+
+```text
+keyword
+tag
+metadata_key
+metadata_value
+asset_type
+account_id
+account_handle
+user_id
+my_posts_only
+```
+
+Example requests:
+
+```text
+GET /api/posts?keyword=temperature
+GET /api/posts?tag=daily-report
+GET /api/posts?metadata_key=source&metadata_value=analysis-program
+GET /api/posts?asset_type=image
+GET /api/posts?account_handle=temp_report_bot
+GET /api/feed?user_id=1&tag=daily-report&asset_type=image
+GET /api/posts?user_id=1&my_posts_only=true
+```
+
+## MVP11 Non-Goals
+
+MVP11 does not implement:
+
+```text
+Elasticsearch
+Advanced PostgreSQL full-text search
+semantic search
+vector search
+saved search
+advanced query builder
+complex AND/OR condition UI
+exclude filter
+advanced multi-select
+advanced date range filtering
+pagination/infinite scroll overhaul
+dashboard
+analytics
+chart/table parsing
+advanced asset viewer
+import pipeline changes
+bot account auto generation
+formal authentication
+JWT
+sessions
+OAuth
+mock mode removal
+equipment-report-specific core naming
+```

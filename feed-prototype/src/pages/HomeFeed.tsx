@@ -3,6 +3,11 @@ import { Link } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
+import PostFilterPanel, {
+  emptyPostFilters,
+  getPostFilterValidationError,
+  hasActivePostFilters,
+} from '../components/PostFilterPanel';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import { getApiBaseUrl } from '../config/apiConfig';
 import { getDataSourceMode } from '../config/dataSource';
@@ -11,6 +16,7 @@ import { API_FOLLOWS_CHANGE_EVENT } from '../hooks/useApiFollows';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useFollowState } from '../hooks/useFollowState';
 import type { FeedItem } from '../types/feed';
+import type { PostFilters } from '../types/filters';
 
 const dataSourceMode = getDataSourceMode();
 const isApiDataSource = dataSourceMode === 'api';
@@ -48,6 +54,10 @@ export default function HomeFeed() {
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [draftFilters, setDraftFilters] = useState<PostFilters>(emptyPostFilters);
+  const [appliedFilters, setAppliedFilters] =
+    useState<PostFilters>(emptyPostFilters);
+  const [filterError, setFilterError] = useState('');
   const accounts = useEffectiveAccounts();
   const { activeUserId, followingIds } = useFollowState();
   const { activeApiUserId } = useActiveApiUser();
@@ -87,6 +97,7 @@ export default function HomeFeed() {
         const items = await getHomeFeedItems({
           activeUserId: isApiDataSource ? activeApiUserId : activeUserId,
           scope: feedScope,
+          filters: isApiDataSource ? appliedFilters : undefined,
         });
 
         if (isMounted) {
@@ -119,13 +130,21 @@ export default function HomeFeed() {
     activeApiUserId,
     activeUserId,
     apiFollowRefreshKey,
+    appliedFilters,
     feedScope,
     followingIds,
     accounts,
   ]);
 
+  const hasAppliedFilters = hasActivePostFilters(appliedFilters);
+
   const emptyState =
-    isApiDataSource ? (
+    isApiDataSource && hasAppliedFilters ? (
+      <EmptyState
+        title="No posts match these filters"
+        description="Try resetting filters or changing the search terms."
+      />
+    ) : isApiDataSource ? (
       <section className="rounded-md border border-dashed border-neutral-300 bg-white px-5 py-12 text-center">
         <div className="mx-auto mb-4 flex size-10 items-center justify-center rounded-full bg-neutral-100 text-sm font-semibold text-neutral-400">
           --
@@ -172,20 +191,54 @@ export default function HomeFeed() {
       </div>
 
       {isApiDataSource ? (
-        <div className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-100 px-3 py-2">
-          <p className="text-xs font-semibold leading-5 text-neutral-600">
-            API mode feed reflects backend follow state.
-          </p>
-          <button
-            type="button"
-            className="h-8 shrink-0 rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-400"
-            disabled={isLoading}
-            onClick={() => {
-              setApiFollowRefreshKey((currentKey) => currentKey + 1);
+        <div className="space-y-3 rounded-md border border-neutral-200 bg-neutral-100 p-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold leading-5 text-neutral-600">
+              API mode feed reflects backend follow state.
+            </p>
+            <button
+              type="button"
+              className="h-8 shrink-0 rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-400"
+              disabled={isLoading}
+              onClick={() => {
+                setApiFollowRefreshKey((currentKey) => currentKey + 1);
+              }}
+            >
+              Refresh feed
+            </button>
+          </div>
+
+          <PostFilterPanel
+            filters={draftFilters}
+            onChange={(nextFilters) => {
+              if (nextFilters.metadataKey?.trim()) {
+                setFilterError('');
+              }
+
+              setDraftFilters(nextFilters);
             }}
-          >
-            Refresh feed
-          </button>
+            onApply={() => {
+              const validationError = getPostFilterValidationError(draftFilters);
+              if (validationError) {
+                setFilterError(validationError);
+                return;
+              }
+
+              setFilterError('');
+              setAppliedFilters(draftFilters);
+            }}
+            onReset={() => {
+              setDraftFilters(emptyPostFilters);
+              setAppliedFilters(emptyPostFilters);
+              setFilterError('');
+            }}
+            isLoading={isLoading}
+            resultCount={!isLoading && !error && activeApiUserId ? feedItems.length : undefined}
+            mode="feed"
+            activeUserId={activeApiUserId}
+            error={filterError}
+            hasAppliedFilters={hasAppliedFilters}
+          />
         </div>
       ) : (
         <div className="grid grid-cols-2 rounded-md border border-neutral-200 bg-neutral-100 p-1">

@@ -618,7 +618,38 @@ git diff
 - `data/external_posts/incoming`의 실제 운영 데이터는 Git에 넣지 않는 것을 권장합니다.
 - backend `.venv`가 Git에 잡히지 않아야 합니다.
 
-## 15. MVP10 성공 기준
+## 15. Next Step: MVP11
+
+MVP11 name: **Metadata / Tag / Asset Filter & Search**.
+
+After MVP10 import succeeds, the next step is to use imported posts as test data
+for API-mode filtering and search. MVP11 will add simple filter query parameters
+to `GET /api/posts` and `GET /api/feed`, plus a Home Feed filter/search panel.
+
+Planned MVP11 filter parameters:
+
+```text
+keyword
+tag
+metadata_key
+metadata_value
+asset_type
+account_id
+account_handle
+user_id
+my_posts_only
+```
+
+MVP11 should keep metadata filtering generic. Domain-specific values such as
+severity, recipe, chamber, equipment, and analysis status may appear inside
+`metadata_json`, but they should not become core model fields or hard-coded UI
+controls.
+
+MVP11 remains out of scope for Elasticsearch, vector search, semantic search,
+saved search, advanced query builders, dashboard/analytics, import pipeline
+changes, formal auth, and mock mode removal.
+
+## 16. MVP10 성공 기준
 
 MVP10 완료 판단 기준:
 

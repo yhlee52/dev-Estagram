@@ -3,7 +3,6 @@ from sqlmodel import Session, select
 
 from app.api.deps import get_session
 from app.models.account import Account
-from app.models.asset import PostAsset
 from app.models.follow import Follow
 from app.models.post import Post
 from app.models.user import User
@@ -15,6 +14,7 @@ from app.schemas.feed import (
     PostRead,
     UserRead,
 )
+from app.services.post_filters import PostFilters, apply_post_filters
 
 
 router = APIRouter(prefix="/api/feed", tags=["feed"])
@@ -23,6 +23,14 @@ router = APIRouter(prefix="/api/feed", tags=["feed"])
 @router.get("", response_model=FeedResponse)
 def get_feed(
     user_id: str = Query(...),
+    keyword: str | None = Query(default=None),
+    tag: str | None = Query(default=None),
+    metadata_key: str | None = Query(default=None),
+    metadata_value: str | None = Query(default=None),
+    asset_type: str | None = Query(default=None),
+    account_id: str | None = Query(default=None),
+    account_handle: str | None = Query(default=None),
+    my_posts_only: bool = Query(default=False),
     session: Session = Depends(get_session),
 ) -> FeedResponse:
     user = session.get(User, user_id)
@@ -40,30 +48,32 @@ def get_feed(
         followed_account_ids + ([own_account.id] if own_account is not None else [])
     ))
 
-    if not feed_account_ids:
-        return FeedResponse(user=UserRead.model_validate(user), items=[])
+    filters = PostFilters(
+        keyword=keyword,
+        tag=tag,
+        metadata_key=metadata_key,
+        metadata_value=metadata_value,
+        asset_type=asset_type,
+        account_id=account_id,
+        account_handle=account_handle,
+        user_id=user_id,
+        my_posts_only=my_posts_only,
+    )
 
-    accounts = session.exec(
-        select(Account).where(Account.id.in_(feed_account_ids))
-    ).all()
-    accounts_by_id = {account.id: account for account in accounts}
+    if not feed_account_ids:
+        apply_post_filters(session, [], filters)
+        return FeedResponse(user=UserRead.model_validate(user), items=[])
 
     posts = session.exec(
         select(Post)
         .where(Post.account_id.in_(feed_account_ids))
         .order_by(Post.created_at.desc())
     ).all()
-
-    post_ids = [post.id for post in posts]
-    assets_by_post_id: dict[str, list[PostAsset]] = {post_id: [] for post_id in post_ids}
-    if post_ids:
-        assets = session.exec(
-            select(PostAsset)
-            .where(PostAsset.post_id.in_(post_ids))
-            .order_by(PostAsset.sort_order, PostAsset.created_at)
-        ).all()
-        for asset in assets:
-            assets_by_post_id.setdefault(asset.post_id, []).append(asset)
+    filtered_posts, accounts_by_id, assets_by_post_id = apply_post_filters(
+        session,
+        posts,
+        filters,
+    )
 
     items = [
         FeedItem(
@@ -74,7 +84,7 @@ def get_feed(
                 for asset in assets_by_post_id.get(post.id, [])
             ],
         )
-        for post in posts
+        for post in filtered_posts
         if post.account_id in accounts_by_id
     ]
 
