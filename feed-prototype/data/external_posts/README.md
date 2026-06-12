@@ -1,5 +1,9 @@
 # 외부 Post Import Package
 
+현재 릴리즈 기준: `v0.0.0`.
+
+이 문서는 v0.0.0 기준 external import mode의 package guide입니다. 외부 프로그램이 만든 JSON package를 backend DB에 넣고, API mode UI가 import된 post를 일반 post처럼 표시하는 흐름을 다룹니다.
+
 이 폴더는 MVP10 **External Post Ingestion Pipeline**을 위한 외부 post package 작업 공간입니다. MVP12 **Asset Viewer Enhancement**부터 asset descriptor에 optional `sort_order`를 포함해 viewer 표시 순서를 안정적으로 지정할 수 있습니다.
 
 MVP10은 UI에서 post를 직접 작성하는 기능이 아닙니다. 외부 분석 프로그램 또는 post 생성 프로그램이 JSON 기반 post package를 만들고, import script가 그 package를 backend DB에 넣습니다. import된 post는 기존 UI에서 일반 post처럼 표시되어야 합니다.
@@ -11,6 +15,19 @@ data/external_posts/
   README.md
   examples/
     feed_import_sample.json
+    general_social_sample/
+      feed_posts.json
+      assets/
+        README.md
+    analysis_report_sample/
+      feed_posts.json
+      assets/
+        README.md
+        sample_summary.csv
+    broken_asset_sample/
+      feed_posts.json
+      assets/
+        README.md
     batch_2026-06-09_090000/
       feed_posts.json
       assets/
@@ -34,9 +51,11 @@ data/external_posts/
 
 MVP10에서는 package를 `archive` 또는 `failed`로 자동 이동하지 않습니다.
 
-상세 JSON 포맷 가이드는 `feed-prototype/docs/MVP10_EXTERNAL_POST_FORMAT.md`를 참고하세요.
+v0.0.0 / MVP12 기준 JSON package 작성 가이드는 `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`를 먼저 참고하세요.
 
-validation, dry-run, rollback, 회귀 테스트 절차는 `feed-prototype/docs/MVP10_TEST_PROCEDURE.md`를 참고하세요.
+MVP10 format history와 세부 참고는 `feed-prototype/docs/MVP10_EXTERNAL_POST_FORMAT.md`에 남겨둡니다.
+
+현재 실행 절차와 dry-run/import 검증은 `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`를 참고하세요. 과거 MVP10 회귀 테스트 절차는 `feed-prototype/docs/archive/MVP10_TEST_PROCEDURE.md`에 보관되어 있습니다.
 
 ## Import 흐름
 
@@ -80,6 +99,19 @@ MVP12 asset viewer 전용 예제:
 ```bash
 python -m app.services.import_external_posts --input ../data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json --dry-run
 python -m app.services.import_external_posts --input ../data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json
+```
+
+v0.0.0 demo sample:
+
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/general_social_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/general_social_sample/feed_posts.json
+
+python -m app.services.import_external_posts --input ../data/external_posts/examples/analysis_report_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/analysis_report_sample/feed_posts.json
+
+python -m app.services.import_external_posts --input ../data/external_posts/examples/broken_asset_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/broken_asset_sample/feed_posts.json
 ```
 
 CSV preview를 성공 케이스로 확인하려면 sample CSV를 browser-accessible static 위치로 복사합니다.
@@ -360,7 +392,7 @@ Metadata
 
 core model, shared component, route, data flow에 설비 리포트 전용 이름을 넣지 않습니다. recipe, chamber, severity, equipment state, analysis status 같은 시나리오 전용 값은 `metadata_json` 또는 asset metadata에 넣습니다.
 
-## Dry Run
+## Dry Run 확인
 
 import command는 DB write 전에 package를 검증하기 위해 `--dry-run`을 지원합니다.
 

@@ -1,3 +1,8 @@
+# Archived Document
+
+This document is archived and may not reflect the v0.0.0 release behavior.
+See docs/RELEASE_0_0_RUNBOOK.md for current instructions.
+
 # MVP11 실행 및 테스트 절차
 
 MVP11은 **Metadata / Tag / Asset Filter & Search** 단계입니다. 이 문서는 backend filter API, API mode Home Feed, Browse Posts, MVP10 import data, mock mode 회귀 테스트를 확인하기 위한 실행 절차와 체크리스트입니다.

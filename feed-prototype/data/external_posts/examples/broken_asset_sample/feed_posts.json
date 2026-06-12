@@ -1,0 +1,94 @@
+{
+  "batch": {
+    "external_id": "batch-broken-asset-sample-v0-0-0",
+    "source": "broken-asset-sample",
+    "created_at": "2026-06-12T15:00:00"
+  },
+  "accounts": [
+    {
+      "external_id": "account-broken-asset-sample",
+      "handle": "broken_assets",
+      "display_name": "Broken Asset Samples",
+      "bio": "Fallback and error UI sample posts for the v0.0.0 demo.",
+      "avatar_url": "/assets/generated/broken_asset_sample_avatar.png"
+    }
+  ],
+  "posts": [
+    {
+      "external_id": "post-broken-asset-sample-001",
+      "account_external_id": "account-broken-asset-sample",
+      "title": "Missing visual asset",
+      "text": "This post intentionally references a missing image URL.",
+      "created_at": "2026-06-12T15:05:00",
+      "tags": ["broken-asset-sample", "fallback", "image"],
+      "metadata_json": {
+        "source": "broken-asset-sample",
+        "scenario": "asset-fallback-demo",
+        "mood": "testing",
+        "location": "local-demo"
+      },
+      "assets": [
+        {
+          "external_id": "asset-broken-asset-sample-001-image",
+          "type": "image",
+          "url": "/assets/generated/missing_broken_sample_image.png",
+          "sort_order": 1
+        }
+      ]
+    },
+    {
+      "external_id": "post-broken-asset-sample-002",
+      "account_external_id": "account-broken-asset-sample",
+      "title": "Missing CSV preview",
+      "text": "This post intentionally references a missing CSV URL.",
+      "created_at": "2026-06-12T15:10:00",
+      "tags": ["broken-asset-sample", "fallback", "table"],
+      "metadata_json": {
+        "source": "broken-asset-sample",
+        "scenario": "asset-fallback-demo",
+        "mood": "testing",
+        "location": "local-demo"
+      },
+      "assets": [
+        {
+          "external_id": "asset-broken-asset-sample-002-table",
+          "type": "table",
+          "url": "/assets/generated/missing_broken_sample_table.csv",
+          "title": "",
+          "description": "",
+          "sort_order": 1
+        }
+      ]
+    },
+    {
+      "external_id": "post-broken-asset-sample-003",
+      "account_external_id": "account-broken-asset-sample",
+      "title": "Mixed missing assets",
+      "text": "This post mixes a missing plot and a missing file card target.",
+      "created_at": "2026-06-12T15:15:00",
+      "tags": ["broken-asset-sample", "fallback", "plot", "file"],
+      "metadata_json": {
+        "source": "broken-asset-sample",
+        "scenario": "asset-fallback-demo",
+        "mood": "testing",
+        "location": "local-demo"
+      },
+      "assets": [
+        {
+          "external_id": "asset-broken-asset-sample-003-plot",
+          "type": "plot",
+          "url": "/assets/generated/missing_broken_sample_plot.svg",
+          "title": "Missing plot",
+          "sort_order": 1
+        },
+        {
+          "external_id": "asset-broken-asset-sample-003-file",
+          "type": "file",
+          "url": "/assets/generated/missing_broken_sample_report.pdf",
+          "description": "Missing file target for Open original fallback checks.",
+          "sort_order": 2
+        }
+      ]
+    }
+  ]
+}

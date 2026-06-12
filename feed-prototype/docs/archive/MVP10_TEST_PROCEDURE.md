@@ -1,3 +1,8 @@
+# Archived Document
+
+This document is archived and may not reflect the v0.0.0 release behavior.
+See docs/RELEASE_0_0_RUNBOOK.md for current instructions.
+
 # MVP10 실행 및 테스트 절차
 
 MVP10은 **External Post Ingestion Pipeline**입니다. 이 문서는 외부 post JSON package를 DB에 넣고, 기존 UI에서 일반 post처럼 확인하기 위한 실행 절차와 테스트 체크리스트입니다.

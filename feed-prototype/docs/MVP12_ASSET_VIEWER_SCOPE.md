@@ -212,7 +212,7 @@ Detailed loading, fallback, accessibility, and regression checks are documented
 in:
 
 ```text
-docs/MVP12_TEST_PROCEDURE.md
+docs/archive/MVP12_TEST_PROCEDURE.md
 ```
 
 ## Non-Goals

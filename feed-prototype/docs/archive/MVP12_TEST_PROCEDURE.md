@@ -1,3 +1,8 @@
+# Archived Document
+
+This document is archived and may not reflect the v0.0.0 release behavior.
+See docs/RELEASE_0_0_RUNBOOK.md for current instructions.
+
 # MVP12 실행 및 테스트 절차
 
 MVP12 이름은 **Asset Viewer Enhancement**입니다.

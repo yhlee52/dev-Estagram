@@ -1,0 +1,4 @@
+channel,score,rank,method
+TEMP_01,0.98,1,Tail
+PRESS_02,0.91,2,MAD
+FLOW_03,0.87,3,Trend

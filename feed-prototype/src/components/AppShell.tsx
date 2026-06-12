@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router';
 import { useActiveApiUser } from '../auth/apiActiveUser';
+import { APP_RELEASE_LABEL } from '../config/appVersion';
 import { isApiMode } from '../config/dataSource';
 import { useActiveUser } from '../hooks/useActiveUser';
 import ApiUserEntry from './ApiUserEntry';
@@ -25,7 +26,7 @@ function ApiModeAppShell() {
               <div className="min-w-0">
                 <h1 className="text-lg font-bold tracking-normal">Local Feed</h1>
                 <p className="truncate text-xs font-medium text-neutral-500">
-                  API mode
+                  API mode - {APP_RELEASE_LABEL}
                 </p>
               </div>
 
@@ -94,7 +95,7 @@ function MockModeAppShell() {
               <div className="min-w-0">
                 <h1 className="text-lg font-bold tracking-normal">Local Feed</h1>
                 <p className="truncate text-xs font-medium text-neutral-500">
-                  Local user
+                  Local user - {APP_RELEASE_LABEL}
                 </p>
               </div>
 
