@@ -1,3 +1,8 @@
+# Archived Document
+
+This document is archived and may not reflect the v0.0.0 release behavior.
+See docs/RELEASE_0_0_RUNBOOK.md for current instructions.
+
 # v0.0.0 Smoke Test
 
 첫 번째 internal/local prototype release를 위한 최종 smoke test입니다.

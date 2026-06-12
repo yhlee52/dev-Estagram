@@ -6,6 +6,18 @@
 
 이 codebase는 personal feed, bot feed, project feed, 향후 회사 내부 설비 리포트 feed를 지원할 수 있을 만큼 generic해야 합니다. core product model은 설비 전용이 아닙니다.
 
+## Current v0.0.0 Release Docs
+
+v0.0.0 기준 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
+
+- `README.md`
+- `feed-prototype/README.md`
+- `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`
+- `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`
+- `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
+
+과거 MVP별 테스트 절차는 `feed-prototype/docs/archive/` 아래에 보관된 historical reference입니다. 현재 실행 절차나 릴리즈 기준을 판단할 때는 archived 문서보다 위 v0.0.0 문서를 우선합니다.
+
 ## Core Domain
 
 core type, shared component, route, data flow에는 다음 generic concept를 사용합니다.

@@ -1,3 +1,8 @@
+# Archived Document
+
+This document is archived and may not reflect the v0.0.0 release behavior.
+See docs/RELEASE_0_0_CHECKLIST.md for the current release checklist.
+
 # v0.0.0 릴리즈 체크리스트
 
 `v0.0.0`은 `feed-prototype`의 첫 번째 공유 가능한 internal/local prototype release입니다.

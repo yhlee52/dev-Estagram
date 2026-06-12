@@ -55,7 +55,7 @@ v0.0.0 / MVP12 기준 JSON package 작성 가이드는 `feed-prototype/docs/EXTE
 
 MVP10 format history와 세부 참고는 `feed-prototype/docs/MVP10_EXTERNAL_POST_FORMAT.md`에 남겨둡니다.
 
-validation, dry-run, rollback, 회귀 테스트 절차는 `feed-prototype/docs/MVP10_TEST_PROCEDURE.md`를 참고하세요.
+현재 실행 절차와 dry-run/import 검증은 `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`를 참고하세요. 과거 MVP10 회귀 테스트 절차는 `feed-prototype/docs/archive/MVP10_TEST_PROCEDURE.md`에 보관되어 있습니다.
 
 ## Import 흐름
 

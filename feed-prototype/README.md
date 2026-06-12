@@ -160,7 +160,7 @@ python -m app.services.import_external_posts --input ../data/external_posts/exam
 
 ```text
 data/external_posts/README.md
-docs/MVP10_EXTERNAL_POST_FORMAT.md
+docs/EXTERNAL_POST_PACKAGE_GUIDE.md
 ```
 
 ## Sample Data
@@ -175,6 +175,9 @@ backend/app/services/seed.py
 외부 분석/리포트형 sample package:
 
 ```text
+data/external_posts/examples/general_social_sample/feed_posts.json
+data/external_posts/examples/analysis_report_sample/feed_posts.json
+data/external_posts/examples/broken_asset_sample/feed_posts.json
 data/external_posts/examples/feed_import_sample.json
 data/external_posts/examples/batch_2026-06-09_090000/feed_posts.json
 data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json
@@ -185,8 +188,9 @@ recipe, chamber, status, severity 같은 report-like value는 sample metadata va
 ## 릴리즈 문서
 
 ```text
-docs/RELEASE_CHECKLIST_v0.0.0.md
-docs/SMOKE_TEST_v0.0.0.md
+docs/RELEASE_0_0_RUNBOOK.md
+docs/EXTERNAL_POST_PACKAGE_GUIDE.md
+docs/RELEASE_0_0_CHECKLIST.md
 docs/README.md
 ```
 

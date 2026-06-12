@@ -387,5 +387,5 @@ data/external_posts/examples/batch_2026-06-09_090000/feed_posts.json
 validation, dry-run, rollback, backend regression, frontend regression check는 아래 문서를 참고합니다.
 
 ```text
-docs/MVP10_TEST_PROCEDURE.md
+docs/archive/MVP10_TEST_PROCEDURE.md
 ```

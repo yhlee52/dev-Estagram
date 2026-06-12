@@ -1,3 +1,8 @@
+# Archived Document
+
+This document is archived and may not reflect the v0.0.0 release behavior.
+See docs/RELEASE_0_0_RUNBOOK.md for current instructions.
+
 # MVP9 실행 및 테스트 절차
 
 ## 1. MVP9 목표 요약
