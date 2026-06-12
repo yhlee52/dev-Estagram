@@ -370,6 +370,49 @@ MVP12 non-goals:
 - Large import pipeline rewrite.
 - Mock mode removal.
 
+## Roadmap & Versioning
+
+v0.0.0 이후 작업은 `feed-prototype/docs/ROADMAP.md`의 버전 트리를 따릅니다.
+새 작업을 시작하기 전에 해당 작업이 로드맵의 어느 테마(MIDDLE)에 속하는지
+확인하고, 그 테마의 non-goals를 범위에 넣지 않습니다.
+
+버전 규칙:
+
+- `MAJOR.MIDDLE.MINOR`
+- MAJOR: 제품 성격이 바뀌는 업그레이드에만 사용. 임의로 올리지 않습니다.
+- MIDDLE: 기능 테마 단위. 테마 기반 작업이 `x.y.0`.
+- MINOR: 테마 내 개별 기능/개선/수정.
+- 현재 버전 라벨은 `feed-prototype/src/config/appVersion.ts`의
+  `APP_RELEASE_LABEL`과 일치시킵니다.
+
+작업 단위 규칙:
+
+- 하나의 MINOR 버전은 하나의 집중된 변경 묶음입니다. 여러 MINOR 범위를
+  한 번에 작업하지 않습니다.
+- 각 MIDDLE 테마의 마지막 MINOR는 `feed-prototype/docs/UX_BACKLOG.md`
+  반영용으로 예약되어 있습니다.
+- 로드맵에 없는 기능 요청이 오면 먼저 로드맵의 어느 테마에 속하는지
+  판단하고, 어울리는 자리가 없으면 로드맵 수정을 먼저 제안합니다.
+
+## External Package Format Freeze
+
+external post package JSON format은 v0.0.0 시점에 동결되었습니다.
+외부 생성 프로그램들이 이 형식으로 데이터를 계속 생산하고 있습니다.
+
+규칙:
+
+- 기존 필드의 이름 변경, 삭제, 의미 변경, optional→required 전환을
+  금지합니다.
+- 새 필드는 optional로만 추가하며, 없을 때 기존 동작이 유지되어야 합니다.
+- `external_id` 기반 upsert 동작을 유지합니다. 이미 import된 package의
+  재import는 항상 안전해야 합니다.
+- timezone 없는 `created_at`(naive datetime)은 허용되는 스펙입니다.
+  tz 필수로 바꾸지 않습니다.
+- import 코드 수정 시 `feed-prototype/data/external_posts/examples/` 아래
+  golden sample package들의 `--dry-run` 통과를 확인합니다.
+- format에 영향을 주는 변경이 불가피해 보이면 작업을 멈추고 사용자에게
+  먼저 확인합니다.
+
 ## Development Guidelines
 
 - TypeScript build를 통과시킵니다.
