@@ -71,6 +71,8 @@ FastAPI + PostgreSQL 기반 mode입니다. 실제 DB를 read/write하며 user, a
 - TODO: `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`
 - TODO: `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
 
+환경 설정은 각 `.env.example`을 복사해 `.env`를 만드는 방식으로 시작합니다. 실제 `.env`는 commit하지 않습니다. Vite 환경변수를 바꾼 뒤에는 frontend dev server를 재시작하고, external import 전에는 backend `DATABASE_URL`이 의도한 DB를 가리키는지 확인합니다.
+
 현재 참고 가능한 기존 문서:
 
 - `feed-prototype/README.md`

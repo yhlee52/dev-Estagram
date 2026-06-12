@@ -52,6 +52,8 @@ copy .env.example .env
 
 local PostgreSQL database에 맞게 `DATABASE_URL`을 설정합니다.
 
+`.env.example`을 복사해 `.env`를 만들고, 실제 `.env`는 commit하지 않습니다. Vite 환경변수인 `VITE_DATA_SOURCE`, `VITE_API_BASE_URL`을 변경한 뒤에는 frontend dev server를 재시작합니다. External import를 실행하기 전에는 `backend/.env`의 `DATABASE_URL`이 어느 DB를 가리키는지 먼저 확인합니다.
+
 ## Mock Mode 실행
 
 Mock mode는 frontend만 있으면 실행할 수 있습니다.

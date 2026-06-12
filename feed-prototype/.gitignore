@@ -12,11 +12,14 @@ dist
 dist-ssr
 *.local
 .env
+.env.local
+*.env.local
 
 # Python / backend
 __pycache__/
 *.py[cod]
 backend/.env
+backend/.env.local
 backend/.venv/
 backend/uploads/*
 !backend/uploads/.gitkeep
