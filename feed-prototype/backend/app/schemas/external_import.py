@@ -65,6 +65,7 @@ class ExternalImportAsset(BaseModel):
     url: str
     title: str | None = None
     description: str | None = None
+    sort_order: int | None = None
 
     @field_validator("external_id", "title", "description")
     @classmethod

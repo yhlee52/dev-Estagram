@@ -77,7 +77,7 @@ class PostAssetRead(BaseModel):
     url: str | None = None
     src: str
     mime_type: str | None = None
-    sort_order: int
+    sort_order: int | None = None
     metadata_json: dict[str, Any] | None = None
     created_at: datetime
     updated_at: datetime
@@ -102,6 +102,7 @@ class PostAssetCreate(BaseModel):
     url: str
     title: str | None = None
     description: str | None = None
+    sort_order: int | None = None
 
     @field_validator("type")
     @classmethod

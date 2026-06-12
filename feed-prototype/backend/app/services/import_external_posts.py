@@ -9,7 +9,7 @@ from typing import Any
 from uuid import uuid4
 
 from pydantic import ValidationError
-from sqlmodel import Session, create_engine, select
+from sqlmodel import Session, col, create_engine, select
 
 from app.db.session import create_session
 from app.models.account import Account
@@ -137,7 +137,12 @@ def get_post_assets(session: Session, post_id: str) -> list[PostAsset]:
         session.exec(
             select(PostAsset)
             .where(PostAsset.post_id == post_id)
-            .order_by(PostAsset.sort_order, PostAsset.created_at)
+            .order_by(
+                col(PostAsset.sort_order).is_(None),
+                PostAsset.sort_order,
+                PostAsset.created_at,
+                PostAsset.id,
+            )
         ).all()
     )
 
@@ -318,7 +323,7 @@ def replace_assets_for_post(
 
     session.flush()
 
-    for sort_order, asset_input in enumerate(post_input.assets):
+    for asset_input in post_input.assets:
         session.add(
             PostAsset(
                 id=f"asset-{uuid4()}",
@@ -329,7 +334,7 @@ def replace_assets_for_post(
                 description=asset_input.description,
                 url=asset_input.url,
                 src=asset_input.url,
-                sort_order=sort_order,
+                sort_order=asset_input.sort_order,
             )
         )
 

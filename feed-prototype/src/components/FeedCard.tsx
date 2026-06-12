@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router';
 import type { FeedItem } from '../types/feed';
 import { formatDateTime } from '../utils/format';
 import AssetRenderer from './AssetRenderer';
+import AssetGallery from './AssetGallery';
 import MetadataSummary from './MetadataSummary';
 import PostBadges from './PostBadges';
 import TagList from './TagList';
+import { getSortedVisualAssets, isVisualAsset } from '../utils/assetUtils';
 
 type FeedCardProps = {
   item: FeedItem;
@@ -37,8 +39,13 @@ export default function FeedCard({ item }: FeedCardProps) {
   const navigate = useNavigate();
   const { account, post } = item;
   const postAssets = post.assets ?? [];
+  const visualAssets = getSortedVisualAssets(postAssets);
+  const nonVisualAssets = postAssets.filter((asset) => !isVisualAsset(asset));
   const postTags = post.tags ?? [];
-  const previewAssets = postAssets.slice(0, 2);
+  const previewAssets =
+    visualAssets.length > 0 ? nonVisualAssets.slice(0, 1) : postAssets.slice(0, 2);
+  const hiddenAssetCount =
+    postAssets.length - visualAssets.length - previewAssets.length;
   const postCreatedAt = post.createdAt ?? post.created_at ?? '';
   const postUpdatedAt = post.updatedAt ?? post.updated_at ?? '';
   const shouldShowUpdatedAt =
@@ -86,18 +93,19 @@ export default function FeedCard({ item }: FeedCardProps) {
       </button>
 
       <div className="space-y-4 px-4 pb-4">
-        {previewAssets.length > 0 ? (
+        {postAssets.length > 0 ? (
           <div className="space-y-2">
+            <AssetGallery assets={postAssets} variant="compact" />
             {previewAssets.map((asset, index) => (
               <AssetRenderer
                 key={asset.id ?? `${post.id}-asset-${index}`}
                 asset={asset}
               />
             ))}
-            {postAssets.length > previewAssets.length ? (
+            {hiddenAssetCount > 0 ? (
               <p className="rounded-md bg-neutral-50 px-3 py-2 text-xs font-bold text-neutral-500">
-                +{postAssets.length - previewAssets.length} more asset
-                {postAssets.length - previewAssets.length === 1 ? '' : 's'}
+                +{hiddenAssetCount} more asset
+                {hiddenAssetCount === 1 ? '' : 's'}
               </p>
             ) : null}
           </div>

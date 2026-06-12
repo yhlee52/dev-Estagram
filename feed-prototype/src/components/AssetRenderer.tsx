@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { MetadataValue, PostAsset } from '../types/feed';
 import { formatMetadataValue } from '../utils/format';
 
@@ -12,6 +12,11 @@ type AssetRendererProps = {
 };
 
 type TableRow = Record<string, MetadataValue>;
+
+type CsvPreviewState =
+  | { status: 'idle' | 'loading' }
+  | { status: 'ready'; headers: string[]; rows: string[][] }
+  | { status: 'error'; message: string };
 
 function AssetShell({
   children,
@@ -72,6 +77,21 @@ function renderContentSummary(content: MetadataValue | undefined) {
   return formatMetadataValue(content);
 }
 
+function formatAssetUrl(value: string | undefined): string {
+  if (!value) {
+    return 'No URL available.';
+  }
+
+  try {
+    const url = new URL(value, window.location.origin);
+    return url.origin === window.location.origin
+      ? url.pathname
+      : `${url.hostname}${url.pathname}`;
+  } catch {
+    return value;
+  }
+}
+
 function getAssetUrl(asset: RenderableAsset): string | undefined {
   return asset.url ?? asset.src;
 }
@@ -94,6 +114,64 @@ function getTableRows(content: MetadataValue | undefined): TableRow[] {
     (row): row is TableRow =>
       row !== null && !Array.isArray(row) && typeof row === 'object',
   );
+}
+
+function parseCsvLine(line: string): string[] {
+  const values: string[] = [];
+  let currentValue = '';
+  let isQuoted = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index];
+    const nextCharacter = line[index + 1];
+
+    if (character === '"' && isQuoted && nextCharacter === '"') {
+      currentValue += '"';
+      index += 1;
+      continue;
+    }
+
+    if (character === '"') {
+      isQuoted = !isQuoted;
+      continue;
+    }
+
+    if (character === ',' && !isQuoted) {
+      values.push(currentValue.trim());
+      currentValue = '';
+      continue;
+    }
+
+    currentValue += character;
+  }
+
+  values.push(currentValue.trim());
+  return values;
+}
+
+function parseCsvPreview(
+  text: string,
+  maxRows: number,
+): { headers: string[]; rows: string[][] } {
+  const lines = text
+    .replace(/^\uFEFF/, '')
+    .split(/\r?\n/)
+    .map((line) => line.trimEnd())
+    .filter((line) => line.trim().length > 0)
+    .slice(0, maxRows + 1);
+
+  if (lines.length < 2) {
+    throw new Error('CSV preview needs a header row and at least one data row.');
+  }
+
+  const headers = parseCsvLine(lines[0]);
+  const rows = lines.slice(1).map(parseCsvLine);
+
+  if (headers.length === 0 || rows.length === 0) {
+    throw new Error('CSV preview is empty.');
+  }
+
+  return { headers, rows };
 }
 
 function getChartData(content: MetadataValue | undefined) {
@@ -194,6 +272,147 @@ function CardHeader({
   );
 }
 
+function AssetActionCard({
+  type,
+  title,
+  description,
+  assetUrl,
+  actionLabel,
+  fallbackText,
+}: {
+  type: string;
+  title: string;
+  description?: string;
+  assetUrl?: string;
+  actionLabel: string;
+  fallbackText: string;
+}) {
+  return (
+    <AssetShell>
+      <div className="space-y-4 p-4">
+        <CardHeader type={type} title={title} description={description} />
+        <div className="rounded-md bg-neutral-50 px-3 py-2">
+          <p className="break-all text-xs font-semibold text-neutral-500">
+            {formatAssetUrl(assetUrl)}
+          </p>
+        </div>
+        {assetUrl ? (
+          <a
+            className="inline-flex rounded-md bg-neutral-950 px-3 py-2 text-xs font-bold text-white"
+            href={assetUrl}
+            rel="noreferrer"
+            target="_blank"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {actionLabel}
+          </a>
+        ) : (
+          <p className="text-sm leading-6 text-neutral-500">{fallbackText}</p>
+        )}
+      </div>
+    </AssetShell>
+  );
+}
+
+function CsvPreview({
+  assetUrl,
+  maxRows,
+}: {
+  assetUrl?: string;
+  maxRows: number;
+}) {
+  const [previewState, setPreviewState] = useState<CsvPreviewState>(
+    assetUrl
+      ? { status: 'loading' }
+      : { status: 'error', message: 'No table URL is available.' },
+  );
+
+  useEffect(() => {
+    if (!assetUrl) {
+      setPreviewState({ status: 'error', message: 'No table URL is available.' });
+      return;
+    }
+
+    const abortController = new AbortController();
+    setPreviewState({ status: 'loading' });
+
+    fetch(assetUrl, { signal: abortController.signal })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`CSV request failed with ${response.status}.`);
+        }
+
+        return response.text();
+      })
+      .then((text) => {
+        if (!abortController.signal.aborted) {
+          setPreviewState({ status: 'ready', ...parseCsvPreview(text, maxRows) });
+        }
+      })
+      .catch((error: unknown) => {
+        if (abortController.signal.aborted) {
+          return;
+        }
+
+        setPreviewState({
+          status: 'error',
+          message: error instanceof Error ? error.message : 'CSV preview failed.',
+        });
+      });
+
+    return () => abortController.abort();
+  }, [assetUrl, maxRows]);
+
+  if (previewState.status === 'ready') {
+    return (
+      <div className="overflow-x-auto rounded-md border border-neutral-200">
+        <table className="w-full min-w-[360px] border-collapse text-left text-xs">
+          <thead>
+            <tr className="border-b border-neutral-200 bg-neutral-50 text-neutral-500">
+              {previewState.headers.map((header, index) => (
+                <th key={`${header}-${index}`} className="px-3 py-2 font-bold">
+                  {header || `Column ${index + 1}`}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-neutral-100">
+            {previewState.rows.map((row, rowIndex) => (
+              <tr key={`csv-row-${rowIndex}`}>
+                {previewState.headers.map((header, columnIndex) => (
+                  <td
+                    key={`${header}-${rowIndex}-${columnIndex}`}
+                    className="max-w-56 truncate px-3 py-2 text-neutral-700"
+                  >
+                    {row[columnIndex] ?? ''}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  if (previewState.status === 'error') {
+    return (
+      <div className="rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-3 py-4">
+        <p className="text-sm font-bold text-neutral-700">CSV preview unavailable</p>
+        <p className="mt-1 text-sm leading-6 text-neutral-500">
+          {previewState.message}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-3 py-4">
+      <p className="text-sm font-bold text-neutral-700">Loading CSV preview...</p>
+    </div>
+  );
+}
+
 export default function AssetRenderer({
   asset,
   variant = 'preview',
@@ -244,47 +463,29 @@ export default function AssetRenderer({
   }
 
   if (type === 'file' || type === 'link') {
-    const label = type === 'link' ? 'Open link' : 'Open asset';
-
     return (
-      <AssetShell>
-        <div className="space-y-4 p-4">
-          <CardHeader
-            type={type}
-            title={title}
-            description={
-              asset.description ??
-              (type === 'link' ? 'External link asset.' : 'File asset.')
-            }
-          />
-          {assetUrl ? (
-            <a
-              className="inline-flex rounded-md bg-neutral-950 px-3 py-2 text-xs font-bold text-white"
-              href={assetUrl}
-              rel="noreferrer"
-              target="_blank"
-              onClick={(event) => event.stopPropagation()}
-            >
-              {label}
-            </a>
-          ) : (
-            <p className="text-sm leading-6 text-neutral-500">
-              No asset link is available.
-            </p>
-          )}
-          {assetUrl ? (
-            <p className="break-all text-xs font-medium text-neutral-400">
-              Source: {assetUrl}
-            </p>
-          ) : null}
-        </div>
-      </AssetShell>
+      <AssetActionCard
+        type={type}
+        title={title}
+        description={
+          asset.description ??
+          (type === 'link' ? 'External link asset.' : 'File asset.')
+        }
+        assetUrl={assetUrl}
+        actionLabel={type === 'link' ? 'Open link' : 'Open file'}
+        fallbackText={
+          type === 'link'
+            ? 'No link URL is available.'
+            : 'No file URL is available.'
+        }
+      />
     );
   }
 
   if (type === 'table') {
     const rows = getTableRows(asset.content);
     const columns = Array.from(new Set(rows.flatMap((row) => Object.keys(row))));
+    const maxCsvRows = shouldShowFull ? 8 : 5;
 
     return (
       <AssetShell>
@@ -321,12 +522,7 @@ export default function AssetRenderer({
               </table>
             </div>
           ) : (
-            <div className="rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-3 py-4">
-              <p className="text-sm font-bold text-neutral-700">Table asset</p>
-              <p className="mt-1 text-sm leading-6 text-neutral-500">
-                Preview is not implemented yet.
-              </p>
-            </div>
+            <CsvPreview assetUrl={assetUrl} maxRows={maxCsvRows} />
           )}
 
           {assetUrl ? (
@@ -338,10 +534,10 @@ export default function AssetRenderer({
                 target="_blank"
                 onClick={(event) => event.stopPropagation()}
               >
-                Open asset
+                Open original
               </a>
-              <p className="break-all text-xs font-medium text-neutral-400">
-                Source: {assetUrl}
+              <p className="break-all text-xs font-semibold text-neutral-500">
+                {formatAssetUrl(assetUrl)}
               </p>
             </div>
           ) : null}

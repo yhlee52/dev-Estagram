@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.api.deps import get_session
 from app.models.account import Account
@@ -72,7 +72,12 @@ def get_post_assets(session: Session, post_id: str) -> list[PostAsset]:
     assets = session.exec(
         select(PostAsset)
         .where(PostAsset.post_id == post_id)
-        .order_by(PostAsset.sort_order, PostAsset.created_at)
+        .order_by(
+            col(PostAsset.sort_order).is_(None),
+            PostAsset.sort_order,
+            PostAsset.created_at,
+            PostAsset.id,
+        )
     ).all()
     return list(assets)
 
@@ -90,7 +95,7 @@ def create_post_assets(
     post_id: str,
     asset_inputs: list[PostAssetCreate],
 ) -> None:
-    for sort_order, asset_input in enumerate(asset_inputs):
+    for asset_input in asset_inputs:
         asset = PostAsset(
             id=f"asset-{uuid4()}",
             post_id=post_id,
@@ -99,7 +104,7 @@ def create_post_assets(
             description=asset_input.description,
             url=asset_input.url,
             src=asset_input.url,
-            sort_order=sort_order,
+            sort_order=asset_input.sort_order,
         )
         session.add(asset)
 

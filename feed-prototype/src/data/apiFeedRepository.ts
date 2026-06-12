@@ -72,6 +72,7 @@ export const mapApiAssetToPostAsset = (asset: ApiPostAsset): PostAsset => ({
   url: asset.url ?? asset.src,
   alt: asset.title ?? undefined,
   content: asset.metadata_json?.content,
+  sort_order: asset.sort_order,
   metadata: {
     ...(asset.metadata_json ?? {}),
     post_id: asset.post_id,

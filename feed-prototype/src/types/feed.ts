@@ -48,6 +48,7 @@ export interface PostAsset {
   url?: string;
   alt?: string;
   content?: MetadataValue;
+  sort_order?: number | null;
   metadata?: PostMetadata;
 }
 

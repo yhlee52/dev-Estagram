@@ -21,7 +21,7 @@ class PostAsset(SQLModel, table=True):
     url: str | None = None
     src: str
     mime_type: str | None = None
-    sort_order: int = 0
+    sort_order: int | None = Field(default=None)
     metadata_json: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
