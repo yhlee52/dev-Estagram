@@ -1,46 +1,197 @@
 # feed-prototype
 
-`feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
+`feed-prototype` is a Vite + React + TypeScript Instagram-like local/general feed prototype.
 
-이 app은 두 가지 data source mode를 지원합니다.
+Current release: `v0.0.0`.
 
-- `mock`: frontend mock JSON과 localStorage overlay를 사용합니다.
-- `api`: FastAPI backend와 PostgreSQL DB를 사용합니다.
+This release is a local/internal prototype baseline. It is suitable for demoing generic SNS-like posts and externally imported analysis/report-style posts, but it is not a production-ready product.
 
-## 실행
+## What Is Included
 
-Frontend 개발 서버:
+- Mock-mode local feed using static frontend data and localStorage overlay
+- API-mode feed using FastAPI and PostgreSQL
+- Local API user/account registration for prototype user selection
+- Follow/unfollow in API mode
+- Personal post create/edit/delete in API mode
+- Tags, metadata, and asset descriptors on posts
+- External JSON post package import with `external_id` upsert
+- API-mode filter/search by keyword, tag, metadata key/value, asset type, account, and own posts
+- Asset viewer for image/plot thumbnails, modal navigation, CSV table preview, file cards, link cards, and broken URL fallback
+
+## What Is Not Included
+
+- Production authentication or authorization
+- Passwords, JWT, sessions, OAuth, or roles
+- Real file upload, S3 upload, or asset file copy
+- Folder watching or scheduled imports
+- Advanced search, semantic search, vector search, dashboards, or analytics
+- Equipment/report-specific core model names
+
+## Environment
+
+Frontend `.env`:
+
+```bash
+copy .env.example .env
+```
+
+Supported values:
+
+```text
+VITE_DATA_SOURCE=mock
+VITE_DATA_SOURCE=api
+VITE_API_BASE_URL=http://127.0.0.1:8000
+```
+
+Backend `.env`:
+
+```bash
+cd backend
+copy .env.example .env
+```
+
+Set `DATABASE_URL` for your local PostgreSQL database.
+
+## Mock Mode
+
+Mock mode needs only the frontend:
+
+```bash
+cd feed-prototype
+copy .env.example .env
+```
+
+Set:
+
+```text
+VITE_DATA_SOURCE=mock
+```
+
+Run:
+
+```bash
+npm install
+npm run dev
+```
+
+Mock data lives in `src/data`. Runtime mock overlay state is stored in localStorage.
+
+Important localStorage keys:
+
+```text
+local-feed-active-user-id
+local-feed-following-by-user
+local-feed-local-users
+local-feed-local-accounts
+```
+
+## API Mode
+
+API mode needs PostgreSQL plus the FastAPI backend.
+
+Backend setup:
+
+```bash
+cd feed-prototype/backend
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+```
+
+Edit `backend/.env`:
+
+```text
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/feed_prototype
+```
+
+Run migration, seed, and backend:
+
+```bash
+alembic upgrade head
+python -m app.services.seed
+uvicorn app.main:app --reload
+```
+
+Frontend setup:
+
+```bash
+cd feed-prototype
+copy .env.example .env
+```
+
+Set:
+
+```text
+VITE_DATA_SOURCE=api
+VITE_API_BASE_URL=http://127.0.0.1:8000
+```
+
+Run:
 
 ```bash
 npm run dev
 ```
 
-Build 확인:
+API user selection is prototype state only. It is not login or authentication.
+
+## External Import Mode
+
+External import is a backend CLI workflow. It reads JSON post packages and upserts generic `Account`, `Post`, `Asset`, and `Metadata` data into PostgreSQL.
+
+Dry-run:
 
 ```bash
-npm run build
+cd feed-prototype/backend
+python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json --dry-run
 ```
 
-## Backend
+Import:
 
-Backend는 `backend/` 아래에 있습니다.
-
-자세한 backend 설정, migration, seed, 실행 방법은 아래 문서를 참고합니다.
-
-```text
-backend/README.md
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json
 ```
 
-## MVP10 External Post Import
+Then use API mode in the UI to view imported posts.
 
-MVP10은 외부 프로그램이 만든 JSON 기반 post package를 backend DB에 import하는 기능입니다.
-
-관련 문서:
+Detailed guide:
 
 ```text
 data/external_posts/README.md
 docs/MVP10_EXTERNAL_POST_FORMAT.md
-docs/MVP10_TEST_PROCEDURE.md
 ```
 
-MVP10은 asset 파일을 자동 복사하지 않습니다. JSON에는 UI에서 접근 가능한 asset URL/path만 저장합니다.
+## Samples
+
+General SNS-like sample content is in:
+
+```text
+src/data
+backend/app/services/seed.py
+```
+
+External analysis/report-style sample packages are in:
+
+```text
+data/external_posts/examples/feed_import_sample.json
+data/external_posts/examples/batch_2026-06-09_090000/feed_posts.json
+data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json
+```
+
+Report-like values such as recipe, chamber, status, and severity are sample metadata values only. They must stay in `metadata_json` or asset metadata, not in core architecture names.
+
+## Release Docs
+
+```text
+docs/RELEASE_CHECKLIST_v0.0.0.md
+docs/SMOKE_TEST_v0.0.0.md
+docs/README.md
+```
+
+## Build
+
+Run before handoff:
+
+```bash
+npm run build
+```

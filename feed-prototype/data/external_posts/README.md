@@ -1,5 +1,9 @@
 # 외부 Post Import Package
 
+Current release baseline: `v0.0.0`.
+
+이 문서는 v0.0.0 기준 external import mode의 package guide입니다. 외부 프로그램이 만든 JSON package를 backend DB에 넣고, API mode UI가 import된 post를 일반 post처럼 표시하는 흐름을 다룹니다.
+
 이 폴더는 MVP10 **External Post Ingestion Pipeline**을 위한 외부 post package 작업 공간입니다. MVP12 **Asset Viewer Enhancement**부터 asset descriptor에 optional `sort_order`를 포함해 viewer 표시 순서를 안정적으로 지정할 수 있습니다.
 
 MVP10은 UI에서 post를 직접 작성하는 기능이 아닙니다. 외부 분석 프로그램 또는 post 생성 프로그램이 JSON 기반 post package를 만들고, import script가 그 package를 backend DB에 넣습니다. import된 post는 기존 UI에서 일반 post처럼 표시되어야 합니다.
