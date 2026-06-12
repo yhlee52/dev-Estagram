@@ -216,6 +216,27 @@ python -m app.services.import_external_posts --input ../data/external_posts/exam
 python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json
 ```
 
+일반 SNS-like sample:
+
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/general_social_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/general_social_sample/feed_posts.json
+```
+
+분석 리포트 sample:
+
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/analysis_report_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/analysis_report_sample/feed_posts.json
+```
+
+Broken asset fallback sample:
+
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/broken_asset_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/broken_asset_sample/feed_posts.json
+```
+
 MVP12 asset viewer sample dry-run:
 
 ```bash

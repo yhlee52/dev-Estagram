@@ -15,6 +15,19 @@ data/external_posts/
   README.md
   examples/
     feed_import_sample.json
+    general_social_sample/
+      feed_posts.json
+      assets/
+        README.md
+    analysis_report_sample/
+      feed_posts.json
+      assets/
+        README.md
+        sample_summary.csv
+    broken_asset_sample/
+      feed_posts.json
+      assets/
+        README.md
     batch_2026-06-09_090000/
       feed_posts.json
       assets/
@@ -86,6 +99,19 @@ MVP12 asset viewer 전용 예제:
 ```bash
 python -m app.services.import_external_posts --input ../data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json --dry-run
 python -m app.services.import_external_posts --input ../data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json
+```
+
+v0.0.0 demo sample:
+
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/general_social_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/general_social_sample/feed_posts.json
+
+python -m app.services.import_external_posts --input ../data/external_posts/examples/analysis_report_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/analysis_report_sample/feed_posts.json
+
+python -m app.services.import_external_posts --input ../data/external_posts/examples/broken_asset_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/broken_asset_sample/feed_posts.json
 ```
 
 CSV preview를 성공 케이스로 확인하려면 sample CSV를 browser-accessible static 위치로 복사합니다.

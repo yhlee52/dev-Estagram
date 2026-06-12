@@ -1,0 +1,114 @@
+{
+  "batch": {
+    "external_id": "batch-general-social-sample-v0-0-0",
+    "source": "v0.0.0-general-social-sample",
+    "created_at": "2026-06-12T09:00:00"
+  },
+  "accounts": [
+    {
+      "external_id": "account-general-social-sample",
+      "handle": "local_weekend",
+      "display_name": "Local Weekend",
+      "bio": "General SNS-like sample posts for the v0.0.0 demo.",
+      "avatar_url": "/assets/generated/social_sample_avatar.png"
+    }
+  ],
+  "posts": [
+    {
+      "external_id": "post-general-social-sample-001",
+      "account_external_id": "account-general-social-sample",
+      "title": "Morning walk snapshots",
+      "text": "A quiet walk before the city gets busy. Three tiny moments from the same route.",
+      "created_at": "2026-06-12T09:05:00",
+      "tags": ["social-sample", "morning", "gallery"],
+      "metadata_json": {
+        "source": "v0.0.0-general-social-sample",
+        "scenario": "general-social-feed",
+        "mood": "calm",
+        "location": "local-demo"
+      },
+      "assets": [
+        {
+          "external_id": "asset-general-social-sample-001-image-001",
+          "type": "image",
+          "url": "/assets/generated/social_sample_001_01.png",
+          "title": "Street corner",
+          "description": "First image in the morning walk set.",
+          "sort_order": 1
+        },
+        {
+          "external_id": "asset-general-social-sample-001-image-002",
+          "type": "image",
+          "url": "/assets/generated/social_sample_001_02.png",
+          "title": "Coffee stop",
+          "description": "Second image in the morning walk set.",
+          "sort_order": 2
+        },
+        {
+          "external_id": "asset-general-social-sample-001-image-003",
+          "type": "image",
+          "url": "/assets/generated/social_sample_001_03.png",
+          "title": "Small park",
+          "description": "Third image in the morning walk set.",
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "external_id": "post-general-social-sample-002",
+      "account_external_id": "account-general-social-sample",
+      "title": "Desk reset",
+      "text": "Clean desk, warm light, and a short list for the afternoon.",
+      "created_at": "2026-06-12T13:20:00",
+      "tags": ["social-sample", "workspace", "daily"],
+      "metadata_json": {
+        "source": "v0.0.0-general-social-sample",
+        "scenario": "general-social-feed",
+        "mood": "focused",
+        "location": "local-demo"
+      },
+      "assets": [
+        {
+          "external_id": "asset-general-social-sample-002-image-001",
+          "type": "image",
+          "url": "/assets/generated/social_sample_002_01.png",
+          "title": "Desk light",
+          "description": "Workspace image sample.",
+          "sort_order": 1
+        }
+      ]
+    },
+    {
+      "external_id": "post-general-social-sample-003",
+      "account_external_id": "account-general-social-sample",
+      "title": "Evening notes",
+      "text": "Two frames from the way home. Nothing dramatic, just a good color in the sky.",
+      "created_at": "2026-06-12T19:10:00",
+      "tags": ["social-sample", "evening", "photo"],
+      "metadata_json": {
+        "source": "v0.0.0-general-social-sample",
+        "scenario": "general-social-feed",
+        "mood": "reflective",
+        "location": "local-demo"
+      },
+      "assets": [
+        {
+          "external_id": "asset-general-social-sample-003-image-001",
+          "type": "image",
+          "url": "/assets/generated/social_sample_003_01.png",
+          "title": "Blue hour",
+          "description": "First evening image.",
+          "sort_order": 1
+        },
+        {
+          "external_id": "asset-general-social-sample-003-image-002",
+          "type": "image",
+          "url": "/assets/generated/social_sample_003_02.png",
+          "title": "Street light",
+          "description": "Second evening image.",
+          "sort_order": 2
+        }
+      ]
+    }
+  ]
+}

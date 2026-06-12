@@ -393,6 +393,19 @@ python -m app.services.import_external_posts --input ../data/external_posts/exam
 python -m app.services.import_external_posts --input ../data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json
 ```
 
+v0.0.0 demo sample:
+
+```bash
+python -m app.services.import_external_posts --input ../data/external_posts/examples/general_social_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/general_social_sample/feed_posts.json
+
+python -m app.services.import_external_posts --input ../data/external_posts/examples/analysis_report_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/analysis_report_sample/feed_posts.json
+
+python -m app.services.import_external_posts --input ../data/external_posts/examples/broken_asset_sample/feed_posts.json --dry-run
+python -m app.services.import_external_posts --input ../data/external_posts/examples/broken_asset_sample/feed_posts.json
+```
+
 Import 전에 `backend/.env`의 `DATABASE_URL`이 의도한 DB를 가리키는지 확인합니다.
 
 ## 13. 자주 하는 실수
