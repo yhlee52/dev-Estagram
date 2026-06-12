@@ -4,6 +4,30 @@
 
 목표는 외부 프로그램, 분석 script, 또는 GPT가 생성한 JSON post package를 안정적으로 backend DB에 import하고, API mode UI에서 일반 post처럼 표시하는 것입니다.
 
+## 0. Format Stability (v0.0.0 동결)
+
+이 package format은 v0.0.0 시점에 동결되었습니다. 외부 생성 프로그램이
+이 형식으로 데이터를 지속 생산하므로, 이미 생성된 package는 모든 미래
+버전에서 그대로 import 가능해야 합니다.
+
+변경 정책:
+
+```text
+허용     optional 필드 추가 (없으면 기존 동작 유지)
+금지     기존 필드 이름 변경 / 삭제 / 의미 변경
+금지     optional 필드의 required 전환
+금지     허용 asset type의 의미 변경
+유지     external_id 기반 upsert (재import 안전성)
+유지     timezone 없는 created_at 허용 (naive datetime)
+```
+
+회귀 확인:
+
+- `examples/` 아래 sample package들은 golden sample입니다. import 관련
+  코드 변경 후에는 각 sample에 대해 `--dry-run`이 통과하는지 확인합니다.
+- 실제 운영에서 생성된 package를 golden sample로 추가할 수 있습니다.
+  golden sample은 수정하지 않고 추가만 합니다.
+
 ## 1. Package 목적
 
 External post package는 외부 프로그램이 생성한 `account`, `post`, `assets`, `metadata` JSON을 backend DB에 import하기 위한 입력 파일입니다.
