@@ -1,6 +1,6 @@
 # 외부 Post Import Package
 
-Current release baseline: `v0.0.0`.
+현재 릴리즈 기준: `v0.0.0`.
 
 이 문서는 v0.0.0 기준 external import mode의 package guide입니다. 외부 프로그램이 만든 JSON package를 backend DB에 넣고, API mode UI가 import된 post를 일반 post처럼 표시하는 흐름을 다룹니다.
 
@@ -364,7 +364,7 @@ Metadata
 
 core model, shared component, route, data flow에 설비 리포트 전용 이름을 넣지 않습니다. recipe, chamber, severity, equipment state, analysis status 같은 시나리오 전용 값은 `metadata_json` 또는 asset metadata에 넣습니다.
 
-## Dry Run
+## Dry Run 확인
 
 import command는 DB write 전에 package를 검증하기 위해 `--dry-run`을 지원합니다.
 

@@ -1,33 +1,33 @@
 # feed-prototype
 
-`feed-prototype` is a Vite + React + TypeScript Instagram-like local/general feed prototype.
+`feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
 
-Current release: `v0.0.0`.
+현재 릴리즈: `v0.0.0`.
 
-This release is a local/internal prototype baseline. It is suitable for demoing generic SNS-like posts and externally imported analysis/report-style posts, but it is not a production-ready product.
+이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다.
 
-## What Is Included
+## 포함된 기능
 
-- Mock-mode local feed using static frontend data and localStorage overlay
-- API-mode feed using FastAPI and PostgreSQL
-- Local API user/account registration for prototype user selection
-- Follow/unfollow in API mode
-- Personal post create/edit/delete in API mode
-- Tags, metadata, and asset descriptors on posts
-- External JSON post package import with `external_id` upsert
-- API-mode filter/search by keyword, tag, metadata key/value, asset type, account, and own posts
-- Asset viewer for image/plot thumbnails, modal navigation, CSV table preview, file cards, link cards, and broken URL fallback
+- static frontend data와 localStorage overlay를 사용하는 mock-mode local feed
+- FastAPI와 PostgreSQL을 사용하는 API-mode feed
+- prototype user selection을 위한 API-mode local user/account registration
+- API mode follow/unfollow
+- API mode personal post create/edit/delete
+- Post tags, metadata, asset descriptors
+- `external_id` upsert 기반 external JSON post package import
+- keyword, tag, metadata key/value, asset type, account, own posts 기준 API-mode filter/search
+- image/plot thumbnail, modal navigation, CSV table preview, file card, link card, broken URL fallback을 포함한 asset viewer
 
-## What Is Not Included
+## 포함되지 않은 기능
 
-- Production authentication or authorization
-- Passwords, JWT, sessions, OAuth, or roles
-- Real file upload, S3 upload, or asset file copy
-- Folder watching or scheduled imports
-- Advanced search, semantic search, vector search, dashboards, or analytics
-- Equipment/report-specific core model names
+- production authentication 또는 authorization
+- password, JWT, session, OAuth, role
+- real file upload, S3 upload, asset file copy
+- folder watch 또는 scheduled import
+- advanced search, semantic search, vector search, dashboard, analytics
+- equipment/report-specific core model name
 
-## Environment
+## 환경 설정
 
 Frontend `.env`:
 
@@ -35,7 +35,7 @@ Frontend `.env`:
 copy .env.example .env
 ```
 
-Supported values:
+지원 값:
 
 ```text
 VITE_DATA_SOURCE=mock
@@ -50,33 +50,33 @@ cd backend
 copy .env.example .env
 ```
 
-Set `DATABASE_URL` for your local PostgreSQL database.
+local PostgreSQL database에 맞게 `DATABASE_URL`을 설정합니다.
 
-## Mock Mode
+## Mock Mode 실행
 
-Mock mode needs only the frontend:
+Mock mode는 frontend만 있으면 실행할 수 있습니다.
 
 ```bash
 cd feed-prototype
 copy .env.example .env
 ```
 
-Set:
+설정:
 
 ```text
 VITE_DATA_SOURCE=mock
 ```
 
-Run:
+실행:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Mock data lives in `src/data`. Runtime mock overlay state is stored in localStorage.
+Mock data는 `src/data`에 있습니다. Runtime mock overlay state는 localStorage에 저장됩니다.
 
-Important localStorage keys:
+중요 localStorage key:
 
 ```text
 local-feed-active-user-id
@@ -85,9 +85,9 @@ local-feed-local-users
 local-feed-local-accounts
 ```
 
-## API Mode
+## API Mode 실행
 
-API mode needs PostgreSQL plus the FastAPI backend.
+API mode는 PostgreSQL과 FastAPI backend가 필요합니다.
 
 Backend setup:
 
@@ -99,13 +99,13 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-Edit `backend/.env`:
+`backend/.env` 수정:
 
 ```text
 DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/feed_prototype
 ```
 
-Run migration, seed, and backend:
+Migration, seed, backend 실행:
 
 ```bash
 alembic upgrade head
@@ -120,24 +120,24 @@ cd feed-prototype
 copy .env.example .env
 ```
 
-Set:
+설정:
 
 ```text
 VITE_DATA_SOURCE=api
 VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-Run:
+실행:
 
 ```bash
 npm run dev
 ```
 
-API user selection is prototype state only. It is not login or authentication.
+API user selection은 prototype state입니다. login 또는 authentication이 아닙니다.
 
-## External Import Mode
+## External Import Mode 실행
 
-External import is a backend CLI workflow. It reads JSON post packages and upserts generic `Account`, `Post`, `Asset`, and `Metadata` data into PostgreSQL.
+External import는 backend CLI 작업 흐름입니다. JSON post package를 읽고 generic `Account`, `Post`, `Asset`, `Metadata` data를 PostgreSQL에 upsert합니다.
 
 Dry-run:
 
@@ -152,25 +152,25 @@ Import:
 python -m app.services.import_external_posts --input ../data/external_posts/examples/feed_import_sample.json
 ```
 
-Then use API mode in the UI to view imported posts.
+이후 API mode UI에서 imported post를 확인합니다.
 
-Detailed guide:
+상세 guide:
 
 ```text
 data/external_posts/README.md
 docs/MVP10_EXTERNAL_POST_FORMAT.md
 ```
 
-## Samples
+## Sample Data
 
-General SNS-like sample content is in:
+일반 SNS-like sample content:
 
 ```text
 src/data
 backend/app/services/seed.py
 ```
 
-External analysis/report-style sample packages are in:
+외부 분석/리포트형 sample package:
 
 ```text
 data/external_posts/examples/feed_import_sample.json
@@ -178,9 +178,9 @@ data/external_posts/examples/batch_2026-06-09_090000/feed_posts.json
 data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json
 ```
 
-Report-like values such as recipe, chamber, status, and severity are sample metadata values only. They must stay in `metadata_json` or asset metadata, not in core architecture names.
+recipe, chamber, status, severity 같은 report-like value는 sample metadata value일 뿐입니다. 이런 값은 core architecture name이 아니라 `metadata_json` 또는 asset metadata 안에 유지합니다.
 
-## Release Docs
+## 릴리즈 문서
 
 ```text
 docs/RELEASE_CHECKLIST_v0.0.0.md
@@ -188,9 +188,9 @@ docs/SMOKE_TEST_v0.0.0.md
 docs/README.md
 ```
 
-## Build
+## Build 검증
 
-Run before handoff:
+handoff 전에 실행합니다.
 
 ```bash
 npm run build
