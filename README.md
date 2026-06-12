@@ -67,7 +67,7 @@ FastAPI + PostgreSQL 기반 mode입니다. 실제 DB를 read/write하며 user, a
 
 상세 실행 절차와 릴리즈 확인 절차는 아래 문서에서 관리합니다.
 
-- TODO: `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`
+- `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`
 - TODO: `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`
 - TODO: `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
 

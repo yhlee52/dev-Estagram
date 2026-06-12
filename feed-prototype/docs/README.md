@@ -5,6 +5,7 @@
 먼저 볼 문서:
 
 - `../README.md`: mock mode, API mode, external import mode 실행 guide
+- `RELEASE_0_0_RUNBOOK.md`: v0.0.0 local 실행 재현 runbook
 - `RELEASE_CHECKLIST_v0.0.0.md`: 릴리즈 준비 체크리스트
 - `SMOKE_TEST_v0.0.0.md`: 최종 smoke test 절차
 - `../data/external_posts/README.md`: external post package 작업 guide
