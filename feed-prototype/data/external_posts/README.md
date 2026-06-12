@@ -38,7 +38,9 @@ data/external_posts/
 
 MVP10에서는 package를 `archive` 또는 `failed`로 자동 이동하지 않습니다.
 
-상세 JSON 포맷 가이드는 `feed-prototype/docs/MVP10_EXTERNAL_POST_FORMAT.md`를 참고하세요.
+v0.0.0 / MVP12 기준 JSON package 작성 가이드는 `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`를 먼저 참고하세요.
+
+MVP10 format history와 세부 참고는 `feed-prototype/docs/MVP10_EXTERNAL_POST_FORMAT.md`에 남겨둡니다.
 
 validation, dry-run, rollback, 회귀 테스트 절차는 `feed-prototype/docs/MVP10_TEST_PROCEDURE.md`를 참고하세요.
 

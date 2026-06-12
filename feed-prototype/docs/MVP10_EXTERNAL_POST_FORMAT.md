@@ -1,5 +1,7 @@
 # MVP10 External Post Format
 
+> v0.0.0 / MVP12 기준 새 package를 작성할 때는 `EXTERNAL_POST_PACKAGE_GUIDE.md`를 먼저 참고하세요. 이 문서는 MVP10 format history와 상세 참고용으로 유지합니다.
+
 MVP10은 **External Post Ingestion Pipeline**입니다. 외부 분석 프로그램 또는 post 생성 프로그램이 JSON 기반 post package를 만들고, import service가 그 package를 읽어 generic feed data를 backend DB에 upsert합니다. UI는 import된 post를 일반 post처럼 표시합니다.
 
 MVP10은 UI post creation, file upload, S3 upload, folder watch, scheduler, metadata search, advanced asset viewer 기능이 아닙니다. MVP12에서는 이 format에 `asset.sort_order`를 추가해 visual asset viewer의 안정적인 표시 순서를 지원합니다.

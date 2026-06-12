@@ -6,10 +6,11 @@
 
 - `../README.md`: mock mode, API mode, external import mode 실행 guide
 - `RELEASE_0_0_RUNBOOK.md`: v0.0.0 local 실행 재현 runbook
+- `EXTERNAL_POST_PACKAGE_GUIDE.md`: v0.0.0 / MVP12 external post package 작성 guide
 - `RELEASE_CHECKLIST_v0.0.0.md`: 릴리즈 준비 체크리스트
 - `SMOKE_TEST_v0.0.0.md`: 최종 smoke test 절차
 - `../data/external_posts/README.md`: external post package 작업 guide
-- `MVP10_EXTERNAL_POST_FORMAT.md`: MVP12 `asset.sort_order`를 포함한 JSON package format
+- `MVP10_EXTERNAL_POST_FORMAT.md`: MVP10 format history와 상세 참고
 
 이 폴더의 historical MVP validation 문서는 회귀 확인용 참고 문서로 유지합니다.
 
