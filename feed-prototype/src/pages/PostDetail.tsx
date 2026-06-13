@@ -7,6 +7,7 @@ import { useActiveApiUser } from '../auth/apiActiveUser';
 import AssetRenderer from '../components/AssetRenderer';
 import AssetGallery from '../components/AssetGallery';
 import EmptyState from '../components/EmptyState';
+import MentionText from '../components/MentionText';
 import MetadataTable from '../components/MetadataTable';
 import PostBadges from '../components/PostBadges';
 import TagList from '../components/TagList';
@@ -312,9 +313,10 @@ export default function PostDetail() {
         </div>
 
         {post.caption ? (
-          <p className="whitespace-pre-wrap text-base leading-7 text-neutral-700">
-            {post.caption}
-          </p>
+          <MentionText
+            text={post.caption}
+            className="whitespace-pre-wrap text-base leading-7 text-neutral-700"
+          />
         ) : null}
 
         <div className="rounded-md bg-neutral-50 px-3 py-2">
