@@ -37,6 +37,18 @@ function buildHandleMap(accounts: Account[]): Map<string, Account> {
   return handleMap;
 }
 
+function buildIdMap(accounts: Account[]): Map<string, Account> {
+  const idMap = new Map<string, Account>();
+
+  accounts.forEach((account) => {
+    if (account.id && !idMap.has(account.id)) {
+      idMap.set(account.id, account);
+    }
+  });
+
+  return idMap;
+}
+
 export function AccountDirectoryProvider({ children }: { children: ReactNode }) {
   const mockAccounts = useEffectiveAccounts();
   const [apiAccounts, setApiAccounts] = useState<Account[]>([]);
@@ -63,17 +75,17 @@ export function AccountDirectoryProvider({ children }: { children: ReactNode }) 
     };
   }, []);
 
-  const handleMap = useMemo(
-    () => buildHandleMap(isApiDataSource ? apiAccounts : mockAccounts),
-    [apiAccounts, mockAccounts],
-  );
+  const accounts = isApiDataSource ? apiAccounts : mockAccounts;
+  const handleMap = useMemo(() => buildHandleMap(accounts), [accounts]);
+  const idMap = useMemo(() => buildIdMap(accounts), [accounts]);
 
   const value = useMemo<AccountDirectory>(
     () => ({
       resolveHandle: (handle: string) =>
         handleMap.get(normalizeMentionHandle(handle)),
+      resolveId: (id: string) => idMap.get(id),
     }),
-    [handleMap],
+    [handleMap, idMap],
   );
 
   return (

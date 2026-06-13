@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import EmptyState from '../components/EmptyState';
@@ -64,15 +64,25 @@ export default function HomeFeed() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState('');
-  const [draftFilters, setDraftFilters] = useState<PostFilters>(() => ({
-    ...emptyPostFilters,
-    ...filtersFromSearchParams(searchParams),
-  }));
-  const [appliedFilters, setAppliedFilters] = useState<PostFilters>(() => ({
-    ...emptyPostFilters,
-    ...filtersFromSearchParams(searchParams),
-  }));
+  // The URL is the source of truth for applied filters (v0.1.0) so that
+  // right-rail filter chips, hashtag links, and reload/share all take effect
+  // without remounting this page.
+  const appliedFilters = useMemo<PostFilters>(
+    () => ({ ...emptyPostFilters, ...filtersFromSearchParams(searchParams) }),
+    [searchParams],
+  );
+  const [draftFilters, setDraftFilters] = useState<PostFilters>(appliedFilters);
+  const [syncedSearch, setSyncedSearch] = useState(() => searchParams.toString());
   const [filterError, setFilterError] = useState('');
+
+  // Re-sync the editable draft when the URL changes from outside the panel
+  // (right-rail chips, hashtag links, browser back/forward). Adjusting state
+  // during render is React's recommended alternative to a syncing effect here.
+  const currentSearch = searchParams.toString();
+  if (currentSearch !== syncedSearch) {
+    setSyncedSearch(currentSearch);
+    setDraftFilters(appliedFilters);
+  }
   const [tagSuggestions, setTagSuggestions] = useState<ApiTagCount[]>([]);
   const accounts = useEffectiveAccounts();
   const { activeUserId, followingIds } = useFollowState();
@@ -222,8 +232,6 @@ export default function HomeFeed() {
     }
 
     setFilterError('');
-    setDraftFilters(routed);
-    setAppliedFilters(routed);
     setSearchParams(filtersToSearchParams(routed), { replace: true });
   };
 
@@ -308,8 +316,6 @@ export default function HomeFeed() {
             }}
             onApply={() => commitFilters(draftFilters)}
             onReset={() => {
-              setDraftFilters(emptyPostFilters);
-              setAppliedFilters(emptyPostFilters);
               setFilterError('');
               setSearchParams(new URLSearchParams(), { replace: true });
             }}

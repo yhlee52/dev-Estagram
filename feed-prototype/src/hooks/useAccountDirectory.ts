@@ -11,10 +11,12 @@ import type { Account } from '../types/feed';
  */
 export type AccountDirectory = {
   resolveHandle: (handle: string) => Account | undefined;
+  resolveId: (id: string) => Account | undefined;
 };
 
 export const AccountDirectoryContext = createContext<AccountDirectory>({
   resolveHandle: () => undefined,
+  resolveId: () => undefined,
 });
 
 export function useAccountDirectory(): AccountDirectory {
