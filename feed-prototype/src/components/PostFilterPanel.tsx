@@ -1,5 +1,7 @@
 import type { FormEvent } from 'react';
+import type { ApiTagCount } from '../api/types';
 import type { PostAssetFilterType, PostFilters, PostSort } from '../types/filters';
+import TagSearchInput from './TagSearchInput';
 
 type PostFilterPanelProps = {
   filters: PostFilters;
@@ -12,6 +14,8 @@ type PostFilterPanelProps = {
   activeUserId?: string;
   error?: string;
   hasAppliedFilters?: boolean;
+  tagSuggestions?: ApiTagCount[];
+  onSelectTag?: (tag: string) => void;
 };
 
 const assetTypeOptions: Array<{
@@ -79,6 +83,8 @@ export default function PostFilterPanel({
   activeUserId,
   error = '',
   hasAppliedFilters = false,
+  tagSuggestions = [],
+  onSelectTag,
 }: PostFilterPanelProps) {
   const resultLabel =
     resultCount === undefined
@@ -97,15 +103,16 @@ export default function PostFilterPanel({
       className="grid gap-2 md:grid-cols-2"
       onSubmit={handleSubmit}
     >
-      <input
-        aria-label="Keyword"
-        type="search"
+      <TagSearchInput
+        ariaLabel="Keyword"
         value={filters.keyword ?? ''}
-        onChange={(event) => {
-          onChange({ ...filters, keyword: event.target.value });
+        onChange={(keyword) => {
+          onChange({ ...filters, keyword });
         }}
-        placeholder="Keyword"
-        className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
+        onSelectTag={(tag) => onSelectTag?.(tag)}
+        suggestions={tagSuggestions}
+        placeholder="Keyword or #tag"
+        className="h-9 w-full rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
       />
       <input
         aria-label="Tag"

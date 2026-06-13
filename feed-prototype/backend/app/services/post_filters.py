@@ -15,6 +15,7 @@ from app.models.account import Account
 from app.models.asset import PostAsset
 from app.models.post import Post
 from app.models.user import User
+from app.schemas.feed import TagCount
 
 
 ALLOWED_ASSET_TYPES = {"image", "plot", "table", "file", "link"}
@@ -22,6 +23,9 @@ ALLOWED_SORTS = {"newest", "oldest"}
 
 DEFAULT_LIMIT = 20
 MAX_LIMIT = 100
+
+DEFAULT_TAG_LIMIT = 20
+MAX_TAG_LIMIT = 100
 
 _DATE_ONLY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -137,6 +141,27 @@ def get_user_account_id(session: Session, user_id: str) -> str:
         raise HTTPException(status_code=404, detail="Account not found for user")
 
     return account.id
+
+
+def get_top_tags(session: Session, *, limit: int = DEFAULT_TAG_LIMIT) -> list[TagCount]:
+    """Return the most-used post tags, highest count first.
+
+    Tags are grouped case-insensitively to match the `tag` filter semantics
+    (which compares with ``lower(...)``), so ``#Chamber`` and ``#chamber`` count
+    as one tag and are returned in lowercase. Posts with empty tag arrays do not
+    contribute any rows.
+    """
+    rows = session.execute(
+        text(
+            "SELECT lower(tag_elem) AS tag, count(*) AS usage_count"
+            " FROM posts, json_array_elements_text(posts.tags) AS tag_elem"
+            " GROUP BY lower(tag_elem)"
+            " ORDER BY usage_count DESC, tag ASC"
+            " LIMIT :limit"
+        ).bindparams(limit=limit)
+    ).all()
+
+    return [TagCount(tag=row.tag, count=row.usage_count) for row in rows]
 
 
 def parse_date_bound(value: str, *, field_name: str) -> tuple[datetime, bool]:

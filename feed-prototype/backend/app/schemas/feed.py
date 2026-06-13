@@ -217,6 +217,15 @@ class PaginatedPosts(BaseModel):
     has_more: bool = False
 
 
+class TagCount(BaseModel):
+    tag: str
+    count: int
+
+
+class TagListResponse(BaseModel):
+    items: list[TagCount] = Field(default_factory=list)
+
+
 class FollowRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

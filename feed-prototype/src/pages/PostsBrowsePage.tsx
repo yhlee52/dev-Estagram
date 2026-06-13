@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 import { getAccounts } from '../api/accountsApi';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import { getPosts } from '../api/postsApi';
+import { getTags } from '../api/tagsApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
@@ -20,7 +21,10 @@ import type { Account, FeedItem, Post } from '../types/feed';
 import type { PostFilters } from '../types/filters';
 import { getFeedItems } from '../utils/feed';
 import { filtersFromSearchParams, filtersToSearchParams } from '../utils/filterUrl';
-import type { ApiPostWithAssets } from '../api/types';
+import { routeHashtagSearch } from '../utils/hashtagSearch';
+import type { ApiPostWithAssets, ApiTagCount } from '../api/types';
+
+const TAG_SUGGESTION_LIMIT = 50;
 
 const isApiDataSource = getDataSourceMode() === 'api';
 const mockPosts = postsData as unknown as Post[];
@@ -86,7 +90,32 @@ export default function PostsBrowsePage() {
   const [isLoading, setIsLoading] = useState(isApiDataSource);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState('');
+  const [tagSuggestions, setTagSuggestions] = useState<ApiTagCount[]>([]);
   const accountsByIdRef = useRef<Map<string, Account>>(new Map());
+
+  // Load popular tags once for the search box autocomplete (v0.1.2). Failures
+  // are non-fatal: the search box just falls back to plain keyword input.
+  useEffect(() => {
+    if (!isApiDataSource) {
+      return;
+    }
+
+    let isMounted = true;
+
+    void getTags(TAG_SUGGESTION_LIMIT)
+      .then((tags) => {
+        if (isMounted) {
+          setTagSuggestions(tags);
+        }
+      })
+      .catch(() => {
+        /* autocomplete is an enhancement; ignore load errors */
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!isApiDataSource) {
@@ -172,6 +201,21 @@ export default function PostsBrowsePage() {
   const items = isApiDataSource ? apiItems : mockItems;
   const hasAppliedFilters = hasActivePostFilters(appliedFilters);
 
+  // The URL is the source of truth here, so committing only updates the query
+  // string; `draftFilters` re-syncs from it on the next render. `#tag` in the
+  // search box is routed to the tag filter before validation/serialization.
+  const commitFilters = (next: PostFilters) => {
+    const routed = routeHashtagSearch(next);
+    const validationError = getPostFilterValidationError(routed);
+    if (validationError) {
+      setFilterError(validationError);
+      return;
+    }
+
+    setFilterError('');
+    setSearchParams(filtersToSearchParams(routed), { replace: true });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-white px-3 py-2 shadow-sm">
@@ -200,16 +244,7 @@ export default function PostsBrowsePage() {
 
               setDraftFilters(nextFilters);
             }}
-            onApply={() => {
-              const validationError = getPostFilterValidationError(draftFilters);
-              if (validationError) {
-                setFilterError(validationError);
-                return;
-              }
-
-              setFilterError('');
-              setSearchParams(filtersToSearchParams(draftFilters), { replace: true });
-            }}
+            onApply={() => commitFilters(draftFilters)}
             onReset={() => {
               setFilterError('');
               setSearchParams(new URLSearchParams(), { replace: true });
@@ -220,6 +255,8 @@ export default function PostsBrowsePage() {
             activeUserId={activeApiUserId}
             error={filterError}
             hasAppliedFilters={hasAppliedFilters}
+            tagSuggestions={tagSuggestions}
+            onSelectTag={(tag) => commitFilters({ ...draftFilters, keyword: '', tag })}
           />
         </section>
       ) : (
