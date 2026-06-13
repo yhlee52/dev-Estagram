@@ -1,11 +1,14 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.0.0`.
+현재 릴리즈: `v0.1.0` (Read at Scale).
 
 먼저 볼 문서:
 
 - `../README.md`: mock mode, API mode, external import mode 실행 guide
 - `ROADMAP.md`: v0.0.0 이후 업데이트 로드맵 (버전 트리, 테마별 scope)
+- `V0_1_0_READ_AT_SCALE_SCOPE.md`: v0.1.0 Read at Scale 상세 scope (pagination,
+  날짜 필터, 정렬, URL 동기화, JSONB+GIN)
+- `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `RELEASE_0_0_RUNBOOK.md`: v0.0.0 local 실행 재현 runbook
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: v0.0.0 / MVP12 external post package 작성 guide
 - `RELEASE_0_0_CHECKLIST.md`: v0.0.0 릴리즈 직전 체크리스트

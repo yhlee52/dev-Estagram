@@ -8,7 +8,10 @@ import type {
   ApiPostAsset,
 } from '../api/types';
 import { getActiveApiUserId } from '../auth/apiActiveUser';
-import type { FeedRepository, GetHomeFeedItemsOptions } from './feedRepositoryTypes';
+import type {
+  FeedRepository,
+  GetHomeFeedItemsOptions,
+} from './feedRepositoryTypes';
 import type {
   Account,
   FeedItem,
@@ -122,11 +125,18 @@ export const apiFeedRepository: FeedRepository = {
     const userId = options.activeUserId ?? getActiveApiUserId();
 
     if (!userId) {
-      return [];
+      return { items: [], nextCursor: null, hasMore: false };
     }
 
-    const response = await getFeed(userId, options.filters);
+    const response = await getFeed(userId, options.filters, {
+      cursor: options.cursor,
+      limit: options.limit,
+    });
 
-    return mapApiFeedResponseToFeedItems(response);
+    return {
+      items: mapApiFeedResponseToFeedItems(response),
+      nextCursor: response.next_cursor,
+      hasMore: response.has_more,
+    };
   },
 };

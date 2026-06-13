@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
@@ -17,9 +17,11 @@ import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useFollowState } from '../hooks/useFollowState';
 import type { FeedItem } from '../types/feed';
 import type { PostFilters } from '../types/filters';
+import { filtersFromSearchParams, filtersToSearchParams } from '../utils/filterUrl';
 
 const dataSourceMode = getDataSourceMode();
 const isApiDataSource = dataSourceMode === 'api';
+const PAGE_LIMIT = 20;
 
 function getFeedErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
@@ -50,13 +52,22 @@ const feedScopeOptions: Array<{
 ];
 
 export default function HomeFeed() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [feedScope, setFeedScope] = useState<FeedScope>('following');
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState('');
-  const [draftFilters, setDraftFilters] = useState<PostFilters>(emptyPostFilters);
-  const [appliedFilters, setAppliedFilters] =
-    useState<PostFilters>(emptyPostFilters);
+  const [draftFilters, setDraftFilters] = useState<PostFilters>(() => ({
+    ...emptyPostFilters,
+    ...filtersFromSearchParams(searchParams),
+  }));
+  const [appliedFilters, setAppliedFilters] = useState<PostFilters>(() => ({
+    ...emptyPostFilters,
+    ...filtersFromSearchParams(searchParams),
+  }));
   const [filterError, setFilterError] = useState('');
   const accounts = useEffectiveAccounts();
   const { activeUserId, followingIds } = useFollowState();
@@ -82,9 +93,11 @@ export default function HomeFeed() {
   useEffect(() => {
     let isMounted = true;
 
-    const loadFeedItems = async () => {
+    const loadFirstPage = async () => {
       if (isApiDataSource && !activeApiUserId) {
         setFeedItems([]);
+        setNextCursor(null);
+        setHasMore(false);
         setIsLoading(false);
         setError('');
         return;
@@ -94,18 +107,23 @@ export default function HomeFeed() {
       setError('');
 
       try {
-        const items = await getHomeFeedItems({
+        const page = await getHomeFeedItems({
           activeUserId: isApiDataSource ? activeApiUserId : activeUserId,
           scope: feedScope,
           filters: isApiDataSource ? appliedFilters : undefined,
+          limit: PAGE_LIMIT,
         });
 
         if (isMounted) {
-          setFeedItems(items);
+          setFeedItems(page.items);
+          setNextCursor(page.nextCursor);
+          setHasMore(page.hasMore);
         }
       } catch (feedError) {
         if (isMounted) {
           setFeedItems([]);
+          setNextCursor(null);
+          setHasMore(false);
           setError(
             isApiDataSource
               ? apiFollowRefreshKey > 0
@@ -121,7 +139,7 @@ export default function HomeFeed() {
       }
     };
 
-    void loadFeedItems();
+    void loadFirstPage();
 
     return () => {
       isMounted = false;
@@ -135,6 +153,32 @@ export default function HomeFeed() {
     followingIds,
     accounts,
   ]);
+
+  const handleLoadMore = async () => {
+    if (!nextCursor || isLoadingMore) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+
+    try {
+      const page = await getHomeFeedItems({
+        activeUserId: isApiDataSource ? activeApiUserId : activeUserId,
+        scope: feedScope,
+        filters: isApiDataSource ? appliedFilters : undefined,
+        cursor: nextCursor,
+        limit: PAGE_LIMIT,
+      });
+
+      setFeedItems((current) => [...current, ...page.items]);
+      setNextCursor(page.nextCursor);
+      setHasMore(page.hasMore);
+    } catch (loadMoreError) {
+      setError(getFeedErrorMessage(loadMoreError));
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   const hasAppliedFilters = hasActivePostFilters(appliedFilters);
 
@@ -226,11 +270,15 @@ export default function HomeFeed() {
 
               setFilterError('');
               setAppliedFilters(draftFilters);
+              setSearchParams(filtersToSearchParams(draftFilters), {
+                replace: true,
+              });
             }}
             onReset={() => {
               setDraftFilters(emptyPostFilters);
               setAppliedFilters(emptyPostFilters);
               setFilterError('');
+              setSearchParams(new URLSearchParams(), { replace: true });
             }}
             isLoading={isLoading}
             resultCount={!isLoading && !error && activeApiUserId ? feedItems.length : undefined}
@@ -285,6 +333,17 @@ export default function HomeFeed() {
           {feedItems.map((item) => (
             <FeedCard key={item.post.id} item={item} />
           ))}
+
+          {hasMore ? (
+            <button
+              type="button"
+              className="h-10 w-full rounded-md border border-neutral-200 bg-white text-sm font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-400"
+              disabled={isLoadingMore}
+              onClick={handleLoadMore}
+            >
+              {isLoadingMore ? 'Loading...' : 'Load more'}
+            </button>
+          ) : null}
         </div>
       )}
     </div>

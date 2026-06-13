@@ -1,6 +1,7 @@
 import { isApiMode } from '../config/dataSource';
 import { apiFeedRepository } from './apiFeedRepository';
 import type {
+  FeedPage,
   FeedRepository,
   FeedScope,
   GetHomeFeedItemsOptions,
@@ -14,4 +15,4 @@ export const getHomeFeedItems = (
   options?: GetHomeFeedItemsOptions,
 ) => getFeedRepository().getHomeFeedItems(options);
 
-export type { FeedRepository, FeedScope, GetHomeFeedItemsOptions };
+export type { FeedPage, FeedRepository, FeedScope, GetHomeFeedItemsOptions };

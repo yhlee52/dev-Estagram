@@ -93,6 +93,12 @@ export interface ApiPostWithAssets extends ApiPost {
   assets: ApiPostAsset[];
 }
 
+export interface ApiPaginatedPosts {
+  items: ApiPostWithAssets[];
+  next_cursor: string | null;
+  has_more: boolean;
+}
+
 export interface ApiFeedItem {
   post: ApiPost;
   account: ApiAccount;
@@ -102,6 +108,8 @@ export interface ApiFeedItem {
 export interface ApiFeedResponse {
   user: ApiUser;
   items: ApiFeedItem[];
+  next_cursor: string | null;
+  has_more: boolean;
 }
 
 export interface ApiFollow {

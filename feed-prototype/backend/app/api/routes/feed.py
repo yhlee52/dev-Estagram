@@ -14,7 +14,17 @@ from app.schemas.feed import (
     PostRead,
     UserRead,
 )
-from app.services.post_filters import PostFilters, apply_post_filters
+from app.services.post_filters import (
+    DEFAULT_LIMIT,
+    MAX_LIMIT,
+    PostFilters,
+    PostPagination,
+    get_accounts_by_id,
+    get_assets_by_post_id,
+    paginate_posts,
+    validate_post_filters,
+    validate_pagination,
+)
 
 
 router = APIRouter(prefix="/api/feed", tags=["feed"])
@@ -31,11 +41,31 @@ def get_feed(
     account_id: str | None = Query(default=None),
     account_handle: str | None = Query(default=None),
     my_posts_only: bool = Query(default=False),
+    created_at_from: str | None = Query(default=None),
+    created_at_to: str | None = Query(default=None),
+    sort: str = Query(default="newest"),
+    cursor: str | None = Query(default=None),
+    limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
     session: Session = Depends(get_session),
 ) -> FeedResponse:
     user = session.get(User, user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
+
+    filters = PostFilters(
+        keyword=keyword,
+        tag=tag,
+        metadata_key=metadata_key,
+        metadata_value=metadata_value,
+        asset_type=asset_type,
+        account_id=account_id,
+        account_handle=account_handle,
+        user_id=user_id,
+        my_posts_only=my_posts_only,
+        created_at_from=created_at_from,
+        created_at_to=created_at_to,
+    )
+    pagination = PostPagination(sort=sort, cursor=cursor, limit=limit)
 
     followed_account_ids = list(
         session.exec(
@@ -48,32 +78,21 @@ def get_feed(
         followed_account_ids + ([own_account.id] if own_account is not None else [])
     ))
 
-    filters = PostFilters(
-        keyword=keyword,
-        tag=tag,
-        metadata_key=metadata_key,
-        metadata_value=metadata_value,
-        asset_type=asset_type,
-        account_id=account_id,
-        account_handle=account_handle,
-        user_id=user_id,
-        my_posts_only=my_posts_only,
-    )
-
     if not feed_account_ids:
-        apply_post_filters(session, [], filters)
+        # Still validate query params so invalid input surfaces a 400.
+        validate_post_filters(session, filters)
+        validate_pagination(pagination)
         return FeedResponse(user=UserRead.model_validate(user), items=[])
 
-    posts = session.exec(
-        select(Post)
-        .where(Post.account_id.in_(feed_account_ids))
-        .order_by(Post.created_at.desc())
-    ).all()
-    filtered_posts, accounts_by_id, assets_by_post_id = apply_post_filters(
+    page = paginate_posts(
         session,
-        posts,
+        select(Post).where(Post.account_id.in_(feed_account_ids)),
         filters,
+        pagination,
     )
+
+    accounts_by_id = get_accounts_by_id(session, [post.account_id for post in page.posts])
+    assets_by_post_id = get_assets_by_post_id(session, [post.id for post in page.posts])
 
     items = [
         FeedItem(
@@ -84,8 +103,13 @@ def get_feed(
                 for asset in assets_by_post_id.get(post.id, [])
             ],
         )
-        for post in filtered_posts
+        for post in page.posts
         if post.account_id in accounts_by_id
     ]
 
-    return FeedResponse(user=UserRead.model_validate(user), items=items)
+    return FeedResponse(
+        user=UserRead.model_validate(user),
+        items=items,
+        next_cursor=page.next_cursor,
+        has_more=page.has_more,
+    )

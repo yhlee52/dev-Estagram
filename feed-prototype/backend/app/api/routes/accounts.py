@@ -6,7 +6,7 @@ from app.models.account import Account
 from app.models.asset import PostAsset
 from app.models.post import Post
 from app.schemas.feed import AccountRead, PostAssetRead, PostRead, PostWithAssets
-from app.services.post_filters import PostFilters, apply_post_filters
+from app.services.post_filters import PostFilters, apply_filters_to_select
 
 
 router = APIRouter(prefix="/api/accounts", tags=["accounts"])
@@ -66,23 +66,23 @@ def list_account_posts(
     if account is None:
         raise HTTPException(status_code=404, detail="Account not found")
 
-    posts = session.exec(
-        select(Post)
-        .where(Post.account_id == account_id)
-        .order_by(Post.created_at.desc())
-    ).all()
-    filtered_posts, _, _ = apply_post_filters(
+    statement, _ = apply_filters_to_select(
         session,
-        posts,
+        select(Post).where(Post.account_id == account_id),
         PostFilters(
             keyword=keyword,
             tag=tag,
             metadata_key=metadata_key,
             metadata_value=metadata_value,
             asset_type=asset_type,
-            account_id=account_id,
             user_id=user_id,
             my_posts_only=my_posts_only,
         ),
     )
-    return [build_post_with_assets(session, post) for post in filtered_posts]
+    if statement is None:
+        return []
+
+    posts = session.exec(
+        statement.order_by(col(Post.created_at).desc(), col(Post.id).desc())
+    ).all()
+    return [build_post_with_assets(session, post) for post in posts]

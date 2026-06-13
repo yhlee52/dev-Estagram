@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ApiNetworkError } from '../api/client';
 import { getAccounts } from '../api/accountsApi';
-import { getPosts } from '../api/postsApi';
+import { getAllPosts } from '../api/postsApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import EmptyState from '../components/EmptyState';
 import AccountCard from '../components/AccountCard';
@@ -55,7 +55,7 @@ export default function AccountsPage() {
       try {
         const [accountsResponse, postsResponse] = await Promise.all([
           getAccounts(),
-          getPosts(),
+          getAllPosts(),
         ]);
 
         if (isMounted) {

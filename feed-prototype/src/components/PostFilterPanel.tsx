@@ -1,5 +1,5 @@
 import type { FormEvent } from 'react';
-import type { PostAssetFilterType, PostFilters } from '../types/filters';
+import type { PostAssetFilterType, PostFilters, PostSort } from '../types/filters';
 
 type PostFilterPanelProps = {
   filters: PostFilters;
@@ -34,6 +34,9 @@ export const emptyPostFilters: PostFilters = {
   assetType: '',
   accountHandle: '',
   myPostsOnly: false,
+  createdAtFrom: '',
+  createdAtTo: '',
+  sort: 'newest',
 };
 
 export function hasActivePostFilters(filters: PostFilters): boolean {
@@ -45,13 +48,21 @@ export function hasActivePostFilters(filters: PostFilters): boolean {
       filters.assetType ||
       filters.accountId ||
       filters.accountHandle?.trim() ||
-      filters.myPostsOnly,
+      filters.myPostsOnly ||
+      filters.createdAtFrom?.trim() ||
+      filters.createdAtTo?.trim(),
   );
 }
 
 export function getPostFilterValidationError(filters: PostFilters): string {
   if (filters.metadataValue?.trim() && !filters.metadataKey?.trim()) {
     return 'Metadata key is required when metadata value is set.';
+  }
+
+  const from = filters.createdAtFrom?.trim();
+  const to = filters.createdAtTo?.trim();
+  if (from && to && from > to) {
+    return 'Date from must be on or before date to.';
   }
 
   return '';
@@ -153,6 +164,35 @@ export default function PostFilterPanel({
         placeholder="Account handle"
         className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
       />
+      <input
+        aria-label="Created from"
+        type="date"
+        value={filters.createdAtFrom ?? ''}
+        onChange={(event) => {
+          onChange({ ...filters, createdAtFrom: event.target.value });
+        }}
+        className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition focus:border-neutral-400"
+      />
+      <input
+        aria-label="Created to"
+        type="date"
+        value={filters.createdAtTo ?? ''}
+        onChange={(event) => {
+          onChange({ ...filters, createdAtTo: event.target.value });
+        }}
+        className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition focus:border-neutral-400"
+      />
+      <select
+        aria-label="Sort order"
+        value={filters.sort ?? 'newest'}
+        onChange={(event) => {
+          onChange({ ...filters, sort: event.target.value as PostSort });
+        }}
+        className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 outline-none transition focus:border-neutral-400"
+      >
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+      </select>
       <label className="flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 has-[:disabled]:text-neutral-400">
         <input
           type="checkbox"

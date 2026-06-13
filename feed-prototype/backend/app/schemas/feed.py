@@ -211,6 +211,12 @@ class PostWithAssets(PostRead):
     assets: list[PostAssetRead] = Field(default_factory=list)
 
 
+class PaginatedPosts(BaseModel):
+    items: list[PostWithAssets] = Field(default_factory=list)
+    next_cursor: str | None = None
+    has_more: bool = False
+
+
 class FollowRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -240,3 +246,5 @@ class FeedItem(BaseModel):
 class FeedResponse(BaseModel):
     user: UserRead
     items: list[FeedItem]
+    next_cursor: str | None = None
+    has_more: bool = False

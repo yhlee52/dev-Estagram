@@ -14,8 +14,9 @@ export const mockFeedRepository: FeedRepository = {
     const scope = options.scope ?? 'following';
     const accounts = getEffectiveAccounts();
 
+    // Mock mode is not paginated: return the full set with no further pages.
     if (scope === 'all') {
-      return getFeedItems(posts, accounts);
+      return { items: getFeedItems(posts, accounts), nextCursor: null, hasMore: false };
     }
 
     const followingByUser = readFollowingByUserOverlay();
@@ -23,6 +24,10 @@ export const mockFeedRepository: FeedRepository = {
       ? followingByUser[options.activeUserId] ?? []
       : [];
 
-    return getFollowedFeedItems(posts, accounts, followingIds);
+    return {
+      items: getFollowedFeedItems(posts, accounts, followingIds),
+      nextCursor: null,
+      hasMore: false,
+    };
   },
 };
