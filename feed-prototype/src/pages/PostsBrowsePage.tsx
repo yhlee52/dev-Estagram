@@ -194,10 +194,22 @@ export default function PostsBrowsePage() {
     }
   };
 
-  const mockItems = useMemo(
-    () => getFeedItems(mockPosts, mockAccounts),
-    [mockAccounts],
-  );
+  // Mock mode has no filter panel, but hashtag chips still link here as
+  // `/posts?tag=<tag>` (v0.1.1). Apply just the tag filter client-side so those
+  // links are not a dead-end; matching is case-insensitive like the API filter.
+  const mockTagFilter = appliedFilters.tag?.trim().toLowerCase() ?? '';
+  const mockItems = useMemo(() => {
+    const allItems = getFeedItems(mockPosts, mockAccounts);
+    if (!mockTagFilter) {
+      return allItems;
+    }
+
+    return allItems.filter((item) =>
+      (item.post.tags ?? []).some(
+        (tag) => tag.trim().toLowerCase() === mockTagFilter,
+      ),
+    );
+  }, [mockAccounts, mockTagFilter]);
   const items = isApiDataSource ? apiItems : mockItems;
   const hasAppliedFilters = hasActivePostFilters(appliedFilters);
 
@@ -260,9 +272,32 @@ export default function PostsBrowsePage() {
           />
         </section>
       ) : (
-        <p className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-semibold text-neutral-500 shadow-sm">
-          Filter/search is available in API mode.
-        </p>
+        <div className="space-y-2">
+          {appliedFilters.tag?.trim() ? (
+            <div className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-white px-3 py-2 shadow-sm">
+              <p className="truncate text-sm font-semibold text-neutral-700">
+                Filtered by{' '}
+                <span className="font-bold text-neutral-950">
+                  #{appliedFilters.tag.trim()}
+                </span>
+              </p>
+              <button
+                type="button"
+                className="h-8 shrink-0 rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100"
+                onClick={() => {
+                  const next = new URLSearchParams(searchParams);
+                  next.delete('tag');
+                  setSearchParams(next, { replace: true });
+                }}
+              >
+                Clear tag
+              </button>
+            </div>
+          ) : null}
+          <p className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-semibold text-neutral-500 shadow-sm">
+            Tag filter works in mock mode. Full filter/search is available in API mode.
+          </p>
+        </div>
       )}
 
       {isLoading ? (

@@ -121,7 +121,8 @@ export default function TagSearchInput({
           setHighlightedIndex(-1);
         }}
         onFocus={() => setIsOpen(true)}
-        // Delay close so an option's click/mousedown can register first.
+        // Close on blur. Option selection still registers because each option's
+        // onMouseDown calls preventDefault, so picking one never blurs the input.
         onBlur={() => setIsOpen(false)}
         onKeyDown={handleKeyDown}
       />
