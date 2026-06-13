@@ -6,12 +6,16 @@
 
 이 codebase는 personal feed, bot feed, project feed, 향후 회사 내부 설비 리포트 feed를 지원할 수 있을 만큼 generic해야 합니다. core product model은 설비 전용이 아닙니다.
 
-## Current v0.0.0 Release Docs
+## Current Release Docs
 
-v0.0.0 기준 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
+현재 릴리즈는 `v0.1.0`(Read at Scale)이며 `feed-prototype/src/config/appVersion.ts`의
+`APP_RELEASE_LABEL`이 기준입니다. 실행, external package 작성, 릴리즈 검증은 다음
+문서를 우선 참고합니다.
 
 - `README.md`
 - `feed-prototype/README.md`
+- `feed-prototype/docs/V0_1_0_READ_AT_SCALE_SCOPE.md`
+- `feed-prototype/docs/GOLDEN_SAMPLE_REGRESSION.md`
 - `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`
 - `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`
 - `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`

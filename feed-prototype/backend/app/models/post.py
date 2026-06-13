@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, ClassVar
 
 from sqlalchemy import Column, JSON
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
 
 
@@ -18,7 +19,7 @@ class Post(SQLModel, table=True):
     title: str
     text: str
     tags: list[str] = Field(default_factory=list, sa_column=Column(JSON, nullable=False))
-    metadata_json: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
+    metadata_json: dict[str, Any] | None = Field(default=None, sa_column=Column(JSONB))
     imported_at: datetime | None = None
     import_batch_external_id: str | None = Field(default=None, index=True)
     created_at: datetime = Field(default_factory=utc_now)

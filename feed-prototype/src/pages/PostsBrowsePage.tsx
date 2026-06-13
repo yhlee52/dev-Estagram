@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { getAccounts } from '../api/accountsApi';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import { getPosts } from '../api/postsApi';
@@ -15,12 +16,15 @@ import { getDataSourceMode } from '../config/dataSource';
 import { mapApiAccountToAccount, mapApiPostToPost } from '../data/apiFeedRepository';
 import postsData from '../data/posts.json';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
-import type { FeedItem, Post } from '../types/feed';
+import type { Account, FeedItem, Post } from '../types/feed';
 import type { PostFilters } from '../types/filters';
 import { getFeedItems } from '../utils/feed';
+import { filtersFromSearchParams, filtersToSearchParams } from '../utils/filterUrl';
+import type { ApiPostWithAssets } from '../api/types';
 
 const isApiDataSource = getDataSourceMode() === 'api';
 const mockPosts = postsData as unknown as Post[];
+const PAGE_LIMIT = 20;
 
 function getBrowseErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
@@ -34,16 +38,45 @@ function getBrowseErrorMessage(error: unknown): string {
   return 'Could not load posts. Check the backend server and try again.';
 }
 
+function mapPostsToItems(
+  posts: ApiPostWithAssets[],
+  accountsById: Map<string, Account>,
+): FeedItem[] {
+  return posts
+    .map((post) => {
+      const account = accountsById.get(post.account_id);
+      if (!account) {
+        return undefined;
+      }
+
+      return {
+        account,
+        post: mapApiPostToPost(post, post.assets),
+      };
+    })
+    .filter((item): item is FeedItem => item !== undefined);
+}
+
 export default function PostsBrowsePage() {
   const mockAccounts = useEffectiveAccounts();
   const { activeApiUserId } = useActiveApiUser();
-  const [draftFilters, setDraftFilters] = useState<PostFilters>(emptyPostFilters);
-  const [appliedFilters, setAppliedFilters] =
-    useState<PostFilters>(emptyPostFilters);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [draftFilters, setDraftFilters] = useState<PostFilters>(() => ({
+    ...emptyPostFilters,
+    ...filtersFromSearchParams(searchParams),
+  }));
+  const [appliedFilters, setAppliedFilters] = useState<PostFilters>(() => ({
+    ...emptyPostFilters,
+    ...filtersFromSearchParams(searchParams),
+  }));
   const [filterError, setFilterError] = useState('');
   const [apiItems, setApiItems] = useState<FeedItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(isApiDataSource);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState('');
+  const accountsByIdRef = useRef<Map<string, Account>>(new Map());
 
   useEffect(() => {
     if (!isApiDataSource) {
@@ -52,42 +85,33 @@ export default function PostsBrowsePage() {
 
     let isMounted = true;
 
-    const loadPosts = async () => {
+    const loadFirstPage = async () => {
       setIsLoading(true);
       setError('');
 
       try {
         const [accountsResponse, postsResponse] = await Promise.all([
           getAccounts(),
-          getPosts(appliedFilters),
+          getPosts(appliedFilters, { limit: PAGE_LIMIT, activeUserId: activeApiUserId }),
         ]);
 
         if (!isMounted) {
           return;
         }
 
-        const accounts = accountsResponse.map(mapApiAccountToAccount);
         const accountsById = new Map(
-          accounts.map((account) => [account.id, account]),
+          accountsResponse.map(mapApiAccountToAccount).map((account) => [account.id, account]),
         );
-        const items = postsResponse
-          .map((post) => {
-            const account = accountsById.get(post.account_id);
-            if (!account) {
-              return undefined;
-            }
+        accountsByIdRef.current = accountsById;
 
-            return {
-              account,
-              post: mapApiPostToPost(post, post.assets),
-            };
-          })
-          .filter((item): item is FeedItem => item !== undefined);
-
-        setApiItems(items);
+        setApiItems(mapPostsToItems(postsResponse.items, accountsById));
+        setNextCursor(postsResponse.next_cursor);
+        setHasMore(postsResponse.has_more);
       } catch (loadError) {
         if (isMounted) {
           setApiItems([]);
+          setNextCursor(null);
+          setHasMore(false);
           setError(getBrowseErrorMessage(loadError));
         }
       } finally {
@@ -97,12 +121,39 @@ export default function PostsBrowsePage() {
       }
     };
 
-    void loadPosts();
+    void loadFirstPage();
 
     return () => {
       isMounted = false;
     };
-  }, [appliedFilters]);
+  }, [appliedFilters, activeApiUserId]);
+
+  const handleLoadMore = async () => {
+    if (!nextCursor || isLoadingMore) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+
+    try {
+      const postsResponse = await getPosts(appliedFilters, {
+        cursor: nextCursor,
+        limit: PAGE_LIMIT,
+        activeUserId: activeApiUserId,
+      });
+
+      setApiItems((current) => [
+        ...current,
+        ...mapPostsToItems(postsResponse.items, accountsByIdRef.current),
+      ]);
+      setNextCursor(postsResponse.next_cursor);
+      setHasMore(postsResponse.has_more);
+    } catch (loadMoreError) {
+      setError(getBrowseErrorMessage(loadMoreError));
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   const mockItems = useMemo(
     () => getFeedItems(mockPosts, mockAccounts),
@@ -148,11 +199,13 @@ export default function PostsBrowsePage() {
 
               setFilterError('');
               setAppliedFilters(draftFilters);
+              setSearchParams(filtersToSearchParams(draftFilters), { replace: true });
             }}
             onReset={() => {
               setDraftFilters(emptyPostFilters);
               setAppliedFilters(emptyPostFilters);
               setFilterError('');
+              setSearchParams(new URLSearchParams(), { replace: true });
             }}
             isLoading={isLoading}
             resultCount={!isLoading && !error ? items.length : undefined}
@@ -193,6 +246,17 @@ export default function PostsBrowsePage() {
           {items.map((item) => (
             <FeedCard key={item.post.id} item={item} />
           ))}
+
+          {isApiDataSource && hasMore ? (
+            <button
+              type="button"
+              className="h-10 w-full rounded-md border border-neutral-200 bg-white text-sm font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-400"
+              disabled={isLoadingMore}
+              onClick={handleLoadMore}
+            >
+              {isLoadingMore ? 'Loading...' : 'Load more'}
+            </button>
+          ) : null}
         </div>
       )}
     </div>

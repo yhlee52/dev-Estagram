@@ -11,6 +11,7 @@ from app.models.user import User
 from app.schemas.feed import (
     AccountRead,
     FeedItem,
+    PaginatedPosts,
     PostAssetCreate,
     PostAssetRead,
     PostCreate,
@@ -18,13 +19,19 @@ from app.schemas.feed import (
     PostUpdate,
     PostWithAssets,
 )
-from app.services.post_filters import PostFilters, apply_post_filters
+from app.services.post_filters import (
+    DEFAULT_LIMIT,
+    MAX_LIMIT,
+    PostFilters,
+    PostPagination,
+    paginate_posts,
+)
 
 
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
 
-@router.get("", response_model=list[PostWithAssets])
+@router.get("", response_model=PaginatedPosts)
 def list_posts(
     keyword: str | None = Query(default=None),
     tag: str | None = Query(default=None),
@@ -35,12 +42,16 @@ def list_posts(
     account_handle: str | None = Query(default=None),
     user_id: str | None = Query(default=None),
     my_posts_only: bool = Query(default=False),
+    created_at_from: str | None = Query(default=None),
+    created_at_to: str | None = Query(default=None),
+    sort: str = Query(default="newest"),
+    cursor: str | None = Query(default=None),
+    limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
     session: Session = Depends(get_session),
-) -> list[PostWithAssets]:
-    posts = session.exec(select(Post).order_by(Post.created_at.desc())).all()
-    filtered_posts, _, _ = apply_post_filters(
+) -> PaginatedPosts:
+    page = paginate_posts(
         session,
-        posts,
+        select(Post),
         PostFilters(
             keyword=keyword,
             tag=tag,
@@ -51,9 +62,16 @@ def list_posts(
             account_handle=account_handle,
             user_id=user_id,
             my_posts_only=my_posts_only,
+            created_at_from=created_at_from,
+            created_at_to=created_at_to,
         ),
+        PostPagination(sort=sort, cursor=cursor, limit=limit),
     )
-    return [build_post_with_assets(session, post) for post in filtered_posts]
+    return PaginatedPosts(
+        items=[build_post_with_assets(session, post) for post in page.posts],
+        next_cursor=page.next_cursor,
+        has_more=page.has_more,
+    )
 
 
 def get_user_account(session: Session, user_id: str) -> Account:

@@ -7,8 +7,16 @@ export interface GetHomeFeedItemsOptions {
   activeUserId?: string;
   scope?: FeedScope;
   filters?: PostFilters;
+  cursor?: string;
+  limit?: number;
+}
+
+export interface FeedPage {
+  items: FeedItem[];
+  nextCursor: string | null;
+  hasMore: boolean;
 }
 
 export interface FeedRepository {
-  getHomeFeedItems(options?: GetHomeFeedItemsOptions): Promise<FeedItem[]>;
+  getHomeFeedItems(options?: GetHomeFeedItemsOptions): Promise<FeedPage>;
 }
