@@ -1,6 +1,6 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.1.2` (해시태그 검색 최적화).
+현재 릴리즈: `v0.1.3` (@mention 렌더링). v0.1.x(탐색과 발견) 테마 완료.
 
 먼저 볼 문서:
 
@@ -12,6 +12,8 @@
   링크 `/posts?tag=<tag>`)
 - `V0_1_2_HASHTAG_SEARCH_SCOPE.md`: v0.1.2 해시태그 검색 최적화 상세 scope
   (검색창 `#` → tag 라우팅, `GET /api/tags`, tag 자동완성)
+- `V0_1_3_MENTION_SCOPE.md`: v0.1.3 @mention 렌더링 상세 scope (post 본문
+  `@handle` → Account Profile 링크, 존재하지 않는 handle은 plain text fallback)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `RELEASE_0_0_RUNBOOK.md`: v0.0.0 local 실행 재현 runbook
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: v0.0.0 / MVP12 external post package 작성 guide

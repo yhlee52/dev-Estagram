@@ -1,8 +1,8 @@
 # 외부 Post Import Package
 
-현재 릴리즈 기준: `v0.0.0`.
+현재 릴리즈 기준: `v0.1.3`. external post package format은 v0.0.0 시점에 동결되어 v0.1.x에서도 변경되지 않았습니다(`docs/EXTERNAL_POST_PACKAGE_GUIDE.md`의 Format Stability 참고).
 
-이 문서는 v0.0.0 기준 external import mode의 package guide입니다. 외부 프로그램이 만든 JSON package를 backend DB에 넣고, API mode UI가 import된 post를 일반 post처럼 표시하는 흐름을 다룹니다.
+이 문서는 external import mode의 package guide입니다. 외부 프로그램이 만든 JSON package를 backend DB에 넣고, API mode UI가 import된 post를 일반 post처럼 표시하는 흐름을 다룹니다.
 
 이 폴더는 MVP10 **External Post Ingestion Pipeline**을 위한 외부 post package 작업 공간입니다. MVP12 **Asset Viewer Enhancement**부터 asset descriptor에 optional `sort_order`를 포함해 viewer 표시 순서를 안정적으로 지정할 수 있습니다.
 

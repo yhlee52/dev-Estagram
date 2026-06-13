@@ -2,9 +2,9 @@
 
 `feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
 
-현재 릴리즈: `v0.0.0`.
+현재 릴리즈: `v0.1.3`.
 
-이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다.
+이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
 
 ## 포함된 기능
 
@@ -17,6 +17,11 @@
 - `external_id` upsert 기반 external JSON post package import
 - keyword, tag, metadata key/value, asset type, account, own posts 기준 API-mode filter/search
 - image/plot thumbnail, modal navigation, CSV table preview, file card, link card, broken URL fallback을 포함한 asset viewer
+- cursor 기반 pagination(더 보기), 날짜 범위 필터(`created_at_from`/`created_at_to`), 최신순/오래된순 정렬 (v0.1.0)
+- 필터 상태 ↔ URL query parameter 동기화로 공유/재현 가능한 필터 링크 (v0.1.0)
+- 클릭 가능한 해시태그 칩(`#tag` → `/posts?tag=<tag>`) (v0.1.1)
+- 검색창 `#` tag 라우팅, 사용 빈도순 tag 자동완성, `GET /api/tags` (v0.1.2)
+- post 본문의 `@handle`을 Account Profile 링크로 렌더링 (v0.1.3)
 
 ## 포함되지 않은 기능
 
