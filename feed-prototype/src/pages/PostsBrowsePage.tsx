@@ -61,15 +61,25 @@ export default function PostsBrowsePage() {
   const mockAccounts = useEffectiveAccounts();
   const { activeApiUserId } = useActiveApiUser();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [draftFilters, setDraftFilters] = useState<PostFilters>(() => ({
-    ...emptyPostFilters,
-    ...filtersFromSearchParams(searchParams),
-  }));
-  const [appliedFilters, setAppliedFilters] = useState<PostFilters>(() => ({
-    ...emptyPostFilters,
-    ...filtersFromSearchParams(searchParams),
-  }));
+  // The URL is the source of truth for applied filters so that hashtag links
+  // like `/posts?tag=<tag>` (v0.1.1) take effect even when we are already on
+  // this page (no remount) and survive reload/share.
+  const appliedFilters = useMemo<PostFilters>(
+    () => ({ ...emptyPostFilters, ...filtersFromSearchParams(searchParams) }),
+    [searchParams],
+  );
+  const [draftFilters, setDraftFilters] = useState<PostFilters>(appliedFilters);
+  const [syncedSearch, setSyncedSearch] = useState(() => searchParams.toString());
   const [filterError, setFilterError] = useState('');
+
+  // Reset the editable draft when the URL changes from outside the panel
+  // (e.g. a hashtag link click or browser back/forward). Adjusting state during
+  // render is React's recommended alternative to a syncing effect here.
+  const currentSearch = searchParams.toString();
+  if (currentSearch !== syncedSearch) {
+    setSyncedSearch(currentSearch);
+    setDraftFilters(appliedFilters);
+  }
   const [apiItems, setApiItems] = useState<FeedItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -198,12 +208,9 @@ export default function PostsBrowsePage() {
               }
 
               setFilterError('');
-              setAppliedFilters(draftFilters);
               setSearchParams(filtersToSearchParams(draftFilters), { replace: true });
             }}
             onReset={() => {
-              setDraftFilters(emptyPostFilters);
-              setAppliedFilters(emptyPostFilters);
               setFilterError('');
               setSearchParams(new URLSearchParams(), { replace: true });
             }}
