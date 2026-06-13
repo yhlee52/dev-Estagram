@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider } from 'react-router';
+import { AccountDirectoryProvider } from './components/AccountDirectoryProvider';
 import AppShell from './components/AppShell';
 import AccountProfile from './pages/AccountProfile';
 import AccountsPage from './pages/AccountsPage';
@@ -51,5 +52,9 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <AccountDirectoryProvider>
+      <RouterProvider router={router} />
+    </AccountDirectoryProvider>
+  );
 }

@@ -4,6 +4,7 @@ import type { FeedItem } from '../types/feed';
 import { formatDateTime } from '../utils/format';
 import AssetRenderer from './AssetRenderer';
 import AssetGallery from './AssetGallery';
+import MentionText from './MentionText';
 import MetadataSummary from './MetadataSummary';
 import PostBadges from './PostBadges';
 import TagList from './TagList';
@@ -118,9 +119,10 @@ export default function FeedCard({ item }: FeedCardProps) {
               {post.title}
             </h2>
             {post.caption ? (
-              <p className="text-sm leading-6 text-neutral-600">
-                {post.caption}
-              </p>
+              <MentionText
+                text={post.caption}
+                className="text-sm leading-6 text-neutral-600"
+              />
             ) : null}
           </div>
 
