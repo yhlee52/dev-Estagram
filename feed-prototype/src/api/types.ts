@@ -112,6 +112,15 @@ export interface ApiFeedResponse {
   has_more: boolean;
 }
 
+export interface ApiTagCount {
+  tag: string;
+  count: number;
+}
+
+export interface ApiTagListResponse {
+  items: ApiTagCount[];
+}
+
 export interface ApiFollow {
   id: string;
   follower_user_id: string;

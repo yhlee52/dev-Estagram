@@ -8,6 +8,8 @@ import PostFilterPanel, {
   getPostFilterValidationError,
   hasActivePostFilters,
 } from '../components/PostFilterPanel';
+import { getTags } from '../api/tagsApi';
+import type { ApiTagCount } from '../api/types';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import { getApiBaseUrl } from '../config/apiConfig';
 import { getDataSourceMode } from '../config/dataSource';
@@ -18,10 +20,12 @@ import { useFollowState } from '../hooks/useFollowState';
 import type { FeedItem } from '../types/feed';
 import type { PostFilters } from '../types/filters';
 import { filtersFromSearchParams, filtersToSearchParams } from '../utils/filterUrl';
+import { routeHashtagSearch } from '../utils/hashtagSearch';
 
 const dataSourceMode = getDataSourceMode();
 const isApiDataSource = dataSourceMode === 'api';
 const PAGE_LIMIT = 20;
+const TAG_SUGGESTION_LIMIT = 50;
 
 function getFeedErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
@@ -69,10 +73,35 @@ export default function HomeFeed() {
     ...filtersFromSearchParams(searchParams),
   }));
   const [filterError, setFilterError] = useState('');
+  const [tagSuggestions, setTagSuggestions] = useState<ApiTagCount[]>([]);
   const accounts = useEffectiveAccounts();
   const { activeUserId, followingIds } = useFollowState();
   const { activeApiUserId } = useActiveApiUser();
   const [apiFollowRefreshKey, setApiFollowRefreshKey] = useState(0);
+
+  // Load popular tags once for the search box autocomplete (v0.1.2). Failures
+  // are non-fatal: the search box just falls back to plain keyword input.
+  useEffect(() => {
+    if (!isApiDataSource) {
+      return;
+    }
+
+    let isMounted = true;
+
+    void getTags(TAG_SUGGESTION_LIMIT)
+      .then((tags) => {
+        if (isMounted) {
+          setTagSuggestions(tags);
+        }
+      })
+      .catch(() => {
+        /* autocomplete is an enhancement; ignore load errors */
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!isApiDataSource) {
@@ -182,6 +211,22 @@ export default function HomeFeed() {
 
   const hasAppliedFilters = hasActivePostFilters(appliedFilters);
 
+  // Apply filters from the panel. `#tag` in the search box is routed to the tag
+  // filter first; the routed result drives draft, applied, and the URL together.
+  const commitFilters = (next: PostFilters) => {
+    const routed = routeHashtagSearch(next);
+    const validationError = getPostFilterValidationError(routed);
+    if (validationError) {
+      setFilterError(validationError);
+      return;
+    }
+
+    setFilterError('');
+    setDraftFilters(routed);
+    setAppliedFilters(routed);
+    setSearchParams(filtersToSearchParams(routed), { replace: true });
+  };
+
   const emptyState =
     isApiDataSource && hasAppliedFilters ? (
       <EmptyState
@@ -261,19 +306,7 @@ export default function HomeFeed() {
 
               setDraftFilters(nextFilters);
             }}
-            onApply={() => {
-              const validationError = getPostFilterValidationError(draftFilters);
-              if (validationError) {
-                setFilterError(validationError);
-                return;
-              }
-
-              setFilterError('');
-              setAppliedFilters(draftFilters);
-              setSearchParams(filtersToSearchParams(draftFilters), {
-                replace: true,
-              });
-            }}
+            onApply={() => commitFilters(draftFilters)}
             onReset={() => {
               setDraftFilters(emptyPostFilters);
               setAppliedFilters(emptyPostFilters);
@@ -286,6 +319,8 @@ export default function HomeFeed() {
             activeUserId={activeApiUserId}
             error={filterError}
             hasAppliedFilters={hasAppliedFilters}
+            tagSuggestions={tagSuggestions}
+            onSelectTag={(tag) => commitFilters({ ...draftFilters, keyword: '', tag })}
           />
         </div>
       ) : (

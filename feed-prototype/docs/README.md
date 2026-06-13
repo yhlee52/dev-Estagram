@@ -1,6 +1,6 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.1.0` (Read at Scale).
+현재 릴리즈: `v0.1.2` (해시태그 검색 최적화).
 
 먼저 볼 문서:
 
@@ -8,6 +8,10 @@
 - `ROADMAP.md`: v0.0.0 이후 업데이트 로드맵 (버전 트리, 테마별 scope)
 - `V0_1_0_READ_AT_SCALE_SCOPE.md`: v0.1.0 Read at Scale 상세 scope (pagination,
   날짜 필터, 정렬, URL 동기화, JSONB+GIN)
+- `V0_1_1_HASHTAG_SCOPE.md`: v0.1.1 해시태그 활성화 상세 scope (태그 칩 클릭
+  링크 `/posts?tag=<tag>`)
+- `V0_1_2_HASHTAG_SEARCH_SCOPE.md`: v0.1.2 해시태그 검색 최적화 상세 scope
+  (검색창 `#` → tag 라우팅, `GET /api/tags`, tag 자동완성)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `RELEASE_0_0_RUNBOOK.md`: v0.0.0 local 실행 재현 runbook
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: v0.0.0 / MVP12 external post package 작성 guide
