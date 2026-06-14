@@ -15,8 +15,10 @@ v0.3.x 항목을 코드 현황에 맞춰 구체화하고, 진입 전 확인할 �
 >   분할로 v0.3.3으로 분리.)
 > - v0.3.3 — Asset Managed Storage 복사(opt-in): **완료**. 상세는
 >   `V0_3_3_ASSET_STORAGE_SCOPE.md`, 요약은 `AGENTS.md` Completed Scope History.
-> - v0.3.x 마지막 MINOR — UX backlog 반영: 예약 슬롯(미진행).
-> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.3.3`.
+> - v0.3.4 — UX backlog 반영(테마 마지막 MINOR): **완료**. Me 탭 내 post
+>   "Load more" 점진 렌더 + 공용 ConfirmDialog. 상세는
+>   `V0_3_4_UX_BACKLOG_SCOPE.md`. **이로써 v0.3.x 테마 완료.**
+> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.3.4`.
 
 ## 1. v0.2.x 완료 / 진입 판단
 
@@ -140,7 +142,14 @@ v0.3.x는 대부분 기존 자산 위에 얇게 얹는 작업입니다.
 - import가 현재 asset 파일을 읽지 않고 `url` 문자열만 저장하므로, 파일 해석·복사·
   서빙·URL 재작성을 새로 설계해야 함(가장 크고 위험한 작업이라 별도 MINOR로 격리).
 
-### v0.3.x 마지막 MINOR — UX backlog 예약 슬롯
+### v0.3.x 마지막 MINOR — UX backlog 반영 — ✅ 완료
+
+> 구현 완료. 결정 사항은 `V0_3_4_UX_BACKLOG_SCOPE.md`에서 확정됨: (1) Me 탭
+> 페이지네이션은 활동 요약이 정확한 총계를 보여줘 어차피 전량 fetch가 필요하므로
+> 서버 cursor 대신 표시 카드만 `MY_POSTS_PAGE_SIZE`(20)개씩 "Load more"로 점진
+> 렌더(클라이언트 사이드, 백엔드 변경 없음). (2) 공용 `ConfirmDialog`로
+> `window.confirm`을 교체(`MyPostCard`·`PostDetail`). Following 목록은 backlog
+> 메모대로 v0.5.x로 이연. 아래는 진입 당시 후보 정의로 기록 보존.
 
 `ROADMAP.md` 규칙대로 테마 마지막 MINOR는 `UX_BACKLOG.md` 반영용으로 예약.
 현재 관련 Open 후보(이연됨): Me 탭 페이지네이션(데이터 누적 대응), 공용
@@ -170,9 +179,9 @@ mock mode는 v0.3.0부터 데모 전용 동결 (제거하지 않음)
 ## 6. 다음 행동
 
 v0.3.0(HTTP Import API)·v0.3.1(Import Batch 이력)·v0.3.2(자동 이동/일괄 처리
-CLI/Watch)·v0.3.3(asset managed storage 복사 opt-in)는 완료되었습니다. 남은 것은
-테마의 마지막 MINOR입니다.
+CLI/Watch)·v0.3.3(asset managed storage 복사 opt-in)·v0.3.4(UX backlog 반영)가
+모두 완료되어 **v0.3.x 테마는 마감되었습니다.**
 
-1. 테마의 마지막 MINOR는 `UX_BACKLOG.md` 반영용 예약 슬롯(현재 후보: Me 탭
-   페이지네이션, 공용 ConfirmDialog). 이 슬롯을 끝으로 v0.3.x 테마를 마감하고
-   다음 테마(v0.4.x 메타데이터 일급화 & 트리아지)로 넘어갑니다.
+1. 다음 테마는 v0.4.x 메타데이터 일급화 & 트리아지(Metadata-first Reading)
+   입니다. 진입 판단은 별도 진입 점검 문서에서 다룹니다(`ROADMAP.md` v0.4.x
+   항목 참고).

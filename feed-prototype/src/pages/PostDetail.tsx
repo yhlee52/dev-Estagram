@@ -6,6 +6,7 @@ import { deletePost, getPost } from '../api/postsApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import AssetRenderer from '../components/AssetRenderer';
 import AssetGallery from '../components/AssetGallery';
+import ConfirmDialog from '../components/ConfirmDialog';
 import EmptyState from '../components/EmptyState';
 import MentionText from '../components/MentionText';
 import MetadataTable from '../components/MetadataTable';
@@ -91,6 +92,7 @@ export default function PostDetail() {
   const [apiAccount, setApiAccount] = useState<Account | undefined>();
   const [isLoading, setIsLoading] = useState(isApiDataSource);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [error, setError] = useState('');
   const [deleteError, setDeleteError] = useState('');
 
@@ -150,13 +152,8 @@ export default function PostDetail() {
   const isOwnApiPost =
     isApiDataSource && account ? getAccountUserId(account) === activeApiUserId : false;
 
-  const handleDeletePost = async () => {
+  const handleConfirmDelete = async () => {
     if (!postId || !account || !activeApiUserId || isDeleting) {
-      return;
-    }
-
-    const shouldDelete = window.confirm('Delete this post?');
-    if (!shouldDelete) {
       return;
     }
 
@@ -168,6 +165,7 @@ export default function PostDetail() {
       navigate(`/accounts/${account.id}`, { replace: true });
     } catch (deletePostError) {
       setDeleteError(getDeletePostErrorMessage(deletePostError));
+      setIsConfirmOpen(false);
     } finally {
       setIsDeleting(false);
     }
@@ -253,7 +251,7 @@ export default function PostDetail() {
                 type="button"
                 className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:text-red-300"
                 disabled={isDeleting}
-                onClick={handleDeletePost}
+                onClick={() => setIsConfirmOpen(true)}
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
               </button>
@@ -275,6 +273,18 @@ export default function PostDetail() {
         <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
           {deleteError}
         </p>
+      ) : null}
+
+      {isConfirmOpen ? (
+        <ConfirmDialog
+          title="Delete post?"
+          description="This post will be permanently deleted. This cannot be undone."
+          confirmLabel="Delete"
+          danger
+          isConfirming={isDeleting}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setIsConfirmOpen(false)}
+        />
       ) : null}
 
       <Link
