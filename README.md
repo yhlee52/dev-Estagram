@@ -2,8 +2,8 @@
 
 `feed-prototype`은 범용 `Account` / `Post` / `Feed` prototype입니다.
 
-현재 릴리즈: `v0.3.3` (asset managed storage 복사 opt-in — v0.3.x Ingestion 신뢰성
-테마). 버전 라벨 기준은 `feed-prototype/src/config/appVersion.ts`의
+현재 릴리즈: `v0.3.4` (UX backlog 반영 — v0.3.x Ingestion 신뢰성 테마 마지막 MINOR,
+테마 완료). 버전 라벨 기준은 `feed-prototype/src/config/appVersion.ts`의
 `APP_RELEASE_LABEL`입니다.
 
 사용 시나리오:
@@ -14,8 +14,8 @@
 `v0.0.0`이 첫 번째 공유 가능한 internal/local prototype release였고, 그 위에
 v0.1.x(탐색과 발견)와 v0.2.x(레이아웃 & UI 개편) 테마가 쌓였으며, v0.3.x(Ingestion
 신뢰성) 테마가 v0.3.0 HTTP Import API, v0.3.1 Import Batch 이력, v0.3.2 자동
-이동/디렉터리 일괄 처리/Watch, v0.3.3 asset managed storage 복사(opt-in)로
-진행되고 있습니다. 일반 SNS-like feed와 external
+이동/디렉터리 일괄 처리/Watch, v0.3.3 asset managed storage 복사(opt-in), v0.3.4 UX
+backlog 반영으로 완료되었습니다. 일반 SNS-like feed와 external
 report feed를 모두 데모할 수 있지만,
 production-ready 제품은 아닙니다. 전체 버전 트리는
 `feed-prototype/docs/ROADMAP.md`를 참고하세요.
@@ -76,6 +76,9 @@ v0.3.x(Ingestion 신뢰성):
   상대 로컬 경로일 때 파일을 `public/assets/managed/`로 복사하고 url을 재작성.
   `/assets/...`·`http(s)://` url은 무손상, 기본 OFF, CLI/`process_incoming` 경로만
   적용(HTTP import 미적용)
+- UX backlog 반영(테마 마지막 MINOR): Me 탭(API 모드) 내 post를 `MY_POSTS_PAGE_SIZE`
+  단위 "Load more"로 점진 렌더, post 삭제 확인을 공용 `ConfirmDialog`로 교체.
+  이로써 v0.3.x 테마 완료
 
 ## 실행 Mode
 

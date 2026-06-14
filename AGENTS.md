@@ -23,12 +23,14 @@ MINOR)이며 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이
 - `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
 
 버전별 상세 scope는 `feed-prototype/docs/`의 `V0_x_y_*_SCOPE.md` 문서를
-참고합니다(현행: `V0_3_0_HTTP_IMPORT_SCOPE.md`, `V0_3_1_BATCH_HISTORY_SCOPE.md`,
-`V0_3_2_AUTO_INGESTION_SCOPE.md`, `V0_3_3_ASSET_STORAGE_SCOPE.md`,
-`V0_3_4_UX_BACKLOG_SCOPE.md`. 완료 테마
-v0.1.x~v0.2.x의 scope는 `archive/`로 이동). v0.3.x 테마 진입 판단과 후보는
-`feed-prototype/docs/V0_3_X_INGESTION_PLAN.md`에 있습니다. 과거 MVP별 테스트
-절차는 `feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
+참고합니다. v0.3.x 테마가 완료되어 그 scope 문서
+(`V0_3_0_HTTP_IMPORT_SCOPE.md` ~ `V0_3_4_UX_BACKLOG_SCOPE.md`)와 진입 판단/후보
+계획(`V0_3_X_INGESTION_PLAN.md`)은 완료 테마 v0.1.x~v0.2.x와 함께
+`feed-prototype/docs/archive/`로 이동했습니다. 다음 테마(v0.4.x 메타데이터 일급화
+& 트리아지)의 진입 판단·후보 계획은 `feed-prototype/docs/V0_4_X_METADATA_PLAN.md`에
+있으며, 각 MINOR 확정 scope는 착수 시 `docs/`에 `V0_4_*_SCOPE.md`로 새로
+작성합니다. 과거 MVP별 테스트 절차도 `feed-prototype/docs/archive/` 아래에
+historical reference로 보관됩니다.
 현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.
 
 ## Core Domain

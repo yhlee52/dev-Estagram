@@ -11,7 +11,7 @@
 - 두 번째 asset(`/assets/generated/...`)은 이미 서빙되는 URL이라 토글과 무관하게
   **건드리지 않습니다**(format freeze / 하위호환). 해당 파일은 의도적으로 두지 않아
   viewer fallback 확인에도 쓰입니다.
-- 상세는 `feed-prototype/docs/V0_3_3_ASSET_STORAGE_SCOPE.md` 참고.
+- 상세는 `feed-prototype/docs/archive/V0_3_3_ASSET_STORAGE_SCOPE.md` 참고.
 
 참조 경로:
 

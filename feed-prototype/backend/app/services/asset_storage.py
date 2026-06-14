@@ -6,7 +6,7 @@ and not a remote `scheme://` URL) copies the referenced file — resolved relati
 to the package directory — into the managed storage tree (already served by the
 frontend) and rewrites the stored url to the managed url.
 
-Stability contract (see `docs/V0_3_3_ASSET_STORAGE_SCOPE.md`):
+Stability contract (see `docs/archive/V0_3_3_ASSET_STORAGE_SCOPE.md`):
 - Already-served and remote urls are left untouched (format freeze / backward
   compat). No new package fields; the decision keys off the existing url string.
 - Copy is best-effort: a missing source, a path escaping the package dir, or any

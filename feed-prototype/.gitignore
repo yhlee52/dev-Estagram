@@ -24,6 +24,10 @@ backend/.venv/
 backend/uploads/*
 !backend/uploads/.gitkeep
 
+# Managed asset storage copies (v0.3.3 opt-in runtime artifacts; keep dir, ignore contents)
+public/assets/managed/*
+!public/assets/managed/.gitkeep
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
