@@ -8,7 +8,7 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.2.3`(레이아웃 & UI 개편 테마 완료)이며
+현재 릴리즈는 `v0.3.0`(HTTP Import API — v0.3.x Ingestion 신뢰성 테마 진입)이며
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이 기준입니다.
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
@@ -22,7 +22,8 @@
 - `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
 
 버전별 상세 scope는 `feed-prototype/docs/`의 `V0_x_y_*_SCOPE.md` 문서를
-참고합니다(v0.1.0~v0.2.3). 다음 테마 진입 판단과 후보는
+참고합니다(현행: `V0_3_0_HTTP_IMPORT_SCOPE.md`. 완료 테마 v0.1.x~v0.2.x의
+scope는 `archive/`로 이동). v0.3.x 테마 진입 판단과 후보는
 `feed-prototype/docs/V0_3_X_INGESTION_PLAN.md`에 있습니다. 과거 MVP별 테스트
 절차는 `feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
 현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.
@@ -116,6 +117,13 @@ v0.2.x — 레이아웃 & UI 개편 (Layout & UI):
 - v0.2.2: Posts→Explore 태그 진입점, Accounts 활동 신호(최근 N일 post 수)·정렬.
 - v0.2.3: Me 탭 mock/API 내 활동 요약 + 내 post 관리(New Post·Edit·인라인 Delete),
   필터 0건 empty state의 "Reset filters", UX backlog 반영.
+
+v0.3.x — Ingestion 신뢰성 (Ingestion Hardening):
+
+- v0.3.0: HTTP import API. `POST /api/imports`가 기존 `import_payload`를 재사용해
+  동일한 package JSON을 HTTP로 수신(`?dry_run=true` 지원). 스키마 위반 422 /
+  payload 의미 오류 400 / 그 외 500. 선택적 `IMPORT_API_TOKEN` 헤더 보호(미설정 시
+  검사 없음). CLI import workflow 유지.
 
 ## Roadmap & Versioning
 

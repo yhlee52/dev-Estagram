@@ -38,6 +38,21 @@ python -m scripts.check_golden_samples
 - 모든 golden sample의 dry-run이 통과하면 exit code 0.
 - 하나라도 실패하면 실패 목록과 함께 non-zero exit.
 
+### HTTP import 경로 (v0.3.0)
+
+v0.3.0의 `POST /api/imports`도 같은 golden sample을 HTTP dry-run으로 통과하는지
+확인합니다. CLI(`run_import`)와 HTTP route가 동일한 `import_payload`를 쓰므로,
+이 스크립트는 HTTP 레이어(라우팅·body 검증·트랜잭션·에러 매핑)의 드리프트를
+잡습니다. schema 위반 422 / 중복 external_id 400 동작도 함께 확인합니다.
+
+```bash
+cd feed-prototype/backend
+python -m scripts.check_http_import
+```
+
+FastAPI TestClient로 in-process 실행하며 dry-run/거부 요청만 보내므로 DB에
+쓰지 않습니다. (`DATABASE_URL`은 동일하게 필요합니다.)
+
 ## 릴리즈 체크 포함
 
 import service 또는 external package format에 영향을 주는 변경 후, 그리고 릴리즈

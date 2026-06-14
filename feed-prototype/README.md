@@ -2,9 +2,9 @@
 
 `feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
 
-현재 릴리즈: `v0.2.3`. v0.2.x(레이아웃 & UI 개편) 테마 완료.
+현재 릴리즈: `v0.3.0` (HTTP Import API). v0.3.x(Ingestion 신뢰성) 테마 진입.
 
-이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
+이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. v0.3.x(Ingestion 신뢰성) 테마는 v0.3.0에서 HTTP import API(`POST /api/imports`)를 추가했습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
 
 ## 포함된 기능
 
@@ -26,6 +26,7 @@
 - 한 줄 헤더 + 아바타 드롭다운(user id·버전 등 디버그 정보 수납), Switch user 단일화 (v0.2.1)
 - Explore(Posts) 탭: 인기/최근 태그 진입점, Accounts 탭 활동 신호(최근 N일 post 수)·정렬(최근 활동/post 수/이름) (v0.2.2)
 - Me 탭: mock/API 양쪽에서 동작하는 내 활동 요약 + 내 post 관리(New Post·Edit·인라인 Delete), 필터 0건 empty state의 "Reset filters" (v0.2.3)
+- HTTP import API: 기존 CLI와 동일한 package JSON을 `POST /api/imports`로 수신(`?dry_run=true`, 선택적 `X-Import-Token` 보호) (v0.3.0)
 
 ## 포함되지 않은 기능
 
@@ -165,11 +166,36 @@ python -m app.services.import_external_posts --input ../data/external_posts/exam
 
 이후 API mode UI에서 imported post를 확인합니다.
 
+### HTTP Import API (v0.3.0)
+
+동일한 package JSON을 backend가 실행 중일 때 HTTP로 보내 import할 수도 있습니다.
+CLI와 같은 `import_payload` 로직을 재사용하며, package 형식은 동일합니다.
+
+```bash
+# dry-run (DB write 없이 검증·요약만)
+curl -X "POST" "http://127.0.0.1:8000/api/imports?dry_run=true" \
+  -H "Content-Type: application/json" \
+  --data-binary @../data/external_posts/examples/feed_import_sample.json
+
+# 실제 import
+curl -X "POST" "http://127.0.0.1:8000/api/imports" \
+  -H "Content-Type: application/json" \
+  --data-binary @../data/external_posts/examples/feed_import_sample.json
+```
+
+응답은 `ImportSummary`(accounts/users/posts/assets 생성·수정·스킵 수)입니다. 같은
+payload를 다시 보내면 `external_id` 기준 upsert로 중복 없이 갱신됩니다.
+
+선택적 보호: `backend/.env`에 `IMPORT_API_TOKEN`을 설정하면 요청에
+`-H "X-Import-Token: <token>"`이 일치해야 합니다(미설정 시 검사 없음). 정식 인증은
+아니며 backend는 localhost 바인딩을 전제로 합니다(인증은 v0.6.x).
+
 상세 guide:
 
 ```text
 data/external_posts/README.md
 docs/EXTERNAL_POST_PACKAGE_GUIDE.md
+docs/V0_3_0_HTTP_IMPORT_SCOPE.md
 ```
 
 ## Sample Data

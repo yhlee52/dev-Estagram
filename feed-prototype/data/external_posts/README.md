@@ -1,6 +1,6 @@
 # 외부 Post Import Package
 
-현재 릴리즈 기준: `v0.2.3`. external post package format은 v0.0.0 시점에 동결되어 v0.1.x·v0.2.x에서도 변경되지 않았습니다(`docs/EXTERNAL_POST_PACKAGE_GUIDE.md`의 Format Stability 참고).
+현재 릴리즈 기준: `v0.3.0`. external post package format은 v0.0.0 시점에 동결되어 v0.1.x·v0.2.x·v0.3.x에서도 변경되지 않았습니다(`docs/EXTERNAL_POST_PACKAGE_GUIDE.md`의 Format Stability 참고). v0.3.0은 같은 package를 HTTP(`POST /api/imports`)로도 받을 수 있게 했지만 format은 그대로입니다.
 
 이 문서는 external import mode의 package guide입니다. 외부 프로그램이 만든 JSON package를 backend DB에 넣고, API mode UI가 import된 post를 일반 post처럼 표시하는 흐름을 다룹니다.
 
@@ -53,7 +53,7 @@ MVP10에서는 package를 `archive` 또는 `failed`로 자동 이동하지 않�
 
 v0.0.0 / MVP12 기준 JSON package 작성 가이드는 `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`를 먼저 참고하세요.
 
-MVP10 format history와 세부 참고는 `feed-prototype/docs/MVP10_EXTERNAL_POST_FORMAT.md`에 남겨둡니다.
+MVP10 format history와 세부 참고는 `feed-prototype/docs/archive/MVP10_EXTERNAL_POST_FORMAT.md`에 남겨둡니다.
 
 현재 실행 절차와 dry-run/import 검증은 `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`를 참고하세요. 과거 MVP10 회귀 테스트 절차는 `feed-prototype/docs/archive/MVP10_TEST_PROCEDURE.md`에 보관되어 있습니다.
 

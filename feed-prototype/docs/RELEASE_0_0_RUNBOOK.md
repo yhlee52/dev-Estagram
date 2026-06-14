@@ -344,4 +344,4 @@ Vite 기본 port는 보통 `5173`, backend 기본 port는 `8000`입니다. 이�
 - `RELEASE_0_0_CHECKLIST.md`
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`
 - `../data/external_posts/README.md`
-- `MVP10_EXTERNAL_POST_FORMAT.md`
+- `archive/MVP10_EXTERNAL_POST_FORMAT.md`
