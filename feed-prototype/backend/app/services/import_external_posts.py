@@ -11,6 +11,7 @@ from uuid import uuid4
 from pydantic import ValidationError
 from sqlmodel import Session, col, create_engine, select
 
+from app.core.config import Settings, get_settings
 from app.db.session import create_session
 from app.models.account import Account
 from app.models.asset import PostAsset
@@ -23,6 +24,7 @@ from app.schemas.external_import import (
     ExternalImportPayload,
     ExternalImportPost,
 )
+from app.services.asset_storage import managed_url_for_asset
 
 
 @dataclass
@@ -308,6 +310,9 @@ def replace_assets_for_post(
     *,
     dry_run: bool,
     summary: ImportSummary,
+    batch_external_id: str,
+    asset_source_dir: Path | None,
+    settings: Settings,
 ) -> None:
     if "assets" not in post_input.model_fields_set:
         return
@@ -325,7 +330,21 @@ def replace_assets_for_post(
 
     session.flush()
 
+    # Managed-storage copy (v0.3.3) only applies when the toggle is on and the
+    # package came from disk (asset_source_dir set). HTTP import passes None.
+    # dry_run already returned above, so copy never runs on a dry-run.
+    manage_assets = settings.manage_asset_storage and asset_source_dir is not None
+
     for asset_input in post_input.assets:
+        url = asset_input.url
+        if manage_assets:
+            url = managed_url_for_asset(
+                url=asset_input.url,
+                external_id=asset_input.external_id,
+                batch_external_id=batch_external_id,
+                source_dir=asset_source_dir,
+                settings=settings,
+            )
         session.add(
             PostAsset(
                 id=f"asset-{uuid4()}",
@@ -334,8 +353,8 @@ def replace_assets_for_post(
                 type=asset_input.type,
                 title=asset_input.title,
                 description=asset_input.description,
-                url=asset_input.url,
-                src=asset_input.url,
+                url=url,
+                src=url,
                 sort_order=asset_input.sort_order,
             )
         )
@@ -447,8 +466,18 @@ def import_payload(
     payload: ExternalImportPayload,
     *,
     dry_run: bool,
+    asset_source_dir: Path | None = None,
 ) -> ImportSummary:
+    """Import a validated payload.
+
+    `asset_source_dir` is the directory the package was loaded from, used to
+    resolve relative local asset files for managed-storage copy (v0.3.3). It is
+    set by the CLI / process_incoming (disk packages) and left None by the HTTP
+    route (no files on disk), so HTTP import never copies. Copy only happens when
+    `Settings.manage_asset_storage` is on; otherwise this is a no-op.
+    """
     ensure_unique_payload_ids(payload)
+    settings = get_settings()
     summary = ImportSummary()
     accounts_by_external_id: dict[str, Account] = {}
 
@@ -492,7 +521,16 @@ def import_payload(
             summary.posts_skipped += 1
             continue
         session.flush()
-        replace_assets_for_post(session, post, post_input, dry_run=dry_run, summary=summary)
+        replace_assets_for_post(
+            session,
+            post,
+            post_input,
+            dry_run=dry_run,
+            summary=summary,
+            batch_external_id=payload.batch.external_id,
+            asset_source_dir=asset_source_dir,
+            settings=settings,
+        )
 
     # Record the successful batch event atomically with the imported rows
     # (caller commits). dry_run writes nothing, including no batch row, so the
@@ -570,7 +608,11 @@ def run_import(
     engine = create_engine(database_url, pool_pre_ping=True) if database_url is not None else None
     session = Session(engine) if engine is not None else create_session()
     try:
-        summary = import_payload(session, payload, dry_run=dry_run)
+        # The package's own directory resolves relative local asset files for
+        # managed-storage copy (v0.3.3, opt-in). No-op unless the toggle is on.
+        summary = import_payload(
+            session, payload, dry_run=dry_run, asset_source_dir=input_path.parent
+        )
         if dry_run:
             session.rollback()
         else:

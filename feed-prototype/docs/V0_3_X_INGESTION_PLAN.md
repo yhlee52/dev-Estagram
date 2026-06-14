@@ -1,7 +1,7 @@
 # V0_3_X_INGESTION_PLAN.md
 
 `feed-prototype` v0.3.x — **Ingestion 신뢰성 (Ingestion Hardening)** 테마 진입
-판단과 0.3.0~0.3.2 후보 계획 문서입니다.
+판단과 0.3.0~0.3.3 후보 계획 문서입니다.
 
 이 문서는 v0.2.x post-dev 점검(2026-06-14)에서 작성되었습니다. `ROADMAP.md`의
 v0.3.x 항목을 코드 현황에 맞춰 구체화하고, 진입 전 확인할 사항을 정리합니다.
@@ -13,8 +13,10 @@ v0.3.x 항목을 코드 현황에 맞춰 구체화하고, 진입 전 확인할 �
 > - v0.3.2 — 자동 이동 + 디렉터리 일괄 처리 CLI + 폴링 Watch: **완료**. 상세는
 >   `V0_3_2_AUTO_INGESTION_SCOPE.md`. (원안의 asset managed storage 복사는 범위
 >   분할로 v0.3.3으로 분리.)
-> - v0.3.3 — Asset Managed Storage 복사(opt-in): 후보(다음 MINOR).
-> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.3.2`.
+> - v0.3.3 — Asset Managed Storage 복사(opt-in): **완료**. 상세는
+>   `V0_3_3_ASSET_STORAGE_SCOPE.md`, 요약은 `AGENTS.md` Completed Scope History.
+> - v0.3.x 마지막 MINOR — UX backlog 반영: 예약 슬롯(미진행).
+> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.3.3`.
 
 ## 1. v0.2.x 완료 / 진입 판단
 
@@ -120,7 +122,15 @@ v0.3.x는 대부분 기존 자산 위에 얇게 얹는 작업입니다.
 - folder watch 또는 스케줄 실행으로 `incoming` 자동 처리(폴링/watchdog 등 수단은
   scope에서 결정).
 
-### v0.3.3 — Asset Managed Storage 복사 (opt-in)
+### v0.3.3 — Asset Managed Storage 복사 (opt-in) — ✅ 완료
+
+> 구현 완료. 결정 사항은 `V0_3_3_ASSET_STORAGE_SCOPE.md`에서 확정됨: `Settings`
+> 단일 env 토글(`manage_asset_storage`, 기본 OFF), 새 서빙 인프라 없이 frontend가
+> 이미 서빙하는 `public/assets/managed/`로 복사, asset url이 **상대 로컬 경로**일
+> 때만 복사·재작성하고 `/assets/...`·`http(s)://` url은 무손상, 복사는 디스크
+> 패키지가 있는 CLI/`process_incoming`에만 적용(HTTP import 미적용), 실패는 원본
+> url 유지(import 실패 없음), DB 스키마/마이그레이션·format 변경 없음. 아래는 진입
+> 당시 후보 정의로 기록 보존.
 
 목표: asset 내구성(opt-in).
 
@@ -160,11 +170,9 @@ mock mode는 v0.3.0부터 데모 전용 동결 (제거하지 않음)
 ## 6. 다음 행동
 
 v0.3.0(HTTP Import API)·v0.3.1(Import Batch 이력)·v0.3.2(자동 이동/일괄 처리
-CLI/Watch)는 완료되었습니다. 다음은 v0.3.3입니다.
+CLI/Watch)·v0.3.3(asset managed storage 복사 opt-in)는 완료되었습니다. 남은 것은
+테마의 마지막 MINOR입니다.
 
-1. `V0_3_3_*_SCOPE.md` 작성 후 구현 착수. asset 파일 managed storage 복사(opt-in).
-   import가 현재 asset 파일을 읽지 않고 `url` 문자열만 저장하므로, 파일 해석·복사·
-   서빙·URL 재작성 방식과 opt-in 토글을 scope에서 확정. 기존 `/assets/...` URL
-   package의 하위호환(format 동결)을 유지.
-2. 테마의 마지막 MINOR는 `UX_BACKLOG.md` 반영용 예약 슬롯(현재 후보: Me 탭
-   페이지네이션, 공용 ConfirmDialog).
+1. 테마의 마지막 MINOR는 `UX_BACKLOG.md` 반영용 예약 슬롯(현재 후보: Me 탭
+   페이지네이션, 공용 ConfirmDialog). 이 슬롯을 끝으로 v0.3.x 테마를 마감하고
+   다음 테마(v0.4.x 메타데이터 일급화 & 트리아지)로 넘어갑니다.

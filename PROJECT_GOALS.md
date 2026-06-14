@@ -20,7 +20,7 @@ core type name, shared component name, route, data flow에 설비/리포트 전�
 
 ## 현재 릴리즈
 
-현재 릴리즈는 `v0.3.2`(자동 이동/디렉터리 일괄 처리/Watch — v0.3.x Ingestion
+현재 릴리즈는 `v0.3.3`(asset managed storage 복사 opt-in — v0.3.x Ingestion
 신뢰성 테마)입니다. 버전 라벨 기준은
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
 
@@ -51,14 +51,17 @@ v0.0.0 위에 쌓인 테마:
   Explore/Accounts 탭 활성화(v0.2.2), Me 탭 + UX backlog 반영(v0.2.3).
 - v0.3.x (Ingestion 신뢰성): HTTP import API `POST /api/imports`(v0.3.0),
   import batch 이력 API + 최소 UI(v0.3.1), incoming→archive/failed 자동 이동 +
-  디렉터리 일괄 처리 CLI + 폴링 Watch(v0.3.2). 진행 중.
+  디렉터리 일괄 처리 CLI + 폴링 Watch(v0.3.2), asset managed storage 복사 opt-in
+  (v0.3.3). 마지막 UX backlog MINOR만 남고 진행 중.
 
 ## 다음 테마
 
 진행 중인 테마는 v0.3.x(Ingestion 신뢰성)입니다. v0.3.0(HTTP Import API)·
-v0.3.1(import batch 이력 API + 최소 UI)·v0.3.2(자동 이동/일괄 처리 CLI/Watch)
-완료, 다음 후보는 v0.3.3(asset managed storage 복사 opt-in)입니다. 진입 판단과
-v0.3.x 후보는 `feed-prototype/docs/V0_3_X_INGESTION_PLAN.md`를 참고합니다.
+v0.3.1(import batch 이력 API + 최소 UI)·v0.3.2(자동 이동/일괄 처리 CLI/Watch)·
+v0.3.3(asset managed storage 복사 opt-in) 완료, 남은 것은 테마 마지막 MINOR
+(`UX_BACKLOG.md` 반영 예약 슬롯)입니다. 이후 다음 테마는 v0.4.x(메타데이터 일급화
+& 트리아지)입니다. 진입 판단과 v0.3.x 후보는
+`feed-prototype/docs/V0_3_X_INGESTION_PLAN.md`를 참고합니다.
 v0.3.0부터 mock mode는 "UI 데모 전용 동결" 상태가 되며, 신규 기능은 API mode에만
 추가합니다.
 

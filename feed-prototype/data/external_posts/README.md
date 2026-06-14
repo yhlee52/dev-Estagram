@@ -1,6 +1,6 @@
 # 외부 Post Import Package
 
-현재 릴리즈 기준: `v0.3.2`. external post package format은 v0.0.0 시점에 동결되어 v0.1.x·v0.2.x·v0.3.x에서도 변경되지 않았습니다(`docs/EXTERNAL_POST_PACKAGE_GUIDE.md`의 Format Stability 참고). v0.3.0은 같은 package를 HTTP(`POST /api/imports`)로도 받을 수 있게 했고, v0.3.1은 import 사건을 `import_batch` 테이블에 기록하며, v0.3.2는 `incoming/`의 package를 일괄 import한 뒤 `archive/`(성공)·`failed/`(실패)로 자동 이동하지만 format은 그대로입니다.
+현재 릴리즈 기준: `v0.3.3`. external post package format은 v0.0.0 시점에 동결되어 v0.1.x·v0.2.x·v0.3.x에서도 변경되지 않았습니다(`docs/EXTERNAL_POST_PACKAGE_GUIDE.md`의 Format Stability 참고). v0.3.0은 같은 package를 HTTP(`POST /api/imports`)로도 받을 수 있게 했고, v0.3.1은 import 사건을 `import_batch` 테이블에 기록하며, v0.3.2는 `incoming/`의 package를 일괄 import한 뒤 `archive/`(성공)·`failed/`(실패)로 자동 이동하고, v0.3.3은 opt-in으로 상대 로컬 경로 asset을 managed storage로 복사하지만 format은 그대로입니다.
 
 이 문서는 external import mode의 package guide입니다. 외부 프로그램이 만든 JSON package를 backend DB에 넣고, API mode UI가 import된 post를 일반 post처럼 표시하는 흐름을 다룹니다.
 
@@ -307,7 +307,7 @@ MVP10은 `external_id` 기반 upsert를 사용합니다. 같은 JSON을 여러 �
 - Post upsert: `post.external_id`
 - Asset id/reference: `asset.external_id`
 
-MVP10은 asset 파일을 복사하지 않습니다. JSON에는 UI가 접근 가능한 URL 또는 path만 저장합니다.
+MVP10은 asset 파일을 복사하지 않습니다. JSON에는 UI가 접근 가능한 URL 또는 path만 저장합니다. (v0.3.3부터 opt-in으로 상대 로컬 경로 asset만 managed storage로 복사할 수 있습니다 — 아래 "Asset Managed Storage 복사" 참고. 기본은 종전과 동일하게 복사하지 않음.)
 
 권장 `external_id` 패턴:
 
@@ -341,6 +341,21 @@ MVP 단계에서는 각 `Account`에 정확히 하나의 `User`가 필요합니�
 post payload에 `assets` 필드가 있으면, 그 list를 해당 post의 최신 전체 asset list로 봅니다. 기존 asset은 삭제되고 imported list로 교체됩니다.
 
 post payload에서 `assets` 필드를 생략하면 기존 asset은 유지됩니다. asset이 없는 상태가 정답이라면 외부 generator가 `assets: []`를 명시해야 합니다.
+
+## Asset Managed Storage 복사 (v0.3.3, opt-in)
+
+기본 동작은 종전과 같습니다: import는 asset의 `url` 문자열만 저장하고 파일은 복사하지 않습니다. `backend/.env`에서 `MANAGE_ASSET_STORAGE=true`로 켜면, asset url이 **상대 로컬 경로**일 때 패키지 디렉터리(`feed_posts.json`의 위치) 기준으로 파일을 찾아 `public/assets/managed/<batch>/<asset>`으로 복사하고 DB에 저장되는 url을 `/assets/managed/...`로 재작성합니다.
+
+규칙:
+
+- `/assets/...`·`http(s)://`·`//`로 시작하는 url은 **건드리지 않습니다**(format 동결·하위호환). 이 url을 쓰는 기존 package는 토글과 무관하게 그대로 동작합니다.
+- 상대 로컬 경로(예: `assets/img.png`)만 복사 후보입니다. 이 경우 실제 파일을 패키지 폴더 안 `assets/` 등에 함께 두어야 합니다.
+- 복사는 디스크 패키지가 있는 CLI(`import_external_posts --input`)와 `process_incoming` 경로에만 적용됩니다. **HTTP import(`POST /api/imports`)는 파일이 없어 적용되지 않습니다.**
+- 원본 파일 누락·패키지 밖 경로(`../` 탈출)·복사 실패는 import를 실패시키지 않고 원본 url을 그대로 둡니다(경고 로그).
+- 목적지가 결정적이라 같은 package 재import 시 덮어씁니다(누적 없음).
+- DB 스키마/마이그레이션·package format 변경은 없습니다.
+
+예제: `examples/managed_copy_sample/`(상대 로컬 SVG asset + 서빙 URL asset). 상세 guide는 `../../docs/V0_3_3_ASSET_STORAGE_SCOPE.md`.
 
 ## 지속 import 체크리스트
 

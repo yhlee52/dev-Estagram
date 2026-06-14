@@ -8,7 +8,7 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.3.2`(자동 이동/디렉터리 일괄 처리/Watch — v0.3.x Ingestion
+현재 릴리즈는 `v0.3.3`(asset managed storage 복사 opt-in — v0.3.x Ingestion
 신뢰성 테마)이며 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이
 기준입니다.
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
@@ -24,8 +24,8 @@
 
 버전별 상세 scope는 `feed-prototype/docs/`의 `V0_x_y_*_SCOPE.md` 문서를
 참고합니다(현행: `V0_3_0_HTTP_IMPORT_SCOPE.md`, `V0_3_1_BATCH_HISTORY_SCOPE.md`,
-`V0_3_2_AUTO_INGESTION_SCOPE.md`. 완료 테마 v0.1.x~v0.2.x의 scope는 `archive/`로
-이동). v0.3.x 테마 진입 판단과 후보는
+`V0_3_2_AUTO_INGESTION_SCOPE.md`, `V0_3_3_ASSET_STORAGE_SCOPE.md`. 완료 테마
+v0.1.x~v0.2.x의 scope는 `archive/`로 이동). v0.3.x 테마 진입 판단과 후보는
 `feed-prototype/docs/V0_3_X_INGESTION_PLAN.md`에 있습니다. 과거 MVP별 테스트
 절차는 `feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
 현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.
@@ -143,6 +143,16 @@ v0.3.x — Ingestion 신뢰성 (Ingestion Hardening):
   무변경. 이동은 이 경로에서만 발생(단일 파일 `--input` CLI와 HTTP import는 파일
   이동 없음). `Settings.external_posts_dir` 설정 추가. DB 스키마/마이그레이션 없음,
   frontend 변경 없음, package format 변경 없음. asset managed storage 복사는 v0.3.3.
+- v0.3.3: asset managed storage 복사(opt-in). 신규 `app/services/asset_storage.py`가
+  asset url이 **상대 로컬 경로**일 때만 패키지 디렉터리 기준으로 파일을 해석해
+  `public/assets/managed/<batch>/<asset>`(frontend가 이미 서빙하는 트리)로 복사하고
+  DB url을 `/assets/managed/...`로 재작성. `Settings.manage_asset_storage`(env
+  `MANAGE_ASSET_STORAGE`, 기본 OFF) 단일 토글. 복사는 디스크 패키지가 있는
+  CLI/`process_incoming` 경로에만 적용(`import_payload`에 `asset_source_dir` 주입,
+  HTTP import은 `None`이라 미적용). `/assets/...`·`http(s)://`·`//` url은 무손상,
+  원본 누락·디렉터리 탈출·복사 실패는 원본 url 유지(import 실패 없음). 목적지는
+  결정적이라 재import 시 덮어씀(누적 없음). DB 스키마/마이그레이션 없음, package
+  format 변경 없음, frontend 변경 없음(재작성된 url도 기존과 동일하게 렌더링).
 
 ## Roadmap & Versioning
 

@@ -1,0 +1,46 @@
+{
+  "batch": {
+    "external_id": "batch-managed-copy-sample",
+    "source": "managed-copy-sample",
+    "created_at": "2026-06-14T09:00:00"
+  },
+  "accounts": [
+    {
+      "external_id": "managed-copy-sample-account",
+      "handle": "managed.copy.sample",
+      "display_name": "Managed Copy Sample"
+    }
+  ],
+  "posts": [
+    {
+      "external_id": "post-managed-copy-sample-001",
+      "account_external_id": "managed-copy-sample-account",
+      "title": "Managed storage copy sample (v0.3.3)",
+      "text": "First asset uses a relative local path (assets/...) and is copied into managed storage when MANAGE_ASSET_STORAGE is enabled. The second asset is an already-served /assets/... URL and is left untouched.",
+      "created_at": "2026-06-14T09:00:00",
+      "tags": ["managed-storage", "v0.3.3"],
+      "metadata_json": {
+        "source": "managed-copy-sample",
+        "purpose": "asset managed storage regression"
+      },
+      "assets": [
+        {
+          "external_id": "asset-managed-copy-sample-local-001",
+          "type": "image",
+          "url": "assets/sample_managed.svg",
+          "title": "Relative local asset (copied when opt-in is on)",
+          "description": "Resolved next to feed_posts.json; copied into public/assets/managed when MANAGE_ASSET_STORAGE=true.",
+          "sort_order": 1
+        },
+        {
+          "external_id": "asset-managed-copy-sample-served-001",
+          "type": "image",
+          "url": "/assets/generated/missing_managed_sample.png",
+          "title": "Already-served URL (left untouched)",
+          "description": "Begins with /assets/, so it is never copied or rewritten regardless of the toggle.",
+          "sort_order": 2
+        }
+      ]
+    }
+  ]
+}
