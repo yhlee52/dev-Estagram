@@ -13,14 +13,28 @@ import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useApiFollows } from '../hooks/useApiFollows';
 import { useFollowState } from '../hooks/useFollowState';
 import type { Account, Post } from '../types/feed';
+import {
+  buildAccountActivity,
+  getAccountActivity,
+  sortAccounts,
+  RECENT_ACTIVITY_DAYS,
+  type AccountSort,
+  type PostActivityEntry,
+} from '../utils/accountActivity';
 
 const posts = postsData as unknown as Post[];
 const isApiDataSource = getDataSourceMode() === 'api';
 
-const postCountByAccountId = posts.reduce<Record<string, number>>((counts, post) => {
-  counts[post.accountId] = (counts[post.accountId] ?? 0) + 1;
-  return counts;
-}, {});
+const mockActivityEntries: PostActivityEntry[] = posts.map((post) => ({
+  accountId: post.accountId,
+  createdAt: post.createdAt,
+}));
+
+const SORT_OPTIONS: { value: AccountSort; label: string }[] = [
+  { value: 'recent', label: 'Recent activity' },
+  { value: 'posts', label: 'Most posts' },
+  { value: 'name', label: 'Name' },
+];
 
 function getAccountUserId(account: Account): string {
   const userId = account.metadata?.user_id;
@@ -35,11 +49,12 @@ export default function AccountsPage() {
   const { activeApiUserId } = useActiveApiUser();
   const apiFollows = useApiFollows(isApiDataSource ? activeApiUserId : '');
   const [apiAccounts, setApiAccounts] = useState<Account[]>([]);
-  const [apiPostCountByAccountId, setApiPostCountByAccountId] = useState<
-    Record<string, number>
-  >({});
+  const [apiActivityEntries, setApiActivityEntries] = useState<
+    PostActivityEntry[]
+  >([]);
   const [isLoading, setIsLoading] = useState(isApiDataSource);
   const [error, setError] = useState('');
+  const [sort, setSort] = useState<AccountSort>('recent');
 
   useEffect(() => {
     if (!isApiDataSource) {
@@ -60,17 +75,17 @@ export default function AccountsPage() {
 
         if (isMounted) {
           setApiAccounts(accountsResponse.map(mapApiAccountToAccount));
-          setApiPostCountByAccountId(
-            postsResponse.reduce<Record<string, number>>((counts, post) => {
-              counts[post.account_id] = (counts[post.account_id] ?? 0) + 1;
-              return counts;
-            }, {}),
+          setApiActivityEntries(
+            postsResponse.map((post) => ({
+              accountId: post.account_id,
+              createdAt: post.created_at,
+            })),
           );
         }
       } catch (loadError) {
         if (isMounted) {
           setApiAccounts([]);
-          setApiPostCountByAccountId({});
+          setApiActivityEntries([]);
           setError(
             loadError instanceof ApiNetworkError
               ? `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`
@@ -92,9 +107,16 @@ export default function AccountsPage() {
   }, []);
 
   const accounts = isApiDataSource ? apiAccounts : mockAccounts;
-  const countsByAccountId = useMemo(
-    () => (isApiDataSource ? apiPostCountByAccountId : postCountByAccountId),
-    [apiPostCountByAccountId],
+  const activityEntries = isApiDataSource
+    ? apiActivityEntries
+    : mockActivityEntries;
+  const activityById = useMemo(
+    () => buildAccountActivity(activityEntries),
+    [activityEntries],
+  );
+  const sortedAccounts = useMemo(
+    () => sortAccounts(accounts, activityById, sort),
+    [accounts, activityById, sort],
   );
 
   if (isLoading) {
@@ -135,13 +157,40 @@ export default function AccountsPage() {
         ) : null}
       </div>
 
+      <div className="flex flex-wrap items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 py-2 shadow-sm">
+        <span className="text-xs font-bold uppercase tracking-wide text-neutral-400">
+          Sort
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {SORT_OPTIONS.map((option) => {
+            const isActive = sort === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => setSort(option.value)}
+                className={[
+                  'rounded-md border px-2.5 py-1 text-xs font-bold transition-colors',
+                  isActive
+                    ? 'border-neutral-950 bg-neutral-950 text-white'
+                    : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900',
+                ].join(' ')}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {isApiDataSource && apiFollows.error ? (
         <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
           {apiFollows.error}
         </p>
       ) : null}
 
-      {accounts.map((account) => (
+      {sortedAccounts.map((account) => (
         (() => {
           const isOwnApiAccount =
             isApiDataSource && getAccountUserId(account) === activeApiUserId;
@@ -150,12 +199,16 @@ export default function AccountsPage() {
           const isApiFollowDisabled =
             apiFollows.isLoading || apiFollows.isMutating || isOwnApiAccount;
           const apiFollowing = apiFollows.isFollowing(account.id);
+          const activity = getAccountActivity(activityById, account.id);
 
           return (
             <AccountCard
               key={account.id}
               account={account}
-              postCount={countsByAccountId[account.id] ?? 0}
+              postCount={activity.postCount}
+              recentPostCount={activity.recentPostCount}
+              recentWindowDays={RECENT_ACTIVITY_DAYS}
+              lastActiveAt={activity.lastActiveAt}
               isFollowing={
                 isApiDataSource ? apiFollowing : isMockFollowing(account.id)
               }
