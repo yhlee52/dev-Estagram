@@ -1,17 +1,18 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.3.2` (자동 이동/디렉터리 일괄 처리/Watch). v0.3.x(Ingestion
+현재 릴리즈: `v0.3.3` (asset managed storage 복사 opt-in). v0.3.x(Ingestion
 신뢰성) 테마 **진행 중** — v0.3.0(HTTP import)·v0.3.1(Import Batch 이력)·v0.3.2
-(자동 이동/일괄 처리/Watch) 완료, 다음 후보는 v0.3.3(asset managed storage 복사).
-진입 판단과 후보는 `V0_3_X_INGESTION_PLAN.md`, v0.3.0 상세는
-`V0_3_0_HTTP_IMPORT_SCOPE.md`, v0.3.1 상세는 `V0_3_1_BATCH_HISTORY_SCOPE.md`,
-v0.3.2 상세는 `V0_3_2_AUTO_INGESTION_SCOPE.md` 참고.
+(자동 이동/일괄 처리/Watch)·v0.3.3(asset managed storage 복사 opt-in) 완료, 남은
+슬롯은 테마 마지막 MINOR(UX backlog 반영 예약). 진입 판단과 후보는
+`V0_3_X_INGESTION_PLAN.md`, v0.3.0 상세는 `V0_3_0_HTTP_IMPORT_SCOPE.md`, v0.3.1
+상세는 `V0_3_1_BATCH_HISTORY_SCOPE.md`, v0.3.2 상세는
+`V0_3_2_AUTO_INGESTION_SCOPE.md`, v0.3.3 상세는 `V0_3_3_ASSET_STORAGE_SCOPE.md` 참고.
 
 ## 현행 문서 (먼저 볼 것)
 
 - `../README.md`: mock mode, API mode, external import mode 실행 guide
 - `ROADMAP.md`: v0.0.0 이후 업데이트 로드맵 (버전 트리, 테마별 scope)
-- `V0_3_X_INGESTION_PLAN.md`: v0.3.x(Ingestion 신뢰성) 진입 판단과 0.3.0~0.3.2
+- `V0_3_X_INGESTION_PLAN.md`: v0.3.x(Ingestion 신뢰성) 진입 판단과 0.3.0~0.3.3
   후보 계획 (현재 테마)
 - `V0_3_0_HTTP_IMPORT_SCOPE.md`: v0.3.0 HTTP Import API 상세 scope
   (`POST /api/imports`, dry_run, 에러 매핑, 최소 보호)
@@ -19,6 +20,8 @@ v0.3.2 상세는 `V0_3_2_AUTO_INGESTION_SCOPE.md` 참고.
   (`import_batch` 테이블, `GET /api/imports`·`/{id}`, `/imports` UI)
 - `V0_3_2_AUTO_INGESTION_SCOPE.md`: v0.3.2 자동 이동/디렉터리 일괄 처리/Watch 상세
   scope (`process_incoming` CLI, incoming→archive/failed 자동 이동, 폴링 watch)
+- `V0_3_3_ASSET_STORAGE_SCOPE.md`: v0.3.3 asset managed storage 복사(opt-in) 상세
+  scope (`public/assets/managed` 복사, 상대 로컬 경로만, 동결 URL 무손상)
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: external post package 작성 guide (format 중심)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog

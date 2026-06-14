@@ -65,7 +65,9 @@ def create_import(
     the CLI. dry_run records nothing (no DB writes contract).
     """
     try:
-        summary = import_payload(session, payload, dry_run=dry_run)
+        # HTTP receives a JSON body with no asset files on disk, so managed
+        # storage copy (v0.3.3) never applies here: asset_source_dir stays None.
+        summary = import_payload(session, payload, dry_run=dry_run, asset_source_dir=None)
         if dry_run:
             session.rollback()
         else:

@@ -19,6 +19,18 @@ class Settings(BaseSettings):
     # processor derives incoming/archive/failed from this. Defaults to the repo's
     # feed-prototype/data/external_posts.
     external_posts_dir: Path = BACKEND_DIR.parent / "data" / "external_posts"
+    # Asset managed-storage copy (v0.3.3, opt-in). When enabled, importing a
+    # package via the CLI / process_incoming copies assets referenced by a
+    # *relative local path* (resolved next to the package) into
+    # `managed_assets_dir` — a subtree the frontend already serves — and rewrites
+    # the stored url to `managed_assets_url_prefix`. Already-served (`/assets/...`)
+    # and remote (`http(s)://`) urls are left untouched. Default off keeps
+    # behavior byte-for-byte identical to v0.3.2. HTTP import never copies (no
+    # package files on disk). The dir and url prefix are the filesystem and
+    # browser views of the same location; change them together.
+    manage_asset_storage: bool = False
+    managed_assets_dir: Path = BACKEND_DIR.parent / "public" / "assets" / "managed"
+    managed_assets_url_prefix: str = "/assets/managed"
 
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env",

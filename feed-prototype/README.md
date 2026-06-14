@@ -2,9 +2,9 @@
 
 `feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
 
-현재 릴리즈: `v0.3.2` (자동 이동/디렉터리 일괄 처리/Watch). v0.3.x(Ingestion 신뢰성) 테마 진행 중.
+현재 릴리즈: `v0.3.3` (asset managed storage 복사 opt-in). v0.3.x(Ingestion 신뢰성) 테마 진행 중.
 
-이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. v0.3.x(Ingestion 신뢰성) 테마는 v0.3.0에서 HTTP import API(`POST /api/imports`), v0.3.1에서 Import batch 이력(`import_batch` 테이블 + `GET /api/imports` + `/imports` UI), v0.3.2에서 `incoming/` 자동 이동·디렉터리 일괄 처리 CLI·폴링 Watch(`process_incoming`)를 추가했습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
+이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. v0.3.x(Ingestion 신뢰성) 테마는 v0.3.0에서 HTTP import API(`POST /api/imports`), v0.3.1에서 Import batch 이력(`import_batch` 테이블 + `GET /api/imports` + `/imports` UI), v0.3.2에서 `incoming/` 자동 이동·디렉터리 일괄 처리 CLI·폴링 Watch(`process_incoming`), v0.3.3에서 asset managed storage 복사(opt-in)를 추가했습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
 
 ## 포함된 기능
 
@@ -29,12 +29,13 @@
 - HTTP import API: 기존 CLI와 동일한 package JSON을 `POST /api/imports`로 수신(`?dry_run=true`, 선택적 `X-Import-Token` 보호) (v0.3.0)
 - Import batch 이력: import 사건을 `import_batch`에 기록(success/failed·사건 카운트·import 횟수), `GET /api/imports`(목록)·`GET /api/imports/{batch_external_id}`(상세) 조회, `/imports` UI 목록/상세 (API mode 전용) (v0.3.1)
 - 디렉터리 일괄 처리/자동 이동/Watch: `process_incoming` CLI가 `incoming/`의 package(단일 `.json` 또는 `feed_posts.json` 포함 디렉터리)를 일괄 import하고 성공→`archive/`/실패→`failed/`로 자동 이동(이름 충돌 시 타임스탬프 접미사), `--watch --interval N` 단순 폴링, `--dry-run`은 DB·파일 무변경. 단일 파일 `--input` CLI·HTTP import는 파일 이동 없음 (v0.3.2)
+- Asset managed storage 복사(opt-in): `MANAGE_ASSET_STORAGE`를 켜면 import 시 asset url이 **상대 로컬 경로**일 때만 패키지 디렉터리 기준으로 파일을 `public/assets/managed/`로 복사하고 DB url을 `/assets/managed/...`로 재작성. `/assets/...`·`http(s)://` url은 무손상, 기본 OFF, CLI/`process_incoming` 경로만 적용(HTTP import 미적용), 복사 실패·원본 누락은 원본 url 유지. DB 스키마/format 변경 없음 (v0.3.3)
 
 ## 포함되지 않은 기능
 
 - production authentication 또는 authorization
 - password, JWT, session, OAuth, role
-- real file upload, S3 upload, asset file copy (asset managed storage 복사는 v0.3.3 예정)
+- real file upload, S3 upload, UI/HTTP asset 업로드 (v0.3.3 asset managed storage 복사는 opt-in으로 상대 로컬 경로 파일에 한해 제공)
 - OS 레벨 scheduler/데몬 (v0.3.2의 단순 폴링 watch와 일괄 처리 CLI는 제공)
 - watchdog/inotify 등 OS 파일시스템 이벤트 기반 watch (단순 폴링만)
 - advanced search, semantic search, vector search, dashboard, analytics
@@ -247,6 +248,35 @@ watch가 쓰다 만 파일을 집지 않도록, package writer는 임시 파일�
 (atomic)으로 `incoming/`에 넣는 것을 권장합니다. 상세 guide는
 `docs/V0_3_2_AUTO_INGESTION_SCOPE.md`.
 
+### Asset Managed Storage 복사 (v0.3.3, opt-in)
+
+기본적으로 import는 asset의 `url` 문자열만 저장합니다(파일 복사 없음). asset 내구성을
+위해 `backend/.env`에서 `MANAGE_ASSET_STORAGE=true`로 켜면, asset url이 **상대 로컬
+경로**(예: `assets/img.png`)일 때 패키지 디렉터리(`feed_posts.json`의 위치) 기준으로
+파일을 찾아 `public/assets/managed/<batch>/<asset>`으로 복사하고 DB에 저장되는 url을
+`/assets/managed/...`로 재작성합니다.
+
+```bash
+# backend/.env
+MANAGE_ASSET_STORAGE=true
+# (선택) 복사 위치/서빙 prefix 재정의 — 둘은 같은 위치의 파일/URL 표현
+MANAGED_ASSETS_DIR=.../feed-prototype/public/assets/managed
+MANAGED_ASSETS_URL_PREFIX=/assets/managed
+```
+
+규칙:
+
+- `/assets/...`·`http(s)://`·`//`로 시작하는 url은 **건드리지 않습니다**(format
+  동결·하위호환). 이미 import된 package에도 영향 없음.
+- 복사는 디스크 패키지가 있는 CLI(`import_external_posts --input`)와
+  `process_incoming` 경로에만 적용됩니다. **HTTP import(`POST /api/imports`)는
+  파일이 없어 적용되지 않습니다.**
+- 원본 파일 누락·패키지 밖 경로·복사 실패는 import를 실패시키지 않고 원본 url을
+  그대로 둡니다(경고 로그).
+- 목적지가 결정적이라 같은 package 재import 시 덮어씁니다(누적 없음).
+- 기본값 OFF에서는 v0.3.2와 동작이 완전히 동일합니다. 상세 guide는
+  `docs/V0_3_3_ASSET_STORAGE_SCOPE.md`.
+
 ## Sample Data
 
 일반 SNS-like sample content:
@@ -265,6 +295,7 @@ data/external_posts/examples/broken_asset_sample/feed_posts.json
 data/external_posts/examples/feed_import_sample.json
 data/external_posts/examples/batch_2026-06-09_090000/feed_posts.json
 data/external_posts/examples/batch_mvp12_asset_viewer/feed_posts.json
+data/external_posts/examples/managed_copy_sample/feed_posts.json
 ```
 
 recipe, chamber, status, severity 같은 report-like value는 sample metadata value일 뿐입니다. 이런 값은 core architecture name이 아니라 `metadata_json` 또는 asset metadata 안에 유지합니다.
