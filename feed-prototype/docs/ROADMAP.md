@@ -156,7 +156,13 @@ external package format 변경
   (`process_incoming`) + 단순 폴링 watch. import 성공/실패(v0.3.1 batch status)에
   따라 package를 `archive`/`failed`로 이동.
 - v0.3.3: asset 파일 managed storage 복사(opt-in, 기존 URL 방식 계속 지원).
-- v0.3.x 마지막 MINOR: `UX_BACKLOG.md` 반영 예약 슬롯.
+- v0.3.4: `UX_BACKLOG.md` 반영(테마 마지막 MINOR). Me 탭 Load more + 공용
+  ConfirmDialog. **이로써 v0.3.x 테마 완료.**
+- v0.3.5: 테마 완료 후 운영 안정화 patch. `process_incoming --watch` 실행 중
+  managed storage·`data/external_posts/` 파일 churn으로 Vite dev server가
+  종료되던 문제를 `vite.config.ts`의 `server.watch.ignored`로 해결하고, 릴리즈
+  runbook/checklist를 현재 버전 기준으로 최신화. 신규 기능 없음(코드 변경
+  `vite.config.ts` 1개).
 
 > v0.3.2는 원래 자동 이동·watch·asset 복사를 한 묶음으로 두었으나, "하나의
 > MINOR = 하나의 집중된 변경" 원칙에 맞춰 운영 자동화(이동/CLI/watch)와 asset

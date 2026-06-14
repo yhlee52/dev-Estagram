@@ -1,9 +1,10 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.3.4` (UX backlog 반영 — 테마 마지막 MINOR). v0.3.x(Ingestion
-신뢰성) 테마 **완료** — v0.3.0(HTTP import)·v0.3.1(Import Batch 이력)·v0.3.2
-(자동 이동/일괄 처리/Watch)·v0.3.3(asset managed storage 복사 opt-in)·v0.3.4
-(UX backlog: Me 탭 Load more + 공용 ConfirmDialog) 완료. 테마가 완료되어 v0.3.x
+현재 릴리즈: `v0.3.5` (테마 완료 후 운영 안정화 patch — Watch 중 Vite dev server
+종료 수정 + 릴리즈 문서 최신화). v0.3.x(Ingestion 신뢰성) 테마는 v0.3.4로 **완료**
+— v0.3.0(HTTP import)·v0.3.1(Import Batch 이력)·v0.3.2(자동 이동/일괄 처리/Watch)·
+v0.3.3(asset managed storage 복사 opt-in)·v0.3.4(UX backlog: Me 탭 Load more + 공용
+ConfirmDialog) 완료. 테마가 완료되어 v0.3.x
 진입 판단·후보(`archive/V0_3_X_INGESTION_PLAN.md`)와 각 MINOR scope 문서
 (`archive/V0_3_0_HTTP_IMPORT_SCOPE.md` ~ `archive/V0_3_4_UX_BACKLOG_SCOPE.md`)는
 `archive/`로 이동했습니다(아래 Archive 섹션). 다음 테마는 v0.4.x(메타데이터
@@ -20,10 +21,14 @@
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog
 - `../data/external_posts/README.md`: external post package 작업 guide
 
-## v0.0.0 릴리즈 문서 (v1.0.0 안정화 단계까지 유지)
+## 릴리즈 운영 문서 (current release 기준, v1.0.0 안정화 단계까지 유지)
 
-- `RELEASE_0_0_RUNBOOK.md`: v0.0.0 local 실행 재현 runbook
-- `RELEASE_0_0_CHECKLIST.md`: v0.0.0 릴리즈 직전 체크리스트
+파일명은 v0.0.0 시점 이름을 유지하지만, 내용은 항상 현재 릴리즈(`v0.3.5`) 기준으로
+갱신됩니다. v0.0.0 시점 historical 사본은 `archive/`에 보관합니다.
+
+- `RELEASE_0_0_RUNBOOK.md`: 현재 릴리즈 기준 local 실행 재현 runbook
+  (mock / API / 외부 데이터 — 단일 파일 CLI·HTTP·디렉터리 일괄 처리·Watch·managed storage)
+- `RELEASE_0_0_CHECKLIST.md`: 현재 릴리즈 기준 릴리즈 직전 체크리스트
 
 ## Archive (완료 테마 / historical 참고)
 

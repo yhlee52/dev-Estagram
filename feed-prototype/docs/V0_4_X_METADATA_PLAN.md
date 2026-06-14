@@ -12,7 +12,9 @@ v0.4.x 항목을 코드 현황에 맞춰 구체화하고, 진입 전 확인할 �
 > - v0.4.0 — Facet 기반 필터: **미착수**.
 > - v0.4.1 — 카드 metadata 노출 & 값 정렬: **미착수**.
 > - v0.4.x 마지막 MINOR — UX backlog 반영: **미착수(예약 슬롯)**.
-> - 직전 테마 v0.3.x(Ingestion 신뢰성)는 **완료**(`appVersion.ts` 라벨 `v0.3.4`).
+> - 직전 테마 v0.3.x(Ingestion 신뢰성)는 **완료**(v0.3.4). 이후 `appVersion.ts`
+>   라벨은 `v0.3.5`(테마 완료 후 운영 안정화 patch — Watch 중 dev server 종료 수정 +
+>   릴리즈 문서 최신화).
 >   상세는 `archive/V0_3_X_INGESTION_PLAN.md` 및 `archive/V0_3_*_SCOPE.md`.
 
 ## 1. v0.3.x 완료 / 진입 판단

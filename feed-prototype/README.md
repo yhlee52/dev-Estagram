@@ -2,9 +2,9 @@
 
 `feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
 
-현재 릴리즈: `v0.3.4` (UX backlog 반영 — 테마 마지막 MINOR). v0.3.x(Ingestion 신뢰성) 테마 완료.
+현재 릴리즈: `v0.3.5` (테마 완료 후 운영 안정화 patch). v0.3.x(Ingestion 신뢰성) 테마는 v0.3.4로 완료되었고, v0.3.5는 Watch 중 Vite dev server가 종료되던 문제를 수정하고 릴리즈 문서를 현재 버전 기준으로 최신화한 patch입니다.
 
-이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. v0.3.x(Ingestion 신뢰성) 테마는 v0.3.0에서 HTTP import API(`POST /api/imports`), v0.3.1에서 Import batch 이력(`import_batch` 테이블 + `GET /api/imports` + `/imports` UI), v0.3.2에서 `incoming/` 자동 이동·디렉터리 일괄 처리 CLI·폴링 Watch(`process_incoming`), v0.3.3에서 asset managed storage 복사(opt-in), v0.3.4에서 UX backlog 반영(Me 탭 Load more + 공용 ConfirmDialog)을 추가하며 테마를 완료했습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
+이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. v0.3.x(Ingestion 신뢰성) 테마는 v0.3.0에서 HTTP import API(`POST /api/imports`), v0.3.1에서 Import batch 이력(`import_batch` 테이블 + `GET /api/imports` + `/imports` UI), v0.3.2에서 `incoming/` 자동 이동·디렉터리 일괄 처리 CLI·폴링 Watch(`process_incoming`), v0.3.3에서 asset managed storage 복사(opt-in), v0.3.4에서 UX backlog 반영(Me 탭 Load more + 공용 ConfirmDialog)을 추가하며 테마를 완료했습니다. 테마 완료 후 v0.3.5에서 `process_incoming --watch` 실행 중 managed storage·external_posts 파일 churn으로 Vite dev server가 종료되던 문제를 `vite.config.ts`의 `server.watch.ignored`로 해결하고 릴리즈 runbook/checklist를 최신화했습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
 
 ## 포함된 기능
 
