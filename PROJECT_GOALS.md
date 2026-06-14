@@ -20,8 +20,9 @@ core type name, shared component name, route, data flow에 설비/리포트 전�
 
 ## 현재 릴리즈
 
-현재 릴리즈는 `v0.3.0`(HTTP Import API — v0.3.x Ingestion 신뢰성 테마 진입)입니다.
-버전 라벨 기준은 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
+현재 릴리즈는 `v0.3.2`(자동 이동/디렉터리 일괄 처리/Watch — v0.3.x Ingestion
+신뢰성 테마)입니다. 버전 라벨 기준은
+`feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
 
 이 문서는 제품의 변하지 않는 목표/원칙을 정의합니다. 버전별 테마와 순서는
 `feed-prototype/docs/ROADMAP.md`, 단계별 상세 이력은 `AGENTS.md`의
@@ -48,15 +49,18 @@ v0.0.0 위에 쌓인 테마:
   해시태그 칩(v0.1.1), `#tag` 검색·자동완성(v0.1.2), `@mention` 렌더링(v0.1.3).
 - v0.2.x (레이아웃 & UI 개편): 데스크톱 3컬럼(v0.2.0), 헤더 정리·UserMenu(v0.2.1),
   Explore/Accounts 탭 활성화(v0.2.2), Me 탭 + UX backlog 반영(v0.2.3).
-- v0.3.x (Ingestion 신뢰성): HTTP import API `POST /api/imports`(v0.3.0). 진행 중.
+- v0.3.x (Ingestion 신뢰성): HTTP import API `POST /api/imports`(v0.3.0),
+  import batch 이력 API + 최소 UI(v0.3.1), incoming→archive/failed 자동 이동 +
+  디렉터리 일괄 처리 CLI + 폴링 Watch(v0.3.2). 진행 중.
 
 ## 다음 테마
 
-진행 중인 테마는 v0.3.x(Ingestion 신뢰성)입니다. v0.3.0(HTTP Import API) 완료,
-다음 후보는 v0.3.1(import batch 이력 API + 최소 UI), v0.3.2(자동 이동/watch/
-asset 복사)입니다. 진입 판단과 0.3.0~0.3.2 후보는
-`feed-prototype/docs/V0_3_X_INGESTION_PLAN.md`를 참고합니다. v0.3.0부터 mock
-mode는 "UI 데모 전용 동결" 상태가 되며, 신규 기능은 API mode에만 추가합니다.
+진행 중인 테마는 v0.3.x(Ingestion 신뢰성)입니다. v0.3.0(HTTP Import API)·
+v0.3.1(import batch 이력 API + 최소 UI)·v0.3.2(자동 이동/일괄 처리 CLI/Watch)
+완료, 다음 후보는 v0.3.3(asset managed storage 복사 opt-in)입니다. 진입 판단과
+v0.3.x 후보는 `feed-prototype/docs/V0_3_X_INGESTION_PLAN.md`를 참고합니다.
+v0.3.0부터 mock mode는 "UI 데모 전용 동결" 상태가 되며, 신규 기능은 API mode에만
+추가합니다.
 
 ## 개발 원칙
 

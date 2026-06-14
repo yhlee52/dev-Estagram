@@ -8,8 +8,9 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.3.1`(Import Batch 이력 — v0.3.x Ingestion 신뢰성 테마)이며
-`feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이 기준입니다.
+현재 릴리즈는 `v0.3.2`(자동 이동/디렉터리 일괄 처리/Watch — v0.3.x Ingestion
+신뢰성 테마)이며 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이
+기준입니다.
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
 - `README.md`
@@ -22,9 +23,9 @@
 - `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
 
 버전별 상세 scope는 `feed-prototype/docs/`의 `V0_x_y_*_SCOPE.md` 문서를
-참고합니다(현행: `V0_3_0_HTTP_IMPORT_SCOPE.md`, `V0_3_1_BATCH_HISTORY_SCOPE.md`.
-완료 테마 v0.1.x~v0.2.x의 scope는 `archive/`로 이동). v0.3.x 테마 진입
-판단과 후보는
+참고합니다(현행: `V0_3_0_HTTP_IMPORT_SCOPE.md`, `V0_3_1_BATCH_HISTORY_SCOPE.md`,
+`V0_3_2_AUTO_INGESTION_SCOPE.md`. 완료 테마 v0.1.x~v0.2.x의 scope는 `archive/`로
+이동). v0.3.x 테마 진입 판단과 후보는
 `feed-prototype/docs/V0_3_X_INGESTION_PLAN.md`에 있습니다. 과거 MVP별 테스트
 절차는 `feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
 현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.
@@ -133,6 +134,15 @@ v0.3.x — Ingestion 신뢰성 (Ingestion Hardening):
   사건 스냅샷 + live post 수)·`GET /api/imports/{batch_external_id}`(상세 + 귀속
   post, 미존재 404). 최소 UI는 신규 `/imports` 라우트(목록/상세), **API mode 전용**.
   package format 변경 없음.
+- v0.3.2: 자동 이동 + 디렉터리 일괄 처리 CLI + 폴링 Watch. 신규
+  `app/services/process_incoming.py`가 `data/external_posts/incoming/`을 스캔해
+  package(단일 `.json` 또는 `feed_posts.json` 포함 디렉터리)마다 `run_import`를
+  호출하고, 성공→`archive/` / 실패→`failed/`로 이동(이름 충돌 시 타임스탬프
+  접미사, 덮어쓰지 않음). 한 package 실패가 나머지를 막지 않음. `--watch
+  --interval N`은 단순 폴링 루프(외부 의존성 없음). `--dry-run`은 DB·파일 모두
+  무변경. 이동은 이 경로에서만 발생(단일 파일 `--input` CLI와 HTTP import는 파일
+  이동 없음). `Settings.external_posts_dir` 설정 추가. DB 스키마/마이그레이션 없음,
+  frontend 변경 없음, package format 변경 없음. asset managed storage 복사는 v0.3.3.
 
 ## Roadmap & Versioning
 

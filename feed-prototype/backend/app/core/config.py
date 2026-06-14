@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     # When unset, the endpoint follows the local CLI trust model (no check).
     # This is not real auth; the backend is assumed to bind to localhost.
     import_api_token: str | None = None
+    # Root of the external_posts working tree (v0.3.2). The directory-batch
+    # processor derives incoming/archive/failed from this. Defaults to the repo's
+    # feed-prototype/data/external_posts.
+    external_posts_dir: Path = BACKEND_DIR.parent / "data" / "external_posts"
 
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env",
