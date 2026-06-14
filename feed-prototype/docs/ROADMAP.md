@@ -25,8 +25,9 @@ MAJOR.MIDDLE.MINOR  (예: 0.1.2)
 v0.1.x  탐색과 발견 (Discovery & Navigation)
 v0.2.x  레이아웃 & UI 개편 (Layout & UI)
 v0.3.x  Ingestion 신뢰성 (Ingestion Hardening)
-v0.4.x  협업 (Annotation & Collaboration)
-v0.5.x  인증 & 멀티유저 (Auth & Multi-user)
+v0.4.x  메타데이터 일급화 & 트리아지 (Metadata-first Reading)
+v0.5.x  협업 (Annotation & Collaboration)
+v0.6.x  인증 & 멀티유저 (Auth & Multi-user)
 v1.0.0  첫 major: 배포 가능한 제품 기준선
 v1.1.x  Rich Asset Experience
 ```
@@ -36,11 +37,15 @@ v1.1.x  Rich Asset Experience
 - 외부 프로그램이 주기적으로 post를 생성하므로 데이터는 빠르게 누적됩니다.
   읽기 확장성(pagination 등)이 가장 시급합니다.
 - ingestion 신뢰성은 사용자가 도구를 신뢰하기 위한 조건입니다.
+- ingestion으로 metadata 풍부한 post가 대량 누적되면, 그 다음 병목은 "읽기"가
+  아니라 "트리아지"입니다. metadata를 일급 차원(facet 필터, 카드 칩, 값 정렬)으로
+  올리는 v0.4.x를 협업보다 먼저 둡니다. generic 메커니즘이지만 리포트/분석 post
+  (severity·chamber·recipe를 한눈에)에서 특히 강력합니다.
 - 댓글/북마크는 prototype user selection 상태로도 가치 검증이 가능하므로
-  인증보다 먼저 진행합니다. 사내 실배포 일정이 앞당겨지면 v0.4와 v0.5의
-  순서를 바꿀 수 있습니다.
+  인증보다 먼저 진행합니다. 사내 실배포 일정이 앞당겨지면 협업(v0.5)과
+  인증(v0.6)의 순서를 바꿀 수 있습니다.
 - dashboard는 별도 기능으로 만들지 않습니다. saved filter(이름 붙인 필터
-  조합의 저장)로 같은 요구를 generic하게 충족합니다.
+  조합의 저장)로 같은 요구를 generic하게 충족하며, v0.4.x의 후속 후보입니다.
 
 ## 전 버전 공통 제약
 
@@ -88,7 +93,7 @@ v1.1.x  Rich Asset Experience
 - post text의 `@handle` 패턴을 Account Profile 링크로 렌더링.
 - 존재하지 않는 handle은 plain text로 fallback.
 - frontend 렌더링만 구현. mention 저장, 알림, "나를 언급한 post" 목록은
-  v0.4.x로 미룹니다.
+  v0.5.x로 미룹니다.
 - package format 변경 없음. 기존 생성된 post에도 소급 적용됩니다.
 
 ### v0.1.x non-goals
@@ -127,7 +132,7 @@ external package format 변경
 
 ### v0.2.3 — 탭 활성화 2 (Me) + UX backlog 반영
 
-- Me 탭: 내 post 관리 강화. (북마크/언급됨 목록 자리는 v0.4.x에서 채움)
+- Me 탭: 내 post 관리 강화. (북마크/언급됨 목록 자리는 v0.5.x에서 채움)
 - `UX_BACKLOG.md`에 쌓인 항목 중 합의된 것 반영.
 
 ### v0.2.x non-goals
@@ -158,30 +163,65 @@ asset 파일 복사는 opt-in이며 기존 /assets/... 경로 package는 계속 
 기존 CLI import workflow를 제거하지 않는다
 ```
 
-## v0.4.x — 협업 (Annotation & Collaboration)
+## v0.4.x — 메타데이터 일급화 & 트리아지 (Metadata-first Reading)
+
+목표: metadata가 풍부한 고volume feed에서, 자유 입력 필터(MVP11)를 넘어 metadata를
+일급 차원으로 읽고 트리아지한다. 일반 피드에도 적용되지만(평점·장르·출처 등),
+리포트/분석 post에서 severity·chamber·recipe를 한눈에 보고 정렬하는 데 특히
+강력하다.
+
+- v0.4.0: facet 기반 필터(기반). `GET /api/metadata/keys`류 facet API(distinct
+  key/value + 사용 빈도). 필터 패널의 자유 입력 metadata key/value를 알려진
+  key·value의 드롭다운/칩 선택으로 보강(자유 입력은 유지). v0.1.2 tag 자동완성과
+  같은 패턴 재사용.
+- v0.4.1: 카드 metadata 노출 & 값 정렬. 사용자가 고른 metadata key를
+  PostCard/Explore 카드에 칩으로 고정 표시(pinned keys, URL/localStorage).
+  metadata 값 기준 정렬(숫자/날짜 인식, 기존 newest/oldest sort 확장).
+- 마지막 MINOR: `UX_BACKLOG.md` 반영 예약 슬롯.
+
+### v0.4.x 메타데이터 정책 (재확인)
+
+```text
+facet/정렬/칩은 모두 generic key-value 위에서 동작한다
+severity, recipe, chamber, equipment 같은 도메인 필드를 core model / 공유
+  component / route / 주요 UI 컨트롤에 하드코딩하지 않는다 (값으로만 유지)
+distinct key/value 목록은 데이터에서 파생한다 (스키마를 새로 정의하지 않는다)
+```
+
+### v0.4.x non-goals
+
+```text
+analytics / 시계열 추세 차트 / dashboard
+복잡한 AND/OR 쿼리 빌더
+saved filter(이름 붙인 조합 저장) — 후속 후보로 보류
+batch/source 단위 그룹 읽기 — 후속 후보로 보류
+metadata 스키마 강제/검증
+```
+
+## v0.5.x — 협업 (Annotation & Collaboration)
 
 목표: 봇/사람이 올린 post에 사람의 판단과 반응을 기록.
 
-- v0.4.0: comments (post별 댓글, 작성/삭제).
-- v0.4.1: bookmark (post 북마크, Me 탭에 북마크 목록).
-- v0.4.2: in-app 알림(팔로우 계정 새 post, 내 post의 새 댓글),
+- v0.5.0: comments (post별 댓글, 작성/삭제).
+- v0.5.1: bookmark (post 북마크, Me 탭에 북마크 목록).
+- v0.5.2: in-app 알림(팔로우 계정 새 post, 내 post의 새 댓글),
   mention 수신(나를 언급한 post 목록, mention 알림),
   Home Feed unread/since-last-visit 표시.
 
 like 기능은 북마크 사용 양상을 본 뒤 별도 결정합니다.
 
-## v0.5.x — 인증 & 멀티유저
+## v0.6.x — 인증 & 멀티유저
 
 목표: 여러 사람이 실제로 쓰기 직전의 관문.
 
-- v0.5.0: password 로그인 + server-side session. 현재 prototype user
+- v0.6.0: password 로그인 + server-side session. 현재 prototype user
   selection을 실제 인증으로 교체. OAuth/SSO/JWT는 범위 밖.
-- v0.5.1: User:Account 1:1 → 1:N. 봇/프로그램 계정을 user가 소유하는 구조.
+- v0.6.1: User:Account 1:1 → 1:N. 봇/프로그램 계정을 user가 소유하는 구조.
   bot 여부 같은 분류는 core 필드가 아닌 generic한 소유 관계로 표현.
 
 ## v1.0.0 — 첫 major
 
-v0.1(읽기 확장성) + v0.3(ingestion 신뢰성) + v0.5(인증)가 갖춰지면
+v0.1(읽기 확장성) + v0.3(ingestion 신뢰성) + v0.6(인증)가 갖춰지면
 v1.0.0으로 올립니다. 별도 신규 기능 없이 안정화/문서화/배포 절차 정리가
 중심인 릴리즈입니다.
 

@@ -14,7 +14,7 @@ v0.1.1/v0.1.2에서 해시태그를 클릭 가능한 탐색 진입점으로 만�
 
 v0.1.3은 post 본문의 `@handle`을 해당 Account Profile 링크로 렌더링합니다.
 해시태그와 마찬가지로 **frontend 렌더링만** 추가하며 backend/package format은
-건드리지 않습니다. mention 저장, 알림, "나를 언급한 post" 목록은 v0.4.x로
+건드리지 않습니다. mention 저장, 알림, "나를 언급한 post" 목록은 v0.5.x로
 미룹니다.
 
 ## Goals
@@ -61,7 +61,7 @@ v0.1.3은 post 본문의 `@handle`을 해당 Account Profile 링크로 렌더링
 
 ```text
 mention 저장 / 인덱싱 (post-mention 관계 영속화)
-mention 알림, "나를 언급한 post" 목록 (v0.4.x)
+mention 알림, "나를 언급한 post" 목록 (v0.5.x)
 mention 자동완성(작성 시 @ 입력 도움) — 읽기 렌더링만
 title/asset/metadata 내 mention 렌더링
 external package format 변경

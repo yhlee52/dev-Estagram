@@ -48,7 +48,7 @@ export default function ExploreTags({
     <section className="space-y-4 rounded-md border border-neutral-200 bg-neutral-100 p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-bold text-neutral-950">Explore</h2>
+          <h2 className="text-sm font-bold text-neutral-950">Discover</h2>
           <p className="text-xs font-semibold text-neutral-500">
             Jump in by tag, or browse accounts.
           </p>

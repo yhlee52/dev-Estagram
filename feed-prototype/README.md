@@ -2,9 +2,9 @@
 
 `feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
 
-현재 릴리즈: `v0.1.3`.
+현재 릴리즈: `v0.2.3`. v0.2.x(레이아웃 & UI 개편) 테마 완료.
 
-이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
+이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
 
 ## 포함된 기능
 
@@ -22,6 +22,10 @@
 - 클릭 가능한 해시태그 칩(`#tag` → `/posts?tag=<tag>`) (v0.1.1)
 - 검색창 `#` tag 라우팅, 사용 빈도순 tag 자동완성, `GET /api/tags` (v0.1.2)
 - post 본문의 `@handle`을 Account Profile 링크로 렌더링 (v0.1.3)
+- 데스크톱 3컬럼 레이아웃: 좌측 네비 레일 + 중앙 feed + 우측 컨텍스트 레일(적용 필터·팔로우 바로가기) (v0.2.0)
+- 한 줄 헤더 + 아바타 드롭다운(user id·버전 등 디버그 정보 수납), Switch user 단일화 (v0.2.1)
+- Explore(Posts) 탭: 인기/최근 태그 진입점, Accounts 탭 활동 신호(최근 N일 post 수)·정렬(최근 활동/post 수/이름) (v0.2.2)
+- Me 탭: mock/API 양쪽에서 동작하는 내 활동 요약 + 내 post 관리(New Post·Edit·인라인 Delete), 필터 0건 empty state의 "Reset filters" (v0.2.3)
 
 ## 포함되지 않은 기능
 

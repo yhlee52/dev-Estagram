@@ -40,7 +40,7 @@ v0.2.0은 단일 컬럼을 3컬럼(좌측 nav 레일 + 중앙 feed + 우측 맥�
 - **디버그성 정보 이동.** user id와 버전 배지는 헤더 본문에서 빼고 드롭다운
   안으로 옮깁니다.
 - **Switch user / Logout 중복 정리.** 동작이 동일하므로 드롭다운 안의 단일
-  **Switch user** 항목 하나로 통합합니다. (진짜 logout/auth는 v0.5.x에서
+  **Switch user** 항목 하나로 통합합니다. (진짜 logout/auth는 v0.6.x에서
   server-side session을 도입할 때 별도로 다룹니다.)
 - **검색창 승격.** 키워드/`#tag` 검색을 `PostFilterPanel` 그리드에서 분리해
   패널 맨 위 **전폭(full-width)** 검색 바로 올리고, 크기를 키웁니다. 나머지
@@ -72,7 +72,7 @@ v0.2.0은 단일 컬럼을 3컬럼(좌측 nav 레일 + 중앙 feed + 우측 맥�
 - **검색/필터 동작 불변.** `PostFilters`, URL 동기화(단일 출처), `#tag`
   라우팅, 태그 자동완성은 그대로입니다. 검색 바는 위치/크기만 바뀝니다.
 - **인증 도입 아님.** Switch user 단일화는 어디까지나 동일 동작의 중복 정리이며,
-  실제 logout/세션은 v0.5.x 범위입니다.
+  실제 logout/세션은 v0.6.x 범위입니다.
 - **external post package JSON format 변경 없음.** format freeze 유지.
 - **데스크톱 전용.** 좁은 폭 fallback(헤더 아래 horizontal nav)은 v0.2.0과
   동일하게 유지하되, 모바일 반응형을 새로 설계하지 않습니다.
@@ -81,7 +81,7 @@ v0.2.0은 단일 컬럼을 3컬럼(좌측 nav 레일 + 중앙 feed + 우측 맥�
 ## Non-goals
 
 ```text
-실제 logout / server-side session / 인증 (v0.5.x)
+실제 logout / server-side session / 인증 (v0.6.x)
 검색 동작/필터 로직 변경, 전역(글로벌) 검색 신설
 Posts·Accounts·Me 탭의 탐색(Explore) 기능 강화 (v0.2.2 / v0.2.3)
 모바일/태블릿 폭 반응형 대응 (PC 전용 전제)

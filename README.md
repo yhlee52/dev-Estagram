@@ -1,13 +1,20 @@
-# feed-prototype v0.0.0
+# feed-prototype
 
 `feed-prototype`은 범용 `Account` / `Post` / `Feed` prototype입니다.
+
+현재 릴리즈: `v0.2.3` (레이아웃 & UI 개편 테마 완료). 버전 라벨 기준은
+`feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
 
 사용 시나리오:
 
 1. 일반 SNS-like local feed
 2. 외부 분석 프로그램이 생성한 plot, table, file, link, tag, metadata 포함 리포트 post를 보여주는 feed UI
 
-`v0.0.0`은 첫 번째 공유 가능한 internal/local prototype release입니다. 일반 SNS-like feed와 external report feed를 모두 데모할 수 있는 기준 버전이지만, production-ready 제품은 아닙니다.
+`v0.0.0`이 첫 번째 공유 가능한 internal/local prototype release였고, 그 위에
+v0.1.x(탐색과 발견)와 v0.2.x(레이아웃 & UI 개편) 테마가 쌓였습니다. 일반 SNS-like
+feed와 external report feed를 모두 데모할 수 있지만, production-ready 제품은
+아닙니다. 전체 버전 트리와 다음 테마(v0.3.x Ingestion 신뢰성)는
+`feed-prototype/docs/ROADMAP.md`를 참고하세요.
 
 ## Core Domain
 
@@ -23,7 +30,9 @@ core domain은 generic하게 유지합니다.
 
 설비/리포트 전용 값이 필요하면 core model이나 component 이름으로 만들지 않고 `metadata_json`, `post.metadata`, asset metadata에 둡니다. 예를 들어 반도체 설비 분석 scenario의 recipe, chamber, severity 같은 값은 metadata value로만 취급합니다.
 
-## v0.0.0 기능 범위
+## 기능 범위
+
+v0.0.0 기준선:
 
 - account/profile 조회
 - follow/unfollow
@@ -36,6 +45,20 @@ core domain은 generic하게 유지합니다.
 - image/plot thumbnail 및 lightbox
 - multi image/plot `sort_order` 표시 순서
 - CSV table preview
+
+v0.1.x(탐색과 발견):
+
+- cursor 기반 pagination(더 보기), 날짜 범위 필터, 최신순/오래된순 정렬
+- 필터 상태 ↔ URL query 동기화(공유/재현 가능한 링크)
+- 클릭 가능한 해시태그 칩, 검색창 `#tag` 라우팅, tag 자동완성, `GET /api/tags`
+- post 본문 `@handle` → Account Profile 링크 렌더링
+
+v0.2.x(레이아웃 & UI 개편):
+
+- 데스크톱 3컬럼 레이아웃(좌측 네비 레일 + 중앙 feed + 우측 컨텍스트 레일)
+- 한 줄 헤더 + 아바타 드롭다운(디버그 정보 수납), Switch user 단일화
+- Explore(Posts) 탭 태그 진입점, Accounts 활동 신호·정렬
+- Me 탭 mock/API 내 활동 요약 + 내 post 관리(New Post·Edit·인라인 Delete)
 
 ## 실행 Mode
 
@@ -51,7 +74,7 @@ FastAPI + PostgreSQL 기반 mode입니다. 실제 DB를 read/write하며 user, a
 
 외부 JSON post package를 backend CLI로 DB에 import하는 workflow입니다. Import된 post는 API mode UI에서 일반 post처럼 표시됩니다. 일반 SNS sample과 분석 리포트 sample을 모두 확인할 수 있습니다.
 
-## v0.0.0 Non-goals / Limitations
+## Non-goals / Limitations (현재까지)
 
 - production-ready app이 아닙니다.
 - 정식 login, JWT, session, OAuth를 제공하지 않습니다.
