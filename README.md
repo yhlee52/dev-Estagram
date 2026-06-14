@@ -2,9 +2,10 @@
 
 `feed-prototype`은 범용 `Account` / `Post` / `Feed` prototype입니다.
 
-현재 릴리즈: `v0.3.4` (UX backlog 반영 — v0.3.x Ingestion 신뢰성 테마 마지막 MINOR,
-테마 완료). 버전 라벨 기준은 `feed-prototype/src/config/appVersion.ts`의
-`APP_RELEASE_LABEL`입니다.
+현재 릴리즈: `v0.3.5` (테마 완료 후 운영 안정화 patch — `process_incoming --watch`
+실행 중 Vite dev server가 종료되던 문제 수정 + 릴리즈 문서 최신화). v0.3.x(Ingestion
+신뢰성) 테마는 v0.3.4로 완료되었습니다. 버전 라벨 기준은
+`feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
 
 사용 시나리오:
 

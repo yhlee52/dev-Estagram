@@ -1,6 +1,6 @@
 # 외부 Post Import Package
 
-현재 릴리즈 기준: `v0.3.4`(v0.3.x 테마 완료). external post package format은 v0.0.0 시점에 동결되어 v0.1.x·v0.2.x·v0.3.x에서도 변경되지 않았습니다(`docs/EXTERNAL_POST_PACKAGE_GUIDE.md`의 Format Stability 참고). v0.3.0은 같은 package를 HTTP(`POST /api/imports`)로도 받을 수 있게 했고, v0.3.1은 import 사건을 `import_batch` 테이블에 기록하며, v0.3.2는 `incoming/`의 package를 일괄 import한 뒤 `archive/`(성공)·`failed/`(실패)로 자동 이동하고, v0.3.3은 opt-in으로 상대 로컬 경로 asset을 managed storage로 복사하며, v0.3.4는 UI/UX 정리(Me 탭 Load more, 공용 ConfirmDialog)에 한정되어 format·import 동작 모두 그대로입니다.
+현재 릴리즈 기준: `v0.3.5`(v0.3.x 테마는 v0.3.4로 완료, v0.3.5는 운영 안정화 patch). external post package format은 v0.0.0 시점에 동결되어 v0.1.x·v0.2.x·v0.3.x에서도 변경되지 않았습니다(`docs/EXTERNAL_POST_PACKAGE_GUIDE.md`의 Format Stability 참고). v0.3.0은 같은 package를 HTTP(`POST /api/imports`)로도 받을 수 있게 했고, v0.3.1은 import 사건을 `import_batch` 테이블에 기록하며, v0.3.2는 `incoming/`의 package를 일괄 import한 뒤 `archive/`(성공)·`failed/`(실패)로 자동 이동하고, v0.3.3은 opt-in으로 상대 로컬 경로 asset을 managed storage로 복사하며, v0.3.4는 UI/UX 정리(Me 탭 Load more, 공용 ConfirmDialog)에 한정되어 format·import 동작 모두 그대로입니다.
 
 이 문서는 external import mode의 package guide입니다. 외부 프로그램이 만든 JSON package를 backend DB에 넣고, API mode UI가 import된 post를 일반 post처럼 표시하는 흐름을 다룹니다.
 

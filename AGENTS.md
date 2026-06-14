@@ -8,9 +8,10 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.3.4`(UX backlog 반영 — v0.3.x Ingestion 신뢰성 테마 마지막
-MINOR)이며 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이
-기준입니다. 이로써 v0.3.x 테마는 완료되었습니다.
+현재 릴리즈는 `v0.3.5`(테마 완료 후 운영 안정화 patch)이며
+`feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이 기준입니다.
+v0.3.x 테마는 v0.3.4(UX backlog 반영)로 완료되었고, v0.3.5는 `process_incoming
+--watch` 중 Vite dev server 종료 문제 수정 + 릴리즈 문서 최신화에 한정된 patch입니다.
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
 - `README.md`
@@ -163,6 +164,13 @@ v0.3.x — Ingestion 신뢰성 (Ingestion Hardening):
   삭제 확인의 `window.confirm`을 신규 공용 `ConfirmDialog`(오버레이/Escape/
   백드롭/포커스 제어)로 교체하고 `MyPostCard`·`PostDetail`에 적용. DB/format
   변경 없음. 이로써 v0.3.x(Ingestion 신뢰성) 테마 완료.
+- v0.3.5: 테마 완료 후 운영 안정화 patch. `process_incoming --watch` 실행 중
+  managed storage 복사(`public/assets/managed/`)와 `data/external_posts/`의
+  package 이동으로 발생하는 파일 churn에 Vite dev server의 watcher가 반응해
+  (특히 Windows의 copy/rename 경합) dev server가 종료되던 문제를 `vite.config.ts`의
+  `server.watch.ignored`로 두 런타임 데이터 경로를 제외해 해결(파일은 계속 serve,
+  불필요한 full reload도 제거). 릴리즈 runbook/checklist를 현재 버전 기준으로
+  재작성. 코드 변경은 `vite.config.ts` 1개, DB/format/frontend 동작 변경 없음.
 
 ## Roadmap & Versioning
 
