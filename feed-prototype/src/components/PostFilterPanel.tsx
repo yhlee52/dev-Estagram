@@ -122,7 +122,7 @@ export default function PostFilterPanel({
           onChange={(event) => {
             onChange({ ...filters, tag: event.target.value });
           }}
-          placeholder="Tag"
+          placeholder="Exact tag (or #tag in search)"
           className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
         />
         <input

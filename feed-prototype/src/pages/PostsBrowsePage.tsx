@@ -285,6 +285,11 @@ export default function PostsBrowsePage() {
     setSearchParams(filtersToSearchParams(routed), { replace: true });
   };
 
+  const resetFilters = () => {
+    setFilterError('');
+    setSearchParams(new URLSearchParams(), { replace: true });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-white px-3 py-2 shadow-sm">
@@ -318,10 +323,7 @@ export default function PostsBrowsePage() {
               setDraftFilters(nextFilters);
             }}
             onApply={() => commitFilters(draftFilters)}
-            onReset={() => {
-              setFilterError('');
-              setSearchParams(new URLSearchParams(), { replace: true });
-            }}
+            onReset={resetFilters}
             isLoading={isLoading}
             resultCount={!isLoading && !error ? items.length : undefined}
             mode="browse"
@@ -374,6 +376,15 @@ export default function PostsBrowsePage() {
           <EmptyState
             title="No posts match these filters"
             description="Try resetting filters or changing the search terms."
+            action={
+              <button
+                type="button"
+                className="h-9 rounded-md border border-neutral-200 bg-white px-4 text-sm font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100"
+                onClick={resetFilters}
+              >
+                Reset filters
+              </button>
+            }
           />
         ) : (
           <EmptyState

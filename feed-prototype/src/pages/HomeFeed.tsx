@@ -235,11 +235,25 @@ export default function HomeFeed() {
     setSearchParams(filtersToSearchParams(routed), { replace: true });
   };
 
+  const resetFilters = () => {
+    setFilterError('');
+    setSearchParams(new URLSearchParams(), { replace: true });
+  };
+
   const emptyState =
     isApiDataSource && hasAppliedFilters ? (
       <EmptyState
         title="No posts match these filters"
         description="Try resetting filters or changing the search terms."
+        action={
+          <button
+            type="button"
+            className="h-9 rounded-md border border-neutral-200 bg-white px-4 text-sm font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100"
+            onClick={resetFilters}
+          >
+            Reset filters
+          </button>
+        }
       />
     ) : isApiDataSource ? (
       <section className="rounded-md border border-dashed border-neutral-300 bg-white px-5 py-12 text-center">
@@ -315,10 +329,7 @@ export default function HomeFeed() {
               setDraftFilters(nextFilters);
             }}
             onApply={() => commitFilters(draftFilters)}
-            onReset={() => {
-              setFilterError('');
-              setSearchParams(new URLSearchParams(), { replace: true });
-            }}
+            onReset={resetFilters}
             isLoading={isLoading}
             resultCount={!isLoading && !error && activeApiUserId ? feedItems.length : undefined}
             mode="feed"
