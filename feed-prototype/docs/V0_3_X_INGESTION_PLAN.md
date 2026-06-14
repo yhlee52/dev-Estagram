@@ -10,8 +10,11 @@ v0.3.x 항목을 코드 현황에 맞춰 구체화하고, 진입 전 확인할 �
 > - v0.3.0 — HTTP Import API: **완료**. 상세는 `V0_3_0_HTTP_IMPORT_SCOPE.md`.
 > - v0.3.1 — Import Batch 이력 API + 최소 UI: **완료**. 상세는
 >   `V0_3_1_BATCH_HISTORY_SCOPE.md`, 요약은 `AGENTS.md` Completed Scope History.
-> - v0.3.2 — 자동 이동 / Watch / Asset Managed Storage: 후보(다음 MINOR).
-> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.3.1`.
+> - v0.3.2 — 자동 이동 + 디렉터리 일괄 처리 CLI + 폴링 Watch: **완료**. 상세는
+>   `V0_3_2_AUTO_INGESTION_SCOPE.md`. (원안의 asset managed storage 복사는 범위
+>   분할로 v0.3.3으로 분리.)
+> - v0.3.3 — Asset Managed Storage 복사(opt-in): 후보(다음 MINOR).
+> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.3.2`.
 
 ## 1. v0.2.x 완료 / 진입 판단
 
@@ -102,17 +105,30 @@ v0.3.x는 대부분 기존 자산 위에 얇게 얹는 작업입니다.
 - 성공/실패 구분이 의미를 가지려면 v0.3.0에서 실패 batch를 어떻게 기록할지와
   연계 설계(아래 v0.3.2의 failed 이동과도 연결).
 
-### v0.3.2 — 자동 이동 / Watch / Asset Managed Storage
+### v0.3.2 — 자동 이동 + 디렉터리 일괄 처리 CLI + 폴링 Watch — ✅ 완료
 
-목표: 운영 자동화와 asset 내구성(opt-in).
+> 구현 완료. 결정 사항은 `V0_3_2_AUTO_INGESTION_SCOPE.md`에서 확정됨: 범위를
+> 운영 자동화(자동 이동/CLI/watch)와 asset managed storage 복사로 나눠 후자는
+> v0.3.3으로 분리. watch는 단순 폴링 CLI(외부 의존성 없음). 자동 이동은
+> `process_incoming`의 `incoming/` 처리 경로에서만 발생(단일 파일 CLI·HTTP는 이동
+> 없음). DB 스키마/frontend 변경 없음. 아래는 진입 당시 후보 정의로 기록 보존.
+
+목표: 운영 자동화.
 
 - import 결과에 따라 package를 `incoming` → `archive`(성공) / `failed`(실패)로
   자동 이동.
 - folder watch 또는 스케줄 실행으로 `incoming` 자동 처리(폴링/watchdog 등 수단은
   scope에서 결정).
+
+### v0.3.3 — Asset Managed Storage 복사 (opt-in)
+
+목표: asset 내구성(opt-in).
+
 - asset 파일 **managed storage 복사(opt-in)**: 기존 URL 방식은 계속 지원하고,
   옵션 활성화 시 파일을 backend 관리 경로로 복사. 기존 `/assets/...` 경로 package는
   계속 동작해야 함(format 동결·하위호환 유지).
+- import가 현재 asset 파일을 읽지 않고 `url` 문자열만 저장하므로, 파일 해석·복사·
+  서빙·URL 재작성을 새로 설계해야 함(가장 크고 위험한 작업이라 별도 MINOR로 격리).
 
 ### v0.3.x 마지막 MINOR — UX backlog 예약 슬롯
 
@@ -143,12 +159,12 @@ mock mode는 v0.3.0부터 데모 전용 동결 (제거하지 않음)
 
 ## 6. 다음 행동
 
-v0.3.0(HTTP Import API)·v0.3.1(Import Batch 이력)은 완료되었습니다. 다음은
-v0.3.2입니다.
+v0.3.0(HTTP Import API)·v0.3.1(Import Batch 이력)·v0.3.2(자동 이동/일괄 처리
+CLI/Watch)는 완료되었습니다. 다음은 v0.3.3입니다.
 
-1. `V0_3_2_*_SCOPE.md` 작성 후 구현 착수. 위 3장 v0.3.2 후보(incoming→archive/
-   failed 자동 이동, folder watch/스케줄, asset managed storage 복사 opt-in)에서
-   결정 필요 항목을 scope에서 확정. v0.3.1의 batch status(success/failed)가
-   자동 이동의 상태 판단 기반이 됨.
+1. `V0_3_3_*_SCOPE.md` 작성 후 구현 착수. asset 파일 managed storage 복사(opt-in).
+   import가 현재 asset 파일을 읽지 않고 `url` 문자열만 저장하므로, 파일 해석·복사·
+   서빙·URL 재작성 방식과 opt-in 토글을 scope에서 확정. 기존 `/assets/...` URL
+   package의 하위호환(format 동결)을 유지.
 2. 테마의 마지막 MINOR는 `UX_BACKLOG.md` 반영용 예약 슬롯(현재 후보: Me 탭
    페이지네이션, 공용 ConfirmDialog).

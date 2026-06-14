@@ -564,6 +564,7 @@ def run_import(
     input_path: Path,
     dry_run: bool,
     database_url: str | None = None,
+    print_result: bool = True,
 ) -> ImportSummary:
     payload = load_payload(input_path)
     engine = create_engine(database_url, pool_pre_ping=True) if database_url is not None else None
@@ -586,7 +587,10 @@ def run_import(
         if engine is not None:
             engine.dispose()
 
-    print_summary(payload=payload, input_path=input_path, summary=summary, dry_run=dry_run)
+    # Callers that drive many imports (e.g. the directory-batch processor in
+    # v0.3.2) print their own concise per-package summary and suppress this.
+    if print_result:
+        print_summary(payload=payload, input_path=input_path, summary=summary, dry_run=dry_run)
     return summary
 
 

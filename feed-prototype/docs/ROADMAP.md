@@ -152,8 +152,15 @@ external package format 변경
   package JSON을 HTTP로 수신. CLI import는 그대로 유지.
 - v0.3.1: import batch 이력 API + 최소 UI (batch별 성공/실패/post 수).
   `import_batch_external_id` 활용.
-- v0.3.2: incoming/archive/failed 자동 이동, folder watch 또는 스케줄 실행,
-  asset 파일 managed storage 복사(opt-in, 기존 URL 방식 계속 지원).
+- v0.3.2: incoming/archive/failed 자동 이동 + 디렉터리 일괄 처리 CLI
+  (`process_incoming`) + 단순 폴링 watch. import 성공/실패(v0.3.1 batch status)에
+  따라 package를 `archive`/`failed`로 이동.
+- v0.3.3: asset 파일 managed storage 복사(opt-in, 기존 URL 방식 계속 지원).
+- v0.3.x 마지막 MINOR: `UX_BACKLOG.md` 반영 예약 슬롯.
+
+> v0.3.2는 원래 자동 이동·watch·asset 복사를 한 묶음으로 두었으나, "하나의
+> MINOR = 하나의 집중된 변경" 원칙에 맞춰 운영 자동화(이동/CLI/watch)와 asset
+> managed storage 복사를 v0.3.2 / v0.3.3으로 분리했습니다(2026-06-14 결정).
 
 ### v0.3.x 제약
 

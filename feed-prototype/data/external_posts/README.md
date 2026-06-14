@@ -1,6 +1,6 @@
 # 외부 Post Import Package
 
-현재 릴리즈 기준: `v0.3.0`. external post package format은 v0.0.0 시점에 동결되어 v0.1.x·v0.2.x·v0.3.x에서도 변경되지 않았습니다(`docs/EXTERNAL_POST_PACKAGE_GUIDE.md`의 Format Stability 참고). v0.3.0은 같은 package를 HTTP(`POST /api/imports`)로도 받을 수 있게 했지만 format은 그대로입니다.
+현재 릴리즈 기준: `v0.3.2`. external post package format은 v0.0.0 시점에 동결되어 v0.1.x·v0.2.x·v0.3.x에서도 변경되지 않았습니다(`docs/EXTERNAL_POST_PACKAGE_GUIDE.md`의 Format Stability 참고). v0.3.0은 같은 package를 HTTP(`POST /api/imports`)로도 받을 수 있게 했고, v0.3.1은 import 사건을 `import_batch` 테이블에 기록하며, v0.3.2는 `incoming/`의 package를 일괄 import한 뒤 `archive/`(성공)·`failed/`(실패)로 자동 이동하지만 format은 그대로입니다.
 
 이 문서는 external import mode의 package guide입니다. 외부 프로그램이 만든 JSON package를 backend DB에 넣고, API mode UI가 import된 post를 일반 post처럼 표시하는 흐름을 다룹니다.
 
@@ -45,11 +45,20 @@ data/external_posts/
 각 폴더의 의미:
 
 - `examples`: 사람이 참고하거나 외부 generator가 따라 쓸 수 있는 샘플 JSON입니다.
-- `incoming`: import 대기 중인 package를 두는 위치입니다.
-- `archive`: import 성공 package를 나중에 수동 보관할 수 있는 위치입니다.
-- `failed`: import 실패 package를 수동 점검용으로 보관할 수 있는 위치입니다.
+  (자동 처리 대상이 아니며, `process_incoming`은 절대 건드리지 않습니다.)
+- `incoming`: import 대기 중인 package를 두는 위치입니다. package는 단일 `.json`
+  파일 또는 `feed_posts.json`을 포함한 디렉터리입니다.
+- `archive`: import **성공** package가 이동되는 위치입니다.
+- `failed`: import **실패** package가 이동되는 위치입니다.
 
-MVP10에서는 package를 `archive` 또는 `failed`로 자동 이동하지 않습니다.
+**v0.3.2부터** `python -m app.services.process_incoming`(또는 `--watch`)이
+`incoming/`을 일괄 처리하고 결과에 따라 package를 `archive/`(성공)·`failed/`(실패)로
+**자동 이동**합니다(이름 충돌 시 덮어쓰지 않고 타임스탬프 접미사). 자동 이동은 이
+`incoming/` 처리 경로에서만 일어나며, 단일 파일 CLI(`import_external_posts
+--input`)와 HTTP import(`POST /api/imports`)는 파일을 이동하지 않습니다. watch가
+쓰다 만 파일을 집지 않도록 package writer는 임시 파일에 쓴 뒤 rename(atomic)으로
+`incoming/`에 넣는 것을 권장합니다. 상세는 `docs/V0_3_2_AUTO_INGESTION_SCOPE.md`.
+(MVP10~v0.3.1까지는 자동 이동이 없었고 수동 보관만 가능했습니다.)
 
 v0.0.0 / MVP12 기준 JSON package 작성 가이드는 `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`를 먼저 참고하세요.
 

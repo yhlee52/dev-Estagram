@@ -2,9 +2,9 @@
 
 `feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
 
-현재 릴리즈: `v0.3.1` (Import Batch 이력). v0.3.x(Ingestion 신뢰성) 테마 진행 중.
+현재 릴리즈: `v0.3.2` (자동 이동/디렉터리 일괄 처리/Watch). v0.3.x(Ingestion 신뢰성) 테마 진행 중.
 
-이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. v0.3.x(Ingestion 신뢰성) 테마는 v0.3.0에서 HTTP import API(`POST /api/imports`), v0.3.1에서 Import batch 이력(`import_batch` 테이블 + `GET /api/imports` + `/imports` UI)을 추가했습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
+이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. v0.3.x(Ingestion 신뢰성) 테마는 v0.3.0에서 HTTP import API(`POST /api/imports`), v0.3.1에서 Import batch 이력(`import_batch` 테이블 + `GET /api/imports` + `/imports` UI), v0.3.2에서 `incoming/` 자동 이동·디렉터리 일괄 처리 CLI·폴링 Watch(`process_incoming`)를 추가했습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
 
 ## 포함된 기능
 
@@ -28,13 +28,15 @@
 - Me 탭: mock/API 양쪽에서 동작하는 내 활동 요약 + 내 post 관리(New Post·Edit·인라인 Delete), 필터 0건 empty state의 "Reset filters" (v0.2.3)
 - HTTP import API: 기존 CLI와 동일한 package JSON을 `POST /api/imports`로 수신(`?dry_run=true`, 선택적 `X-Import-Token` 보호) (v0.3.0)
 - Import batch 이력: import 사건을 `import_batch`에 기록(success/failed·사건 카운트·import 횟수), `GET /api/imports`(목록)·`GET /api/imports/{batch_external_id}`(상세) 조회, `/imports` UI 목록/상세 (API mode 전용) (v0.3.1)
+- 디렉터리 일괄 처리/자동 이동/Watch: `process_incoming` CLI가 `incoming/`의 package(단일 `.json` 또는 `feed_posts.json` 포함 디렉터리)를 일괄 import하고 성공→`archive/`/실패→`failed/`로 자동 이동(이름 충돌 시 타임스탬프 접미사), `--watch --interval N` 단순 폴링, `--dry-run`은 DB·파일 무변경. 단일 파일 `--input` CLI·HTTP import는 파일 이동 없음 (v0.3.2)
 
 ## 포함되지 않은 기능
 
 - production authentication 또는 authorization
 - password, JWT, session, OAuth, role
-- real file upload, S3 upload, asset file copy
-- folder watch 또는 scheduled import
+- real file upload, S3 upload, asset file copy (asset managed storage 복사는 v0.3.3 예정)
+- OS 레벨 scheduler/데몬 (v0.3.2의 단순 폴링 watch와 일괄 처리 CLI는 제공)
+- watchdog/inotify 등 OS 파일시스템 이벤트 기반 watch (단순 폴링만)
 - advanced search, semantic search, vector search, dashboard, analytics
 - equipment/report-specific core model name
 
@@ -216,6 +218,34 @@ curl "http://127.0.0.1:8000/api/imports/<batch_external_id>"
 API mode UI에서는 좌측 네비의 **Imports** 탭(`/imports`)에서 batch 목록과 상세를
 볼 수 있습니다(mock mode에서는 노출되지 않음). 상세 guide는
 `docs/V0_3_1_BATCH_HISTORY_SCOPE.md`.
+
+### 디렉터리 일괄 처리 / 자동 이동 / Watch (v0.3.2)
+
+`incoming/`에 둔 package를 한 번에 처리하고 결과에 따라 자동 이동합니다. package는
+단일 `.json` 파일 또는 `feed_posts.json`을 포함한 디렉터리이며, 성공하면
+`archive/`, 실패하면 `failed/`로 옮겨집니다(이름이 겹치면 덮어쓰지 않고 타임스탬프
+접미사). 한 package가 실패해도 나머지는 계속 처리됩니다.
+
+```bash
+cd feed-prototype/backend
+
+# incoming/을 한 번 처리 (성공→archive/, 실패→failed/)
+python -m app.services.process_incoming
+
+# 검증/요약만 (DB·파일 모두 변경 없음)
+python -m app.services.process_incoming --dry-run
+
+# 폴링 watch (기본 10초 간격, Ctrl-C로 종료)
+python -m app.services.process_incoming --watch --interval 10
+```
+
+자동 이동은 이 `incoming/` 경로에서만 일어납니다. 단일 파일 CLI
+(`import_external_posts --input`)와 HTTP import(`POST /api/imports`)는 파일을
+이동하지 않습니다. external_posts 루트는 `backend/.env`의 `EXTERNAL_POSTS_DIR`
+(또는 `--base-dir`)로 바꿀 수 있고, 기본값은 리포의 `data/external_posts`입니다.
+watch가 쓰다 만 파일을 집지 않도록, package writer는 임시 파일에 쓴 뒤 rename
+(atomic)으로 `incoming/`에 넣는 것을 권장합니다. 상세 guide는
+`docs/V0_3_2_AUTO_INGESTION_SCOPE.md`.
 
 ## Sample Data
 

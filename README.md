@@ -2,8 +2,9 @@
 
 `feed-prototype`은 범용 `Account` / `Post` / `Feed` prototype입니다.
 
-현재 릴리즈: `v0.3.1` (Import Batch 이력 — v0.3.x Ingestion 신뢰성 테마). 버전
-라벨 기준은 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
+현재 릴리즈: `v0.3.2` (자동 이동/디렉터리 일괄 처리/Watch — v0.3.x Ingestion 신뢰성
+테마). 버전 라벨 기준은 `feed-prototype/src/config/appVersion.ts`의
+`APP_RELEASE_LABEL`입니다.
 
 사용 시나리오:
 
@@ -12,8 +13,9 @@
 
 `v0.0.0`이 첫 번째 공유 가능한 internal/local prototype release였고, 그 위에
 v0.1.x(탐색과 발견)와 v0.2.x(레이아웃 & UI 개편) 테마가 쌓였으며, v0.3.x(Ingestion
-신뢰성) 테마가 v0.3.0 HTTP Import API와 v0.3.1 Import Batch 이력으로 진행되고
-있습니다. 일반 SNS-like feed와 external report feed를 모두 데모할 수 있지만,
+신뢰성) 테마가 v0.3.0 HTTP Import API, v0.3.1 Import Batch 이력, v0.3.2 자동
+이동/디렉터리 일괄 처리/Watch로 진행되고 있습니다. 일반 SNS-like feed와 external
+report feed를 모두 데모할 수 있지만,
 production-ready 제품은 아닙니다. 전체 버전 트리는
 `feed-prototype/docs/ROADMAP.md`를 참고하세요.
 
@@ -66,6 +68,9 @@ v0.3.x(Ingestion 신뢰성):
 - HTTP import API: 기존 package JSON을 `POST /api/imports`로 수신(dry-run·선택적 토큰 보호)
 - Import batch 이력: import 사건을 `import_batch`에 기록하고 `GET /api/imports`·
   `GET /api/imports/{batch_external_id}`로 조회, `/imports` UI(목록/상세, API mode 전용)
+- 자동 이동 + 디렉터리 일괄 처리 + Watch: `incoming/`의 package를 일괄 import하고
+  성공→`archive/` / 실패→`failed/`로 자동 이동(`process_incoming` CLI, `--watch`
+  폴링 옵션). 단일 파일 CLI·HTTP import는 파일을 이동하지 않음
 
 ## 실행 Mode
 
@@ -87,8 +92,10 @@ FastAPI + PostgreSQL 기반 mode입니다. 실제 DB를 read/write하며 user, a
 - 정식 login, JWT, session, OAuth를 제공하지 않습니다.
 - formal permission/authorization system은 미완성입니다.
 - 댓글, 좋아요, 알림 기능은 없습니다.
-- S3 upload, real file upload, asset file copy를 제공하지 않습니다.
-- scheduler 또는 folder watch를 제공하지 않습니다.
+- S3 upload, real file upload, asset file copy를 제공하지 않습니다(asset managed
+  storage 복사는 v0.3.3 예정).
+- OS 레벨 scheduler/데몬은 제공하지 않습니다. `incoming/` 폴더의 단순 폴링
+  watch와 일괄 처리 CLI(`process_incoming`)는 v0.3.2부터 제공합니다.
 - interactive chart rendering을 제공하지 않습니다.
 - PDF/HTML inline preview를 제공하지 않습니다.
 - semantic search 또는 vector search를 제공하지 않습니다.

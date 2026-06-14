@@ -69,6 +69,21 @@ python -m scripts.check_batch_history
 `DATABASE_URL`에서 실행합니다. (성공/재import/실패 batch 기록, 목록·상세, 404,
 dry-run 불변식을 확인.)
 
+### 디렉터리 일괄 처리 / 자동 이동 (v0.3.2)
+
+v0.3.2의 `process_incoming`(incoming→archive/failed 자동 이동 + 폴링 watch)는
+임시 external_posts 트리와 실제 DB를 사용해 end-to-end로 확인합니다. 성공→archive/
+이동, 실패→failed/ 이동 + failed batch 기록, dry-run 무변경(DB·파일), 이름 충돌
+시 비파괴 이동, 비-package 건너뜀을 검증한 뒤 생성한 행을 정리합니다. 기존 dry-run
+스크립트는 `incoming/`을 건드리지 않으므로 영향이 없습니다.
+
+```bash
+cd feed-prototype/backend
+python -m scripts.check_process_incoming
+```
+
+실제 import(쓰기)를 수행하므로 dev/test `DATABASE_URL`에서 실행합니다.
+
 ## 릴리즈 체크 포함
 
 import service 또는 external package format에 영향을 주는 변경 후, 그리고 릴리즈
