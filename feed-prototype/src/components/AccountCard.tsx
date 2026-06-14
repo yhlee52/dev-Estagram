@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router';
 import type { Account } from '../types/feed';
+import { formatRelativeTime } from '../utils/format';
 
 type AccountCardProps = {
   account: Account;
@@ -10,6 +11,13 @@ type AccountCardProps = {
   isFollowReadOnly?: boolean;
   isFollowDisabled?: boolean;
   followButtonLabel?: string;
+  /**
+   * Activity signals (v0.2.2). Optional so other callers keep the plain
+   * post-count footer; only rendered when `recentPostCount` is provided.
+   */
+  recentPostCount?: number;
+  recentWindowDays?: number;
+  lastActiveAt?: string | null;
 };
 
 function Avatar({ src, name }: { src?: string; name: string }) {
@@ -43,8 +51,12 @@ export default function AccountCard({
   isFollowReadOnly = false,
   isFollowDisabled = false,
   followButtonLabel,
+  recentPostCount,
+  recentWindowDays = 7,
+  lastActiveAt,
 }: AccountCardProps) {
   const navigate = useNavigate();
+  const showActivity = recentPostCount !== undefined;
 
   const goToAccount = () => {
     navigate(`/accounts/${account.id}`);
@@ -114,9 +126,29 @@ export default function AccountCard({
             <p className="mt-2 text-sm leading-6 text-neutral-600">{account.bio}</p>
           ) : null}
 
-          <p className="mt-3 text-xs font-semibold uppercase text-neutral-400">
-            {postCount} {postCount === 1 ? 'post' : 'posts'}
-          </p>
+          {showActivity ? (
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-neutral-500">
+              <span className="uppercase text-neutral-400">
+                {postCount} {postCount === 1 ? 'post' : 'posts'}
+              </span>
+              <span
+                className={
+                  recentPostCount > 0 ? 'text-neutral-700' : 'text-neutral-400'
+                }
+              >
+                {recentPostCount} in last {recentWindowDays}d
+              </span>
+              <span className="text-neutral-400">
+                {lastActiveAt
+                  ? `Active ${formatRelativeTime(lastActiveAt)}`
+                  : 'No activity yet'}
+              </span>
+            </div>
+          ) : (
+            <p className="mt-3 text-xs font-semibold uppercase text-neutral-400">
+              {postCount} {postCount === 1 ? 'post' : 'posts'}
+            </p>
+          )}
         </div>
       </div>
     </article>

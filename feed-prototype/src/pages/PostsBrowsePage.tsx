@@ -6,6 +6,7 @@ import { getPosts } from '../api/postsApi';
 import { getTags } from '../api/tagsApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import EmptyState from '../components/EmptyState';
+import ExploreTags from '../components/ExploreTags';
 import FeedCard from '../components/FeedCard';
 import PostFilterPanel, {
   emptyPostFilters,
@@ -25,10 +26,52 @@ import { routeHashtagSearch } from '../utils/hashtagSearch';
 import type { ApiPostWithAssets, ApiTagCount } from '../api/types';
 
 const TAG_SUGGESTION_LIMIT = 50;
+const POPULAR_TAG_DISPLAY_LIMIT = 20;
+const RECENT_TAG_LIMIT = 12;
+const RECENT_TAG_POST_SCAN = 30;
 
 const isApiDataSource = getDataSourceMode() === 'api';
 const mockPosts = postsData as unknown as Post[];
 const PAGE_LIMIT = 20;
+
+/** Count tag usage across posts (case-insensitive), highest first. */
+function popularTagsFromPosts(posts: Post[]): ApiTagCount[] {
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    for (const rawTag of post.tags ?? []) {
+      const tag = rawTag.trim().toLowerCase();
+      if (tag) {
+        counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      }
+    }
+  }
+
+  return [...counts.entries()]
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+}
+
+/** Collect tags from the newest posts in order, deduped case-insensitively. */
+function recentTagsFromItems(items: FeedItem[]): string[] {
+  const seen = new Set<string>();
+  const recent: string[] = [];
+
+  for (const item of items.slice(0, RECENT_TAG_POST_SCAN)) {
+    for (const rawTag of item.post.tags ?? []) {
+      const tag = rawTag.trim();
+      const key = tag.toLowerCase();
+      if (tag && !seen.has(key)) {
+        seen.add(key);
+        recent.push(tag);
+        if (recent.length >= RECENT_TAG_LIMIT) {
+          return recent;
+        }
+      }
+    }
+  }
+
+  return recent;
+}
 
 function getBrowseErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
@@ -213,6 +256,20 @@ export default function PostsBrowsePage() {
   const items = isApiDataSource ? apiItems : mockItems;
   const hasAppliedFilters = hasActivePostFilters(appliedFilters);
 
+  // Explore landing (v0.2.2): popular tags come from the tag index (API) or a
+  // client-side count (mock); recent tags are derived from the newest posts
+  // already on screen. Shown only when no filter is applied so picking a tag
+  // swaps this section for results.
+  const popularTags = useMemo<ApiTagCount[]>(
+    () =>
+      (isApiDataSource ? tagSuggestions : popularTagsFromPosts(mockPosts)).slice(
+        0,
+        POPULAR_TAG_DISPLAY_LIMIT,
+      ),
+    [tagSuggestions],
+  );
+  const recentTags = useMemo(() => recentTagsFromItems(items), [items]);
+
   // The URL is the source of truth here, so committing only updates the query
   // string; `draftFilters` re-syncs from it on the next render. `#tag` in the
   // search box is routed to the tag filter before validation/serialization.
@@ -232,15 +289,19 @@ export default function PostsBrowsePage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-white px-3 py-2 shadow-sm">
         <div>
-          <h2 className="text-sm font-bold text-neutral-950">Browse Posts</h2>
+          <h2 className="text-sm font-bold text-neutral-950">Explore</h2>
           <p className="text-xs font-semibold text-neutral-500">
-            {isApiDataSource ? 'All API posts' : 'All mock posts'}
+            {isApiDataSource ? 'Search and browse all posts' : 'Browse mock posts'}
           </p>
         </div>
         <p className="text-xs font-bold uppercase text-neutral-400">
           {isApiDataSource ? 'API' : 'Mock'}
         </p>
       </div>
+
+      {!hasAppliedFilters ? (
+        <ExploreTags popularTags={popularTags} recentTags={recentTags} />
+      ) : null}
 
       {isApiDataSource ? (
         <section className="space-y-3 rounded-md border border-neutral-200 bg-neutral-100 p-3">
