@@ -22,6 +22,7 @@
 
 | 날짜 | 화면 | 내용 | 반영 버전 |
 |---|---|---|---|
+| 2026-06-14 | /posts (필터 없음) | Explore 페이지 상단 헤더 "Explore"와 그 아래 `ExploreTags` 섹션 제목 "Explore"가 같은 화면에 중복 표시됨. 섹션 제목을 "Discover"로 바꿔 중복 제거(태그/계정 진입 의미 유지) | v0.2.3 (post-dev 점검) |
 | 2026-06-12 | /posts, / (필터 결과 0건) | 필터 적용 후 결과 0건일 때 "Try resetting filters..." 안내 문구만 있고 실제 초기화 버튼이 없었음. `EmptyState`에 선택적 action slot 추가 + Explore/Home의 필터 적용 0건 empty state에 "Reset filters" 버튼 노출(URL query 비우기) | v0.2.3 |
 | 2026-06-13 | /posts, / (필터 패널) | 검색창("Keyword or #tag")과 별도 "Tag" 입력 필드가 동시에 존재해 tag 입력 경로가 둘로 보임. 동작은 정상이라 제거하지 않고 "Tag" placeholder를 "Exact tag (or #tag in search)"로 바꿔 역할(정확 일치 필터)을 명시 | v0.2.3 |
 | 2026-06-14 | /me (API 모드) | Me 탭이 mock 전용이라 API 모드에서 활성 user가 있어도 "No active user"만 떠 빈 화면이었음. API 모드에서 내 계정/내 post를 로드하고 활동 요약 + New Post/Edit/Delete 관리 추가 | v0.2.3 |

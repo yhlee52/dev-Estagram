@@ -1,6 +1,8 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.1.3` (@mention 렌더링). v0.1.x(탐색과 발견) 테마 완료.
+현재 릴리즈: `v0.2.3` (탭 활성화 2 + UX backlog 반영). v0.2.x(레이아웃 & UI 개편)
+테마 완료. 다음 테마는 v0.3.x(Ingestion 신뢰성) — 진입 판단과 후보는
+`V0_3_X_INGESTION_PLAN.md` 참고.
 
 먼저 볼 문서:
 
@@ -14,6 +16,16 @@
   (검색창 `#` → tag 라우팅, `GET /api/tags`, tag 자동완성)
 - `V0_1_3_MENTION_SCOPE.md`: v0.1.3 @mention 렌더링 상세 scope (post 본문
   `@handle` → Account Profile 링크, 존재하지 않는 handle은 plain text fallback)
+- `V0_2_0_DESKTOP_LAYOUT_SCOPE.md`: v0.2.0 데스크톱 3컬럼 레이아웃 상세 scope
+  (좌측 네비 레일 + 중앙 feed + 우측 컨텍스트 레일, PC 전용 전제)
+- `V0_2_1_HEADER_SEARCH_SCOPE.md`: v0.2.1 헤더/검색창 정리 상세 scope (한 줄
+  헤더, 아바타 드롭다운 UserMenu, Switch user 단일화)
+- `V0_2_2_TAB_ACTIVATION_1_SCOPE.md`: v0.2.2 탭 활성화 1 상세 scope (Posts→Explore
+  태그 진입점, Accounts 활동 신호·정렬)
+- `V0_2_3_TAB_ACTIVATION_2_SCOPE.md`: v0.2.3 탭 활성화 2 + UX backlog 상세 scope
+  (Me 탭 mock/API 내 활동·post 관리, empty state Reset filters)
+- `V0_3_X_INGESTION_PLAN.md`: v0.3.x(Ingestion 신뢰성) 진입 판단과 0.3.0~0.3.2
+  후보 계획
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `RELEASE_0_0_RUNBOOK.md`: v0.0.0 local 실행 재현 runbook
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: v0.0.0 / MVP12 external post package 작성 guide
