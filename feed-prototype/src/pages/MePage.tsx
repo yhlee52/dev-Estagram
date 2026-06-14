@@ -30,6 +30,11 @@ import { formatRelativeTime } from '../utils/format';
 
 const posts = postsData as unknown as Post[];
 
+// How many of my posts to render at once before requiring "Load more" (v0.3.4).
+// The activity summary still reflects every post; only the rendered card list is
+// windowed so a large history does not mount hundreds of cards at once.
+const MY_POSTS_PAGE_SIZE = 20;
+
 function Avatar({ src, name }: { src?: string; name: string }) {
   const [hasImageError, setHasImageError] = useState(false);
   const initial = name.trim().charAt(0).toUpperCase() || 'U';
@@ -139,6 +144,7 @@ function ApiMePage() {
   const [user, setUser] = useState<User | undefined>();
   const [account, setAccount] = useState<Account | undefined>();
   const [myPosts, setMyPosts] = useState<FeedItem[]>([]);
+  const [visibleCount, setVisibleCount] = useState(MY_POSTS_PAGE_SIZE);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -152,6 +158,7 @@ function ApiMePage() {
     const loadProfile = async () => {
       setIsLoading(true);
       setError('');
+      setVisibleCount(MY_POSTS_PAGE_SIZE);
 
       try {
         const [apiUser, accounts] = await Promise.all([
@@ -306,7 +313,7 @@ function ApiMePage() {
 
           {myPosts.length > 0 ? (
             <div className="space-y-3.5">
-              {myPosts.map((item) => (
+              {myPosts.slice(0, visibleCount).map((item) => (
                 <MyPostCard
                   key={item.post.id}
                   item={item}
@@ -314,6 +321,18 @@ function ApiMePage() {
                   onDeleted={handlePostDeleted}
                 />
               ))}
+
+              {myPosts.length > visibleCount ? (
+                <button
+                  type="button"
+                  className="h-10 w-full rounded-md border border-neutral-200 bg-white text-sm font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100"
+                  onClick={() =>
+                    setVisibleCount((current) => current + MY_POSTS_PAGE_SIZE)
+                  }
+                >
+                  Load more ({myPosts.length - visibleCount} left)
+                </button>
+              ) : null}
             </div>
           ) : (
             <EmptyState

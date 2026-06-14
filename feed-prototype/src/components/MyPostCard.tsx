@@ -4,6 +4,7 @@ import { ApiClientError, ApiNetworkError } from '../api/client';
 import { deletePost } from '../api/postsApi';
 import { getApiBaseUrl } from '../config/apiConfig';
 import type { FeedItem } from '../types/feed';
+import ConfirmDialog from './ConfirmDialog';
 import FeedCard from './FeedCard';
 
 type MyPostCardProps = {
@@ -38,15 +39,11 @@ function getDeletePostErrorMessage(error: unknown): string {
 export default function MyPostCard({ item, userId, onDeleted }: MyPostCardProps) {
   const { post } = item;
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [error, setError] = useState('');
 
-  const handleDelete = async () => {
+  const handleConfirmDelete = async () => {
     if (isDeleting) {
-      return;
-    }
-
-    const shouldDelete = window.confirm(`Delete "${post.title}"?`);
-    if (!shouldDelete) {
       return;
     }
 
@@ -59,6 +56,7 @@ export default function MyPostCard({ item, userId, onDeleted }: MyPostCardProps)
     } catch (deleteError) {
       setError(getDeletePostErrorMessage(deleteError));
       setIsDeleting(false);
+      setIsConfirmOpen(false);
     }
   };
 
@@ -77,7 +75,7 @@ export default function MyPostCard({ item, userId, onDeleted }: MyPostCardProps)
           type="button"
           className="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 shadow-sm transition hover:bg-red-100 disabled:cursor-not-allowed disabled:text-red-300"
           disabled={isDeleting}
-          onClick={handleDelete}
+          onClick={() => setIsConfirmOpen(true)}
         >
           {isDeleting ? 'Deleting...' : 'Delete'}
         </button>
@@ -87,6 +85,18 @@ export default function MyPostCard({ item, userId, onDeleted }: MyPostCardProps)
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
           {error}
         </p>
+      ) : null}
+
+      {isConfirmOpen ? (
+        <ConfirmDialog
+          title="Delete post?"
+          description={`"${post.title}" will be permanently deleted. This cannot be undone.`}
+          confirmLabel="Delete"
+          danger
+          isConfirming={isDeleting}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setIsConfirmOpen(false)}
+        />
       ) : null}
     </div>
   );

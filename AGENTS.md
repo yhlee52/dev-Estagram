@@ -8,9 +8,9 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.3.3`(asset managed storage 복사 opt-in — v0.3.x Ingestion
-신뢰성 테마)이며 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이
-기준입니다.
+현재 릴리즈는 `v0.3.4`(UX backlog 반영 — v0.3.x Ingestion 신뢰성 테마 마지막
+MINOR)이며 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이
+기준입니다. 이로써 v0.3.x 테마는 완료되었습니다.
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
 - `README.md`
@@ -24,7 +24,8 @@
 
 버전별 상세 scope는 `feed-prototype/docs/`의 `V0_x_y_*_SCOPE.md` 문서를
 참고합니다(현행: `V0_3_0_HTTP_IMPORT_SCOPE.md`, `V0_3_1_BATCH_HISTORY_SCOPE.md`,
-`V0_3_2_AUTO_INGESTION_SCOPE.md`, `V0_3_3_ASSET_STORAGE_SCOPE.md`. 완료 테마
+`V0_3_2_AUTO_INGESTION_SCOPE.md`, `V0_3_3_ASSET_STORAGE_SCOPE.md`,
+`V0_3_4_UX_BACKLOG_SCOPE.md`. 완료 테마
 v0.1.x~v0.2.x의 scope는 `archive/`로 이동). v0.3.x 테마 진입 판단과 후보는
 `feed-prototype/docs/V0_3_X_INGESTION_PLAN.md`에 있습니다. 과거 MVP별 테스트
 절차는 `feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
@@ -153,6 +154,13 @@ v0.3.x — Ingestion 신뢰성 (Ingestion Hardening):
   원본 누락·디렉터리 탈출·복사 실패는 원본 url 유지(import 실패 없음). 목적지는
   결정적이라 재import 시 덮어씀(누적 없음). DB 스키마/마이그레이션 없음, package
   format 변경 없음, frontend 변경 없음(재작성된 url도 기존과 동일하게 렌더링).
+- v0.3.4: UX backlog 반영(테마 마지막 MINOR). (1) Me 탭(API 모드) 내 post를
+  전량 한 번에 렌더하던 것을 `MY_POSTS_PAGE_SIZE`(20)개씩 "Load more"로 점진
+  렌더(클라이언트 사이드 윈도우). 활동 요약이 정확한 총계를 보여줘 어차피 전량
+  fetch가 필요하므로 서버 cursor 대신 렌더만 윈도잉(백엔드 변경 없음). (2) post
+  삭제 확인의 `window.confirm`을 신규 공용 `ConfirmDialog`(오버레이/Escape/
+  백드롭/포커스 제어)로 교체하고 `MyPostCard`·`PostDetail`에 적용. DB/format
+  변경 없음. 이로써 v0.3.x(Ingestion 신뢰성) 테마 완료.
 
 ## Roadmap & Versioning
 

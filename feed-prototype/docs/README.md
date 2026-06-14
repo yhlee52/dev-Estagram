@@ -1,12 +1,13 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.3.3` (asset managed storage 복사 opt-in). v0.3.x(Ingestion
-신뢰성) 테마 **진행 중** — v0.3.0(HTTP import)·v0.3.1(Import Batch 이력)·v0.3.2
-(자동 이동/일괄 처리/Watch)·v0.3.3(asset managed storage 복사 opt-in) 완료, 남은
-슬롯은 테마 마지막 MINOR(UX backlog 반영 예약). 진입 판단과 후보는
+현재 릴리즈: `v0.3.4` (UX backlog 반영 — 테마 마지막 MINOR). v0.3.x(Ingestion
+신뢰성) 테마 **완료** — v0.3.0(HTTP import)·v0.3.1(Import Batch 이력)·v0.3.2
+(자동 이동/일괄 처리/Watch)·v0.3.3(asset managed storage 복사 opt-in)·v0.3.4
+(UX backlog: Me 탭 Load more + 공용 ConfirmDialog) 완료. 진입 판단과 후보는
 `V0_3_X_INGESTION_PLAN.md`, v0.3.0 상세는 `V0_3_0_HTTP_IMPORT_SCOPE.md`, v0.3.1
 상세는 `V0_3_1_BATCH_HISTORY_SCOPE.md`, v0.3.2 상세는
-`V0_3_2_AUTO_INGESTION_SCOPE.md`, v0.3.3 상세는 `V0_3_3_ASSET_STORAGE_SCOPE.md` 참고.
+`V0_3_2_AUTO_INGESTION_SCOPE.md`, v0.3.3 상세는 `V0_3_3_ASSET_STORAGE_SCOPE.md`,
+v0.3.4 상세는 `V0_3_4_UX_BACKLOG_SCOPE.md` 참고.
 
 ## 현행 문서 (먼저 볼 것)
 
@@ -22,6 +23,8 @@
   scope (`process_incoming` CLI, incoming→archive/failed 자동 이동, 폴링 watch)
 - `V0_3_3_ASSET_STORAGE_SCOPE.md`: v0.3.3 asset managed storage 복사(opt-in) 상세
   scope (`public/assets/managed` 복사, 상대 로컬 경로만, 동결 URL 무손상)
+- `V0_3_4_UX_BACKLOG_SCOPE.md`: v0.3.4 UX backlog 반영 상세 scope (Me 탭 내 post
+  "Load more" 점진 렌더, 공용 `ConfirmDialog`로 `window.confirm` 교체)
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: external post package 작성 guide (format 중심)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog
