@@ -14,10 +14,12 @@ from sqlmodel import Session, col, create_engine, select
 from app.db.session import create_session
 from app.models.account import Account
 from app.models.asset import PostAsset
+from app.models.import_batch import ImportBatch
 from app.models.post import Post
 from app.models.user import User
 from app.schemas.external_import import (
     ExternalImportAccount,
+    ExternalImportBatch,
     ExternalImportPayload,
     ExternalImportPost,
 )
@@ -354,6 +356,92 @@ def analyze_assets_for_dry_run(
     summary.assets_created += len(post_input.assets)
 
 
+def record_batch(
+    session: Session,
+    batch: ExternalImportBatch,
+    summary: ImportSummary,
+    *,
+    status: str,
+    error_message: str | None = None,
+) -> None:
+    """Upsert the import_batch row for this batch event (v0.3.1).
+
+    Keyed on `batch.external_id`: re-importing the same batch updates the row in
+    place (preserving `first_imported_at`, incrementing `import_count`). The
+    count columns are a snapshot of the latest attempt — real counts on success,
+    zeros on failure (a failed import applies nothing). Caller controls the
+    transaction; this only stages the row (no commit).
+    """
+    now = utc_now()
+    existing = session.exec(
+        select(ImportBatch).where(ImportBatch.external_id == batch.external_id)
+    ).first()
+
+    if existing is None:
+        session.add(
+            ImportBatch(
+                id=f"import-batch-{uuid4()}",
+                external_id=batch.external_id,
+                source=batch.source,
+                batch_created_at=batch.created_at,
+                status=status,
+                error_message=error_message,
+                first_imported_at=now,
+                last_imported_at=now,
+                import_count=1,
+                accounts_created=summary.accounts_created,
+                accounts_updated=summary.accounts_updated,
+                users_created=summary.users_created,
+                users_updated=summary.users_updated,
+                posts_created=summary.posts_created,
+                posts_updated=summary.posts_updated,
+                posts_skipped=summary.posts_skipped,
+                asset_replace_target_posts=summary.asset_replace_target_posts,
+                assets_deleted=summary.assets_deleted,
+                assets_created=summary.assets_created,
+                errors=summary.errors,
+            )
+        )
+        return
+
+    existing.source = batch.source
+    existing.batch_created_at = batch.created_at
+    existing.status = status
+    existing.error_message = error_message
+    existing.last_imported_at = now
+    existing.import_count += 1
+    existing.accounts_created = summary.accounts_created
+    existing.accounts_updated = summary.accounts_updated
+    existing.users_created = summary.users_created
+    existing.users_updated = summary.users_updated
+    existing.posts_created = summary.posts_created
+    existing.posts_updated = summary.posts_updated
+    existing.posts_skipped = summary.posts_skipped
+    existing.asset_replace_target_posts = summary.asset_replace_target_posts
+    existing.assets_deleted = summary.assets_deleted
+    existing.assets_created = summary.assets_created
+    existing.errors = summary.errors
+    session.add(existing)
+
+
+def record_failed_batch(
+    session: Session,
+    batch: ExternalImportBatch,
+    message: str,
+) -> None:
+    """Record a failed import in its own transaction, best-effort.
+
+    The caller has already rolled back the failed import transaction, so the
+    session is clean. We never let batch bookkeeping mask the original import
+    error: if recording itself fails, we just roll back and move on.
+    """
+    try:
+        record_batch(session, batch, ImportSummary(), status="failed", error_message=message)
+        session.commit()
+    except Exception:
+        session.rollback()
+
+
 def import_payload(
     session: Session,
     payload: ExternalImportPayload,
@@ -405,6 +493,12 @@ def import_payload(
             continue
         session.flush()
         replace_assets_for_post(session, post, post_input, dry_run=dry_run, summary=summary)
+
+    # Record the successful batch event atomically with the imported rows
+    # (caller commits). dry_run writes nothing, including no batch row, so the
+    # dry-run "no DB writes" contract holds for both CLI and HTTP.
+    if not dry_run:
+        record_batch(session, payload.batch, summary, status="success")
 
     return summary
 
@@ -480,8 +574,12 @@ def run_import(
             session.rollback()
         else:
             session.commit()
-    except Exception:
+    except Exception as exc:
         session.rollback()
+        # Real imports record the failed batch (payload parsed here, so the batch
+        # id is trusted). dry_run records nothing.
+        if not dry_run:
+            record_failed_batch(session, payload.batch, f"{type(exc).__name__}: {exc}")
         raise
     finally:
         session.close()

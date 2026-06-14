@@ -2,7 +2,7 @@
 
 `feed-prototype`은 범용 `Account` / `Post` / `Feed` prototype입니다.
 
-현재 릴리즈: `v0.3.0` (HTTP Import API — v0.3.x Ingestion 신뢰성 테마 진입). 버전
+현재 릴리즈: `v0.3.1` (Import Batch 이력 — v0.3.x Ingestion 신뢰성 테마). 버전
 라벨 기준은 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
 
 사용 시나리오:
@@ -12,9 +12,10 @@
 
 `v0.0.0`이 첫 번째 공유 가능한 internal/local prototype release였고, 그 위에
 v0.1.x(탐색과 발견)와 v0.2.x(레이아웃 & UI 개편) 테마가 쌓였으며, v0.3.x(Ingestion
-신뢰성) 테마가 v0.3.0 HTTP Import API로 시작되었습니다. 일반 SNS-like feed와
-external report feed를 모두 데모할 수 있지만, production-ready 제품은 아닙니다.
-전체 버전 트리는 `feed-prototype/docs/ROADMAP.md`를 참고하세요.
+신뢰성) 테마가 v0.3.0 HTTP Import API와 v0.3.1 Import Batch 이력으로 진행되고
+있습니다. 일반 SNS-like feed와 external report feed를 모두 데모할 수 있지만,
+production-ready 제품은 아닙니다. 전체 버전 트리는
+`feed-prototype/docs/ROADMAP.md`를 참고하세요.
 
 ## Core Domain
 
@@ -59,6 +60,12 @@ v0.2.x(레이아웃 & UI 개편):
 - 한 줄 헤더 + 아바타 드롭다운(디버그 정보 수납), Switch user 단일화
 - Explore(Posts) 탭 태그 진입점, Accounts 활동 신호·정렬
 - Me 탭 mock/API 내 활동 요약 + 내 post 관리(New Post·Edit·인라인 Delete)
+
+v0.3.x(Ingestion 신뢰성):
+
+- HTTP import API: 기존 package JSON을 `POST /api/imports`로 수신(dry-run·선택적 토큰 보호)
+- Import batch 이력: import 사건을 `import_batch`에 기록하고 `GET /api/imports`·
+  `GET /api/imports/{batch_external_id}`로 조회, `/imports` UI(목록/상세, API mode 전용)
 
 ## 실행 Mode
 

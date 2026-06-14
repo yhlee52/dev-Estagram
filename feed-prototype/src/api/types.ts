@@ -121,6 +121,50 @@ export interface ApiTagListResponse {
   items: ApiTagCount[];
 }
 
+export interface ApiImportBatchSummary {
+  id: string;
+  external_id: string;
+  source: string | null;
+  batch_created_at: string | null;
+  status: string;
+  error_message: string | null;
+  first_imported_at: string;
+  last_imported_at: string;
+  import_count: number;
+  accounts_created: number;
+  accounts_updated: number;
+  users_created: number;
+  users_updated: number;
+  posts_created: number;
+  posts_updated: number;
+  posts_skipped: number;
+  asset_replace_target_posts: number;
+  assets_deleted: number;
+  assets_created: number;
+  errors: number;
+  post_count: number;
+}
+
+export interface ApiImportBatchListResponse {
+  items: ApiImportBatchSummary[];
+}
+
+export interface ApiImportBatchPost {
+  id: string;
+  external_id: string | null;
+  title: string;
+  account_id: string;
+  account_handle: string | null;
+  account_display_name: string | null;
+  created_at: string;
+  imported_at: string | null;
+}
+
+export interface ApiImportBatchDetailResponse {
+  batch: ApiImportBatchSummary;
+  posts: ApiImportBatchPost[];
+}
+
 export interface ApiFollow {
   id: string;
   follower_user_id: string;

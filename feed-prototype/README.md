@@ -2,9 +2,9 @@
 
 `feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
 
-현재 릴리즈: `v0.3.0` (HTTP Import API). v0.3.x(Ingestion 신뢰성) 테마 진입.
+현재 릴리즈: `v0.3.1` (Import Batch 이력). v0.3.x(Ingestion 신뢰성) 테마 진행 중.
 
-이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. v0.3.x(Ingestion 신뢰성) 테마는 v0.3.0에서 HTTP import API(`POST /api/imports`)를 추가했습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
+이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. v0.3.x(Ingestion 신뢰성) 테마는 v0.3.0에서 HTTP import API(`POST /api/imports`), v0.3.1에서 Import batch 이력(`import_batch` 테이블 + `GET /api/imports` + `/imports` UI)을 추가했습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
 
 ## 포함된 기능
 
@@ -27,6 +27,7 @@
 - Explore(Posts) 탭: 인기/최근 태그 진입점, Accounts 탭 활동 신호(최근 N일 post 수)·정렬(최근 활동/post 수/이름) (v0.2.2)
 - Me 탭: mock/API 양쪽에서 동작하는 내 활동 요약 + 내 post 관리(New Post·Edit·인라인 Delete), 필터 0건 empty state의 "Reset filters" (v0.2.3)
 - HTTP import API: 기존 CLI와 동일한 package JSON을 `POST /api/imports`로 수신(`?dry_run=true`, 선택적 `X-Import-Token` 보호) (v0.3.0)
+- Import batch 이력: import 사건을 `import_batch`에 기록(success/failed·사건 카운트·import 횟수), `GET /api/imports`(목록)·`GET /api/imports/{batch_external_id}`(상세) 조회, `/imports` UI 목록/상세 (API mode 전용) (v0.3.1)
 
 ## 포함되지 않은 기능
 
@@ -197,6 +198,24 @@ data/external_posts/README.md
 docs/EXTERNAL_POST_PACKAGE_GUIDE.md
 docs/V0_3_0_HTTP_IMPORT_SCOPE.md
 ```
+
+### Import Batch 이력 (v0.3.1)
+
+CLI/HTTP 어느 경로로 import해도 backend가 import 사건을 `import_batch` 테이블에
+기록합니다(`batch.external_id` 기준 upsert, status success/failed, 사건 카운트
+스냅샷 + import 횟수). dry-run은 아무 것도 기록하지 않습니다.
+
+```bash
+# batch 목록 (최근 import 순)
+curl "http://127.0.0.1:8000/api/imports"
+
+# batch 상세 (귀속 post 목록 포함)
+curl "http://127.0.0.1:8000/api/imports/<batch_external_id>"
+```
+
+API mode UI에서는 좌측 네비의 **Imports** 탭(`/imports`)에서 batch 목록과 상세를
+볼 수 있습니다(mock mode에서는 노출되지 않음). 상세 guide는
+`docs/V0_3_1_BATCH_HISTORY_SCOPE.md`.
 
 ## Sample Data
 
