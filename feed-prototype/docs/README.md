@@ -3,28 +3,18 @@
 현재 릴리즈: `v0.3.4` (UX backlog 반영 — 테마 마지막 MINOR). v0.3.x(Ingestion
 신뢰성) 테마 **완료** — v0.3.0(HTTP import)·v0.3.1(Import Batch 이력)·v0.3.2
 (자동 이동/일괄 처리/Watch)·v0.3.3(asset managed storage 복사 opt-in)·v0.3.4
-(UX backlog: Me 탭 Load more + 공용 ConfirmDialog) 완료. 진입 판단과 후보는
-`V0_3_X_INGESTION_PLAN.md`, v0.3.0 상세는 `V0_3_0_HTTP_IMPORT_SCOPE.md`, v0.3.1
-상세는 `V0_3_1_BATCH_HISTORY_SCOPE.md`, v0.3.2 상세는
-`V0_3_2_AUTO_INGESTION_SCOPE.md`, v0.3.3 상세는 `V0_3_3_ASSET_STORAGE_SCOPE.md`,
-v0.3.4 상세는 `V0_3_4_UX_BACKLOG_SCOPE.md` 참고.
+(UX backlog: Me 탭 Load more + 공용 ConfirmDialog) 완료. 테마가 완료되어 v0.3.x
+진입 판단·후보(`archive/V0_3_X_INGESTION_PLAN.md`)와 각 MINOR scope 문서
+(`archive/V0_3_0_HTTP_IMPORT_SCOPE.md` ~ `archive/V0_3_4_UX_BACKLOG_SCOPE.md`)는
+`archive/`로 이동했습니다(아래 Archive 섹션). 다음 테마는 v0.4.x(메타데이터
+일급화 & 트리아지) — `ROADMAP.md` 참고.
 
 ## 현행 문서 (먼저 볼 것)
 
 - `../README.md`: mock mode, API mode, external import mode 실행 guide
 - `ROADMAP.md`: v0.0.0 이후 업데이트 로드맵 (버전 트리, 테마별 scope)
-- `V0_3_X_INGESTION_PLAN.md`: v0.3.x(Ingestion 신뢰성) 진입 판단과 0.3.0~0.3.3
-  후보 계획 (현재 테마)
-- `V0_3_0_HTTP_IMPORT_SCOPE.md`: v0.3.0 HTTP Import API 상세 scope
-  (`POST /api/imports`, dry_run, 에러 매핑, 최소 보호)
-- `V0_3_1_BATCH_HISTORY_SCOPE.md`: v0.3.1 Import Batch 이력 상세 scope
-  (`import_batch` 테이블, `GET /api/imports`·`/{id}`, `/imports` UI)
-- `V0_3_2_AUTO_INGESTION_SCOPE.md`: v0.3.2 자동 이동/디렉터리 일괄 처리/Watch 상세
-  scope (`process_incoming` CLI, incoming→archive/failed 자동 이동, 폴링 watch)
-- `V0_3_3_ASSET_STORAGE_SCOPE.md`: v0.3.3 asset managed storage 복사(opt-in) 상세
-  scope (`public/assets/managed` 복사, 상대 로컬 경로만, 동결 URL 무손상)
-- `V0_3_4_UX_BACKLOG_SCOPE.md`: v0.3.4 UX backlog 반영 상세 scope (Me 탭 내 post
-  "Load more" 점진 렌더, 공용 `ConfirmDialog`로 `window.confirm` 교체)
+- `V0_4_X_METADATA_PLAN.md`: v0.4.x(메타데이터 일급화 & 트리아지) 진입 판단과
+  v0.4.0~v0.4.1 후보 계획 (다음 테마)
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: external post package 작성 guide (format 중심)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog
@@ -49,6 +39,10 @@ v0.3.4 상세는 `V0_3_4_UX_BACKLOG_SCOPE.md` 참고.
 - `archive/V0_2_0_DESKTOP_LAYOUT_SCOPE.md` ~ `archive/V0_2_3_TAB_ACTIVATION_2_SCOPE.md`:
   v0.2.x(레이아웃 & UI 개편) — 3컬럼 레이아웃, 헤더/검색 정리, Explore/Accounts/Me
   탭 활성화 scope
+- `archive/V0_3_X_INGESTION_PLAN.md` + `archive/V0_3_0_HTTP_IMPORT_SCOPE.md` ~
+  `archive/V0_3_4_UX_BACKLOG_SCOPE.md`: v0.3.x(Ingestion 신뢰성) — 진입 판단/후보
+  계획과 HTTP import, Import Batch 이력, 자동 이동/일괄 처리/Watch, asset managed
+  storage 복사(opt-in), UX backlog 반영 scope
 
 MVP-era 참고 문서:
 

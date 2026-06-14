@@ -16,7 +16,7 @@ Usage (from `feed-prototype/backend`, with DATABASE_URL pointing at a dev/test D
 
 Runs only dry-runs and rejected requests, so it never writes to the DB.
 Exit code is non-zero if any check fails. Token protection (X-Import-Token) is
-config-dependent and verified manually; see V0_3_0_HTTP_IMPORT_SCOPE.md.
+config-dependent and verified manually; see archive/V0_3_0_HTTP_IMPORT_SCOPE.md.
 """
 
 from __future__ import annotations
