@@ -6,6 +6,13 @@
 이 문서는 v0.2.x post-dev 점검(2026-06-14)에서 작성되었습니다. `ROADMAP.md`의
 v0.3.x 항목을 코드 현황에 맞춰 구체화하고, 진입 전 확인할 사항을 정리합니다.
 
+> **테마 진행 현황 (2026-06-14 갱신)**
+> - v0.3.0 — HTTP Import API: **완료**. 상세는 `V0_3_0_HTTP_IMPORT_SCOPE.md`.
+> - v0.3.1 — Import Batch 이력 API + 최소 UI: **완료**. 상세는
+>   `V0_3_1_BATCH_HISTORY_SCOPE.md`, 요약은 `AGENTS.md` Completed Scope History.
+> - v0.3.2 — 자동 이동 / Watch / Asset Managed Storage: 후보(다음 MINOR).
+> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.3.1`.
+
 ## 1. v0.2.x 완료 / 진입 판단
 
 v0.2.x(레이아웃 & UI 개편) 테마는 완료되었습니다.
@@ -56,7 +63,11 @@ v0.3.x는 대부분 기존 자산 위에 얇게 얹는 작업입니다.
 `ROADMAP.md` v0.3.x 항목을 코드 현황에 맞춰 구체화한 것입니다. 각 MINOR는 하나의
 집중된 변경 묶음입니다.
 
-### v0.3.0 — HTTP Import API (테마 기반 작업, x.y.0)
+### v0.3.0 — HTTP Import API (테마 기반 작업, x.y.0) — ✅ 완료
+
+> 구현 완료. 결정 사항은 `V0_3_0_HTTP_IMPORT_SCOPE.md`에서 확정됨: 경로는
+> `POST /api/imports`, 보호는 선택적 `IMPORT_API_TOKEN`(`X-Import-Token` 헤더,
+> 미설정 시 검사 없음). 아래는 진입 당시 후보 정의로 기록 보존.
 
 목표: 동일한 package JSON을 HTTP로 수신해 import. CLI import는 그대로 유지.
 
@@ -73,7 +84,12 @@ v0.3.x는 대부분 기존 자산 위에 얇게 얹는 작업입니다.
 - 인증은 범위 밖(인증은 v0.6.x). 단, 쓰기 엔드포인트이므로 최소한의 보호
   (예: local-only 바인딩, 또는 단순 shared token env)를 둘지 scope에서 결정.
 
-### v0.3.1 — Import Batch 이력 API + 최소 UI
+### v0.3.1 — Import Batch 이력 API + 최소 UI — ✅ 완료
+
+> 구현 완료. 결정 사항은 `V0_3_1_BATCH_HISTORY_SCOPE.md`에서 확정됨: 별도
+> `import_batch` 테이블 신설 / `GET /api/imports`·`GET /api/imports/{batch_external_id}`
+> / 실패 batch는 rollback 후 별도 트랜잭션 기록 / 최소 UI는 신규 `/imports`
+> 라우트(API mode 전용). 아래는 진입 당시 후보 정의로 기록 보존.
 
 목표: "무엇이 언제 들어왔는지" 가시화.
 
@@ -127,6 +143,12 @@ mock mode는 v0.3.0부터 데모 전용 동결 (제거하지 않음)
 
 ## 6. 다음 행동
 
-1. 위 진입 판단 확정.
-2. `V0_3_0_HTTP_IMPORT_SCOPE.md` 작성(goals/non-goals/엔드포인트/검증) 후 구현
-   착수. 인증 최소 보호 여부 등 결정 필요 항목은 scope 작성 시 확정.
+v0.3.0(HTTP Import API)·v0.3.1(Import Batch 이력)은 완료되었습니다. 다음은
+v0.3.2입니다.
+
+1. `V0_3_2_*_SCOPE.md` 작성 후 구현 착수. 위 3장 v0.3.2 후보(incoming→archive/
+   failed 자동 이동, folder watch/스케줄, asset managed storage 복사 opt-in)에서
+   결정 필요 항목을 scope에서 확정. v0.3.1의 batch status(success/failed)가
+   자동 이동의 상태 판단 기반이 됨.
+2. 테마의 마지막 MINOR는 `UX_BACKLOG.md` 반영용 예약 슬롯(현재 후보: Me 탭
+   페이지네이션, 공용 ConfirmDialog).

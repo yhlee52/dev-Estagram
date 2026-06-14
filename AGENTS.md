@@ -8,7 +8,7 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.3.0`(HTTP Import API — v0.3.x Ingestion 신뢰성 테마 진입)이며
+현재 릴리즈는 `v0.3.1`(Import Batch 이력 — v0.3.x Ingestion 신뢰성 테마)이며
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이 기준입니다.
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
@@ -22,8 +22,9 @@
 - `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
 
 버전별 상세 scope는 `feed-prototype/docs/`의 `V0_x_y_*_SCOPE.md` 문서를
-참고합니다(현행: `V0_3_0_HTTP_IMPORT_SCOPE.md`. 완료 테마 v0.1.x~v0.2.x의
-scope는 `archive/`로 이동). v0.3.x 테마 진입 판단과 후보는
+참고합니다(현행: `V0_3_0_HTTP_IMPORT_SCOPE.md`, `V0_3_1_BATCH_HISTORY_SCOPE.md`.
+완료 테마 v0.1.x~v0.2.x의 scope는 `archive/`로 이동). v0.3.x 테마 진입
+판단과 후보는
 `feed-prototype/docs/V0_3_X_INGESTION_PLAN.md`에 있습니다. 과거 MVP별 테스트
 절차는 `feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
 현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.
@@ -124,6 +125,14 @@ v0.3.x — Ingestion 신뢰성 (Ingestion Hardening):
   동일한 package JSON을 HTTP로 수신(`?dry_run=true` 지원). 스키마 위반 422 /
   payload 의미 오류 400 / 그 외 500. 선택적 `IMPORT_API_TOKEN` 헤더 보호(미설정 시
   검사 없음). CLI import workflow 유지.
+- v0.3.1: Import batch 이력. 신규 `import_batch` 테이블(migration `0006`)에 import
+  사건을 기록(`external_id` upsert, status success/failed, 사건 카운트 스냅샷 +
+  `import_count`). 기록은 서비스 계층(`import_payload` 성공=원자적, 실패=별도
+  트랜잭션)에서 처리해 CLI/HTTP 양쪽 자동 반영. dry_run은 batch를 쓰지 않음
+  (dry-run 회귀 스크립트의 "DB 미기록" 보장 유지). 조회 `GET /api/imports`(목록,
+  사건 스냅샷 + live post 수)·`GET /api/imports/{batch_external_id}`(상세 + 귀속
+  post, 미존재 404). 최소 UI는 신규 `/imports` 라우트(목록/상세), **API mode 전용**.
+  package format 변경 없음.
 
 ## Roadmap & Versioning
 

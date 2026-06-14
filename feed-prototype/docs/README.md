@@ -1,8 +1,9 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.3.0` (HTTP Import API). v0.3.x(Ingestion 신뢰성) 테마 **진행 중**
-— v0.3.0(HTTP import) 완료, 다음 후보는 v0.3.1/v0.3.2. 진입 판단과 후보는
-`V0_3_X_INGESTION_PLAN.md`, v0.3.0 상세는 `V0_3_0_HTTP_IMPORT_SCOPE.md` 참고.
+현재 릴리즈: `v0.3.1` (Import Batch 이력). v0.3.x(Ingestion 신뢰성) 테마 **진행 중**
+— v0.3.0(HTTP import)·v0.3.1(Import Batch 이력) 완료, 다음 후보는 v0.3.2. 진입
+판단과 후보는 `V0_3_X_INGESTION_PLAN.md`, v0.3.0 상세는 `V0_3_0_HTTP_IMPORT_SCOPE.md`,
+v0.3.1 상세는 `V0_3_1_BATCH_HISTORY_SCOPE.md` 참고.
 
 ## 현행 문서 (먼저 볼 것)
 
@@ -12,6 +13,8 @@
   후보 계획 (현재 테마)
 - `V0_3_0_HTTP_IMPORT_SCOPE.md`: v0.3.0 HTTP Import API 상세 scope
   (`POST /api/imports`, dry_run, 에러 매핑, 최소 보호)
+- `V0_3_1_BATCH_HISTORY_SCOPE.md`: v0.3.1 Import Batch 이력 상세 scope
+  (`import_batch` 테이블, `GET /api/imports`·`/{id}`, `/imports` UI)
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: external post package 작성 guide (format 중심)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog

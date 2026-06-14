@@ -53,6 +53,22 @@ python -m scripts.check_http_import
 FastAPI TestClient로 in-process 실행하며 dry-run/거부 요청만 보내므로 DB에
 쓰지 않습니다. (`DATABASE_URL`은 동일하게 필요합니다.)
 
+### Import Batch 이력 (v0.3.1)
+
+v0.3.1은 import 사건을 `import_batch` 테이블에 기록합니다. **dry-run은 batch를
+기록하지 않으므로 위 두 dry-run 스크립트의 "DB 미기록" 보장과 통과 결과는
+동일합니다**(사용 sample도 그대로). batch 기록/조회의 실제 동작은 별도 체크가
+DB에 쓰고 스스로 정리합니다.
+
+```bash
+cd feed-prototype/backend
+python -m scripts.check_batch_history
+```
+
+이 스크립트는 실제 import(쓰기)를 수행한 뒤 생성한 행을 삭제하므로 dev/test
+`DATABASE_URL`에서 실행합니다. (성공/재import/실패 batch 기록, 목록·상세, 404,
+dry-run 불변식을 확인.)
+
 ## 릴리즈 체크 포함
 
 import service 또는 external package format에 영향을 주는 변경 후, 그리고 릴리즈

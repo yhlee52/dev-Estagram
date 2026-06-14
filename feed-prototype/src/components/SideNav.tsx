@@ -1,10 +1,13 @@
 import { NavLink } from 'react-router';
+import { isApiMode } from '../config/dataSource';
 
 const navItems = [
   { to: '/', label: 'Home', end: true },
   { to: '/posts', label: 'Explore' },
   { to: '/accounts', label: 'Accounts' },
   { to: '/me', label: 'Me' },
+  // Import batch history is API-mode only (mock mode is demo-frozen from v0.3.0).
+  ...(isApiMode() ? [{ to: '/imports', label: 'Imports' }] : []),
 ];
 
 type SideNavProps = {

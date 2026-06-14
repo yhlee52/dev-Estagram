@@ -4,6 +4,8 @@ import AppShell from './components/AppShell';
 import AccountProfile from './pages/AccountProfile';
 import AccountsPage from './pages/AccountsPage';
 import HomeFeed from './pages/HomeFeed';
+import ImportsPage from './pages/ImportsPage';
+import ImportBatchDetailPage from './pages/ImportBatchDetailPage';
 import MePage from './pages/MePage';
 import EditPostPage from './pages/EditPostPage';
 import NewPostPage from './pages/NewPostPage';
@@ -30,6 +32,14 @@ const router = createBrowserRouter([
       {
         path: 'me',
         element: <MePage />,
+      },
+      {
+        path: 'imports',
+        element: <ImportsPage />,
+      },
+      {
+        path: 'imports/:batchExternalId',
+        element: <ImportBatchDetailPage />,
       },
       {
         path: 'posts',

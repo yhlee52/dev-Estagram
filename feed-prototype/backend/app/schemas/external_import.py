@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.schemas.feed import ASSET_TYPES, normalize_optional_text
 
@@ -158,3 +158,59 @@ class ImportSummaryResponse(BaseModel):
     assets_deleted: int
     assets_created: int
     errors: int
+
+
+class ImportBatchSummary(BaseModel):
+    """One import_batch row for the history API (v0.3.1).
+
+    The count columns are a snapshot of the latest import *event* (what that run
+    created/updated/skipped). `post_count` is the *live* number of posts
+    currently attributed to this batch (`Post.import_batch_external_id`), which
+    can drop as posts get re-attributed by a later batch.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    external_id: str
+    source: str | None = None
+    batch_created_at: datetime | None = None
+    status: str
+    error_message: str | None = None
+    first_imported_at: datetime
+    last_imported_at: datetime
+    import_count: int
+    accounts_created: int
+    accounts_updated: int
+    users_created: int
+    users_updated: int
+    posts_created: int
+    posts_updated: int
+    posts_skipped: int
+    asset_replace_target_posts: int
+    assets_deleted: int
+    assets_created: int
+    errors: int
+    post_count: int
+
+
+class ImportBatchListResponse(BaseModel):
+    items: list[ImportBatchSummary] = Field(default_factory=list)
+
+
+class ImportBatchPost(BaseModel):
+    """A post currently attributed to a batch, for the batch detail view."""
+
+    id: str
+    external_id: str | None = None
+    title: str
+    account_id: str
+    account_handle: str | None = None
+    account_display_name: str | None = None
+    created_at: datetime
+    imported_at: datetime | None = None
+
+
+class ImportBatchDetailResponse(BaseModel):
+    batch: ImportBatchSummary
+    posts: list[ImportBatchPost] = Field(default_factory=list)
