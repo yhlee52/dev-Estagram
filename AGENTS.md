@@ -8,7 +8,7 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.2.3`(레이아웃 & UI 개편 테마 완료)이며
+현재 릴리즈는 `v0.3.0`(HTTP Import API — v0.3.x Ingestion 신뢰성 테마 진입)이며
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이 기준입니다.
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
@@ -22,7 +22,8 @@
 - `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
 
 버전별 상세 scope는 `feed-prototype/docs/`의 `V0_x_y_*_SCOPE.md` 문서를
-참고합니다(v0.1.0~v0.2.3). 다음 테마 진입 판단과 후보는
+참고합니다(현행: `V0_3_0_HTTP_IMPORT_SCOPE.md`. 완료 테마 v0.1.x~v0.2.x의
+scope는 `archive/`로 이동). v0.3.x 테마 진입 판단과 후보는
 `feed-prototype/docs/V0_3_X_INGESTION_PLAN.md`에 있습니다. 과거 MVP별 테스트
 절차는 `feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
 현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.

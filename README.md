@@ -2,8 +2,8 @@
 
 `feed-prototype`은 범용 `Account` / `Post` / `Feed` prototype입니다.
 
-현재 릴리즈: `v0.2.3` (레이아웃 & UI 개편 테마 완료). 버전 라벨 기준은
-`feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
+현재 릴리즈: `v0.3.0` (HTTP Import API — v0.3.x Ingestion 신뢰성 테마 진입). 버전
+라벨 기준은 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
 
 사용 시나리오:
 
@@ -11,10 +11,10 @@
 2. 외부 분석 프로그램이 생성한 plot, table, file, link, tag, metadata 포함 리포트 post를 보여주는 feed UI
 
 `v0.0.0`이 첫 번째 공유 가능한 internal/local prototype release였고, 그 위에
-v0.1.x(탐색과 발견)와 v0.2.x(레이아웃 & UI 개편) 테마가 쌓였습니다. 일반 SNS-like
-feed와 external report feed를 모두 데모할 수 있지만, production-ready 제품은
-아닙니다. 전체 버전 트리와 다음 테마(v0.3.x Ingestion 신뢰성)는
-`feed-prototype/docs/ROADMAP.md`를 참고하세요.
+v0.1.x(탐색과 발견)와 v0.2.x(레이아웃 & UI 개편) 테마가 쌓였으며, v0.3.x(Ingestion
+신뢰성) 테마가 v0.3.0 HTTP Import API로 시작되었습니다. 일반 SNS-like feed와
+external report feed를 모두 데모할 수 있지만, production-ready 제품은 아닙니다.
+전체 버전 트리는 `feed-prototype/docs/ROADMAP.md`를 참고하세요.
 
 ## Core Domain
 

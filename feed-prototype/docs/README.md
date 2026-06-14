@@ -1,8 +1,8 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.2.3` (탭 활성화 2 + UX backlog 반영). v0.2.x(레이아웃 & UI 개편)
-테마 완료. 다음 테마는 v0.3.x(Ingestion 신뢰성) — **진행 중**. 진입 판단과 후보는
-`V0_3_X_INGESTION_PLAN.md` 참고.
+현재 릴리즈: `v0.3.0` (HTTP Import API). v0.3.x(Ingestion 신뢰성) 테마 **진행 중**
+— v0.3.0(HTTP import) 완료, 다음 후보는 v0.3.1/v0.3.2. 진입 판단과 후보는
+`V0_3_X_INGESTION_PLAN.md`, v0.3.0 상세는 `V0_3_0_HTTP_IMPORT_SCOPE.md` 참고.
 
 ## 현행 문서 (먼저 볼 것)
 
