@@ -165,11 +165,36 @@ python -m app.services.import_external_posts --input ../data/external_posts/exam
 
 이후 API mode UI에서 imported post를 확인합니다.
 
+### HTTP Import API (v0.3.0)
+
+동일한 package JSON을 backend가 실행 중일 때 HTTP로 보내 import할 수도 있습니다.
+CLI와 같은 `import_payload` 로직을 재사용하며, package 형식은 동일합니다.
+
+```bash
+# dry-run (DB write 없이 검증·요약만)
+curl -X "POST" "http://127.0.0.1:8000/api/imports?dry_run=true" \
+  -H "Content-Type: application/json" \
+  --data-binary @../data/external_posts/examples/feed_import_sample.json
+
+# 실제 import
+curl -X "POST" "http://127.0.0.1:8000/api/imports" \
+  -H "Content-Type: application/json" \
+  --data-binary @../data/external_posts/examples/feed_import_sample.json
+```
+
+응답은 `ImportSummary`(accounts/users/posts/assets 생성·수정·스킵 수)입니다. 같은
+payload를 다시 보내면 `external_id` 기준 upsert로 중복 없이 갱신됩니다.
+
+선택적 보호: `backend/.env`에 `IMPORT_API_TOKEN`을 설정하면 요청에
+`-H "X-Import-Token: <token>"`이 일치해야 합니다(미설정 시 검사 없음). 정식 인증은
+아니며 backend는 localhost 바인딩을 전제로 합니다(인증은 v0.6.x).
+
 상세 guide:
 
 ```text
 data/external_posts/README.md
 docs/EXTERNAL_POST_PACKAGE_GUIDE.md
+docs/V0_3_0_HTTP_IMPORT_SCOPE.md
 ```
 
 ## Sample Data

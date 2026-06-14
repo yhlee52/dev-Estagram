@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     app_name: str = "feed-prototype-backend"
     app_env: str = "local"
     database_url: str
+    # Optional shared-token protection for the HTTP import endpoint (v0.3.0).
+    # When unset, the endpoint follows the local CLI trust model (no check).
+    # This is not real auth; the backend is assumed to bind to localhost.
+    import_api_token: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env",

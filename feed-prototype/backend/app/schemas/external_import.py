@@ -134,3 +134,27 @@ class ExternalImportPayload(BaseModel):
     batch: ExternalImportBatch
     accounts: list[ExternalImportAccount] = Field(default_factory=list)
     posts: list[ExternalImportPost] = Field(default_factory=list)
+
+
+class ImportSummaryResponse(BaseModel):
+    """HTTP response body for POST /api/imports.
+
+    Mirrors the `ImportSummary` dataclass counts (see
+    `app.services.import_external_posts`) plus the echoed batch id and dry_run
+    flag. Field names match `ImportSummary` so the route can build it with
+    `ImportSummaryResponse(..., **dataclasses.asdict(summary))`.
+    """
+
+    batch_external_id: str
+    dry_run: bool
+    accounts_created: int
+    accounts_updated: int
+    users_created: int
+    users_updated: int
+    posts_created: int
+    posts_updated: int
+    posts_skipped: int
+    asset_replace_target_posts: int
+    assets_deleted: int
+    assets_created: int
+    errors: int

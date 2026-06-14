@@ -4,3 +4,5 @@ sqlmodel
 psycopg[binary]
 pydantic-settings
 alembic
+# Used by fastapi.testclient.TestClient in scripts/check_http_import.py.
+httpx

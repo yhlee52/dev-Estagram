@@ -117,6 +117,13 @@ v0.2.x — 레이아웃 & UI 개편 (Layout & UI):
 - v0.2.3: Me 탭 mock/API 내 활동 요약 + 내 post 관리(New Post·Edit·인라인 Delete),
   필터 0건 empty state의 "Reset filters", UX backlog 반영.
 
+v0.3.x — Ingestion 신뢰성 (Ingestion Hardening):
+
+- v0.3.0: HTTP import API. `POST /api/imports`가 기존 `import_payload`를 재사용해
+  동일한 package JSON을 HTTP로 수신(`?dry_run=true` 지원). 스키마 위반 422 /
+  payload 의미 오류 400 / 그 외 500. 선택적 `IMPORT_API_TOKEN` 헤더 보호(미설정 시
+  검사 없음). CLI import workflow 유지.
+
 ## Roadmap & Versioning
 
 v0.0.0 이후 작업은 `feed-prototype/docs/ROADMAP.md`의 버전 트리를 따릅니다.
