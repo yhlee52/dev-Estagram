@@ -65,7 +65,7 @@ v0.0.0 기준선은 MVP1-MVP12로 구축되었고, 그 위에 v0.1.x·v0.2.x 테
 - runtime mock-mode overlay는 localStorage에 저장합니다.
 - API mode는 FastAPI와 backend PostgreSQL data를 사용합니다.
 - frontend는 PostgreSQL에 직접 연결하지 않습니다.
-- 현 단계에서는 각 `User`에 정확히 하나의 `Account`가 대응합니다(1:N은 v0.5.x).
+- 현 단계에서는 각 `User`에 정확히 하나의 `Account`가 대응합니다(1:N은 v0.6.x).
 - active API user는 backend DB user 중에서 선택하고 local에 저장합니다.
 - active API user selection은 real login, authentication, authorization, account security가 아닙니다.
 

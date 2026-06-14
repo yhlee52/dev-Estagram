@@ -102,8 +102,8 @@ v0.2.0~v0.2.2에서 Home/Explore/Accounts 탭은 내용이 채워졌지만 **Me 
 ## Non-goals
 
 ```text
-북마크 / "나를 언급한 post" 목록 (v0.4.x)
-in-app 알림, unread 표시 (v0.4.x)
+북마크 / "나를 언급한 post" 목록 (v0.5.x)
+in-app 알림, unread 표시 (v0.5.x)
 mock 모드 post 생성/수정/삭제 (API 전용 유지)
 follow/팔로잉 목록 관리 UI 개편 (현행 유지)
 백엔드 신규/변경 엔드포인트, 서버측 "내 post" 집계

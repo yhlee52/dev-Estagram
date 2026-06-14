@@ -63,7 +63,7 @@ mode는 "UI 데모 전용 동결" 상태가 되며, 신규 기능은 API mode에
 - frontend data access는 선택된 repository/API mode 뒤에 둡니다.
 - backend data access는 FastAPI 뒤에 둡니다.
 - frontend는 PostgreSQL에 직접 연결하지 않습니다.
-- 현 단계에서는 `User`와 `Account`를 1:1로 유지합니다(1:N은 v0.5.x).
+- 현 단계에서는 `User`와 `Account`를 1:1로 유지합니다(1:N은 v0.6.x).
 - active API user selection은 local prototype state이며 authentication이 아닙니다.
 - external post package JSON format은 동결 상태입니다(기존 필드 변경/삭제/필수화
   금지, 새 필드는 optional로만). 자세한 규칙은 `AGENTS.md`의 External Package

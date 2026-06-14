@@ -16,10 +16,15 @@ v0.2.x(레이아웃 & UI 개편) 테마는 완료되었습니다.
 - `npm run build`(tsc + vite) 통과. lint는 기존 baseline 5건 유지(신규 회귀 0).
   - baseline: `AssetRenderer.tsx` set-state-in-effect 2건, `PostFilterPanel.tsx`
     react-refresh 3건. v0.2.x 이전부터 존재. 기능 영향 없음.
-- 차단(blocking) 버그 없음. UX_BACKLOG의 Open 3건은 의도적으로 v0.3.x/v0.4.x로
+- 차단(blocking) 버그 없음. UX_BACKLOG의 Open 3건은 의도적으로 v0.3.x/v0.5.x로
   이연된 항목(회귀 아님).
 
 **판단: v0.3.x 진입 가능.**
+
+> 참고: v0.2.x post-dev 논의에서 v0.3.x 다음 테마로 **v0.4.x 메타데이터 일급화 &
+> 트리아지(Metadata-first Reading)**를 신설하기로 했습니다(기존 협업/인증은 한 칸씩
+> v0.5.x/v0.6.x로 이동). v0.3.1의 batch 이력은 그 테마의 후속 후보(batch/source
+> 단위 읽기)의 기반이 됩니다. 자세한 트리는 `ROADMAP.md` 참고.
 
 ### 진입과 함께 적용되는 정책
 
@@ -65,7 +70,7 @@ v0.3.x는 대부분 기존 자산 위에 얇게 얹는 작업입니다.
   (기존 `scripts/check_golden_samples.py`와 동일한 sample 사용).
 
 비고/결정 필요:
-- 인증은 범위 밖(인증은 v0.5.x). 단, 쓰기 엔드포인트이므로 최소한의 보호
+- 인증은 범위 밖(인증은 v0.6.x). 단, 쓰기 엔드포인트이므로 최소한의 보호
   (예: local-only 바인딩, 또는 단순 shared token env)를 둘지 scope에서 결정.
 
 ### v0.3.1 — Import Batch 이력 API + 최소 UI
@@ -107,7 +112,7 @@ asset 파일 복사는 opt-in이며 기존 /assets/... 경로 package는 계속 
 기존 CLI import workflow를 제거하지 않는다
 external post package JSON format은 동결 유지 (새 필드는 optional로만)
 mock mode는 v0.3.0부터 데모 전용 동결 (제거하지 않음)
-인증/JWT/session/OAuth는 범위 밖 (v0.5.x)
+인증/JWT/session/OAuth는 범위 밖 (v0.6.x)
 ```
 
 ## 5. 진입 전 권장 정리 (선택)
