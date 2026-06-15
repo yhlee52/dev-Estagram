@@ -161,8 +161,11 @@ external package format 변경
 - v0.3.5: 테마 완료 후 운영 안정화 patch. `process_incoming --watch` 실행 중
   managed storage·`data/external_posts/` 파일 churn으로 Vite dev server가
   종료되던 문제를 `vite.config.ts`의 `server.watch.ignored`로 해결하고, 릴리즈
-  runbook/checklist를 현재 버전 기준으로 최신화. 신규 기능 없음(코드 변경
-  `vite.config.ts` 1개).
+  runbook/checklist를 현재 버전 기준으로 최신화. 추가로 watch 중 생성 자산을
+  `public/assets/generated/`에 직접 떨궈 넣을 때 Vite watcher가 아직 잠긴 파일에
+  `fs.watch`를 붙이며 `EBUSY`로 dev server가 종료되던 동일 버그 클래스를, watcher
+  제외 대상을 `public/assets/managed/**`에서 `public/assets/**` 전체로 확장해
+  함께 해결. 신규 기능 없음(코드 변경 `vite.config.ts` 1개).
 
 > v0.3.2는 원래 자동 이동·watch·asset 복사를 한 묶음으로 두었으나, "하나의
 > MINOR = 하나의 집중된 변경" 원칙에 맞춰 운영 자동화(이동/CLI/watch)와 asset
