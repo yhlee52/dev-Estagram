@@ -189,11 +189,13 @@ asset 파일 복사는 opt-in이며 기존 /assets/... 경로 package는 계속 
 - v0.4.0: facet 기반 필터(기반). `GET /api/metadata/keys`류 facet API(distinct
   key/value + 사용 빈도). 필터 패널의 자유 입력 metadata key/value를 알려진
   key·value의 드롭다운/칩 선택으로 보강(자유 입력은 유지). v0.1.2 tag 자동완성과
-  같은 패턴 재사용.
-- v0.4.1: 카드 metadata 노출 & 값 정렬. 사용자가 고른 metadata key를
-  PostCard/Explore 카드에 칩으로 고정 표시(pinned keys, URL/localStorage).
-  metadata 값 기준 정렬(숫자/날짜 인식, 기존 newest/oldest sort 확장).
-- 마지막 MINOR: `UX_BACKLOG.md` 반영 예약 슬롯.
+  같은 패턴 재사용. **완료.**
+- v0.4.1: 카드 metadata 노출 & 값 정렬. 사용자가 고른 metadata key를 카드에
+  칩으로 고정 표시(pinned keys, localStorage). metadata 값 기준 정렬(텍스트
+  사전순 + key 보유 post 한정, 기존 newest/oldest sort 확장). 숫자 인식 정렬과
+  pinned keys URL 동기화는 테마 후속 후보로 보류. **완료.**
+- v0.4.2: `UX_BACKLOG.md` 반영(테마 마지막 MINOR). 카드 metadata 중복 제거 +
+  정렬 기대치 안내 + 테마 문서 일괄 정리. **이로써 v0.4.x 테마 완료.**
 
 ### v0.4.x 메타데이터 정책 (재확인)
 

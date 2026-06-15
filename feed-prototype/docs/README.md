@@ -1,10 +1,12 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.4.0` (메타데이터 일급화 & 트리아지 테마 시작 — Facet 기반 필터).
-자유 입력 metadata 필터에 더해, 데이터에서 파생한 알려진 key/value를 골라 넣는
-facet 선택(`GET /api/metadata/keys`·`/values`)과 facet 선택 시 정확일치
-(`metadata_match=exact`, 자유 입력은 기존 ILIKE 유지)를 추가했습니다. 상세는
-`V0_4_0_FACET_FILTER_SCOPE.md`.
+현재 릴리즈: `v0.4.2` (메타데이터 일급화 & 트리아지 테마 **완료**). v0.4.0 facet
+기반 필터(데이터 파생 key/value 선택 `GET /api/metadata/keys`·`/values`, facet
+선택 정확일치 `metadata_match=exact`, 자유 입력 ILIKE 유지) → v0.4.1 카드 metadata
+칩(pinned keys, localStorage) + 값 정렬(텍스트 사전순, key 보유 post 한정, cursor
+안정) → v0.4.2 UX 정리(카드 metadata 중복 제거 + 정렬 기대치 안내 + 문서 일괄
+갱신). 상세는 `V0_4_0_FACET_FILTER_SCOPE.md` ~ `V0_4_2_UX_BACKLOG_SCOPE.md`와
+`V0_4_X_METADATA_PLAN.md`.
 
 직전 테마 v0.3.x(Ingestion 신뢰성)는 v0.3.4로 **완료**, v0.3.5는 운영 안정화
 patch — v0.3.0(HTTP import)·v0.3.1(Import Batch 이력)·v0.3.2(자동 이동/일괄 처리/
@@ -19,8 +21,10 @@ more + 공용 ConfirmDialog) 완료. v0.3.x 진입 판단·후보
 - `../README.md`: mock mode, API mode, external import mode 실행 guide
 - `ROADMAP.md`: v0.0.0 이후 업데이트 로드맵 (버전 트리, 테마별 scope)
 - `V0_4_X_METADATA_PLAN.md`: v0.4.x(메타데이터 일급화 & 트리아지) 진입 판단과
-  v0.4.0~v0.4.1 후보 계획 (현재 테마)
-- `V0_4_0_FACET_FILTER_SCOPE.md`: v0.4.0(Facet 기반 필터) 상세 scope (현재 릴리즈)
+  MINOR 계획·진행 현황 (현재 테마, 완료)
+- `V0_4_0_FACET_FILTER_SCOPE.md`: v0.4.0(Facet 기반 필터) 상세 scope
+- `V0_4_1_CARD_METADATA_SORT_SCOPE.md`: v0.4.1(카드 metadata 칩 & 값 정렬) 상세 scope
+- `V0_4_2_UX_BACKLOG_SCOPE.md`: v0.4.2(UX backlog 반영, 테마 마지막 MINOR) 상세 scope
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: external post package 작성 guide (format 중심)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog
@@ -28,7 +32,7 @@ more + 공용 ConfirmDialog) 완료. v0.3.x 진입 판단·후보
 
 ## 릴리즈 운영 문서 (current release 기준, v1.0.0 안정화 단계까지 유지)
 
-파일명은 v0.0.0 시점 이름을 유지하지만, 내용은 항상 현재 릴리즈(`v0.4.0`) 기준으로
+파일명은 v0.0.0 시점 이름을 유지하지만, 내용은 항상 현재 릴리즈(`v0.4.2`) 기준으로
 갱신됩니다. v0.0.0 시점 historical 사본은 `archive/`에 보관합니다.
 
 - `RELEASE_0_0_RUNBOOK.md`: 현재 릴리즈 기준 local 실행 재현 runbook

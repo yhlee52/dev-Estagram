@@ -1,19 +1,24 @@
 import type { PostMetadata } from '../types/feed';
 import { formatMetadataValue } from '../utils/format';
-import { usePinnedMetadataKeys } from '../hooks/usePinnedMetadataKeys';
 
 type PinnedMetadataChipsProps = {
   metadata?: PostMetadata;
+  pinnedKeys: string[];
 };
 
 /**
  * Render the user's pinned metadata keys (v0.4.1) as key:value chips on a card,
  * for keys this post actually has. Generic: chips show the value as-is, with no
  * domain meaning. Renders nothing when nothing is pinned or present.
+ *
+ * `pinnedKeys` is passed in (not read from the hook) so the parent card can
+ * reuse the same list to exclude these keys from the generic MetadataSummary,
+ * avoiding showing one key twice.
  */
-export default function PinnedMetadataChips({ metadata }: PinnedMetadataChipsProps) {
-  const { pinnedKeys } = usePinnedMetadataKeys();
-
+export default function PinnedMetadataChips({
+  metadata,
+  pinnedKeys,
+}: PinnedMetadataChipsProps) {
   if (!metadata || pinnedKeys.length === 0) {
     return null;
   }

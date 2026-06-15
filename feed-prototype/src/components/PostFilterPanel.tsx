@@ -301,6 +301,13 @@ export default function PostFilterPanel({
             Select an API user to enable My posts only.
           </p>
         ) : null}
+        {(filters.sort === 'metadata_asc' || filters.sort === 'metadata_desc') &&
+        filters.sortMetadataKey?.trim() ? (
+          <p className="text-xs font-semibold text-neutral-500 md:col-span-2">
+            Sorting by “{filters.sortMetadataKey.trim()}” — only posts that have
+            this metadata key are shown.
+          </p>
+        ) : null}
         {resultLabel ? (
           <p className="text-xs font-semibold text-neutral-500 md:col-span-2">
             {resultLabel}
