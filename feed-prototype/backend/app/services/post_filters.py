@@ -15,17 +15,21 @@ from app.models.account import Account
 from app.models.asset import PostAsset
 from app.models.post import Post
 from app.models.user import User
-from app.schemas.feed import TagCount
+from app.schemas.feed import MetadataKeyCount, MetadataValueCount, TagCount
 
 
 ALLOWED_ASSET_TYPES = {"image", "plot", "table", "file", "link"}
 ALLOWED_SORTS = {"newest", "oldest"}
+ALLOWED_METADATA_MATCHES = {"contains", "exact"}
 
 DEFAULT_LIMIT = 20
 MAX_LIMIT = 100
 
 DEFAULT_TAG_LIMIT = 20
 MAX_TAG_LIMIT = 100
+
+DEFAULT_FACET_LIMIT = 20
+MAX_FACET_LIMIT = 100
 
 _DATE_ONLY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -36,6 +40,7 @@ class PostFilters:
     tag: str | None = None
     metadata_key: str | None = None
     metadata_value: str | None = None
+    metadata_match: str | None = None
     asset_type: str | None = None
     account_id: str | None = None
     account_handle: str | None = None
@@ -73,6 +78,11 @@ def normalize_post_filters(filters: PostFilters) -> PostFilters:
         tag=normalize_filter_value(filters.tag),
         metadata_key=normalize_filter_value(filters.metadata_key),
         metadata_value=normalize_filter_value(filters.metadata_value),
+        metadata_match=(
+            normalized_match.lower()
+            if (normalized_match := normalize_filter_value(filters.metadata_match)) is not None
+            else None
+        ),
         asset_type=normalize_filter_value(filters.asset_type),
         account_id=normalize_filter_value(filters.account_id),
         account_handle=normalize_filter_value(filters.account_handle),
@@ -164,6 +174,57 @@ def get_top_tags(session: Session, *, limit: int = DEFAULT_TAG_LIMIT) -> list[Ta
     return [TagCount(tag=row.tag, count=row.usage_count) for row in rows]
 
 
+def get_metadata_keys(
+    session: Session, *, limit: int = DEFAULT_FACET_LIMIT
+) -> list[MetadataKeyCount]:
+    """Return the most-used top-level metadata keys, highest count first.
+
+    Keys are derived from data (``jsonb_object_keys``): we never define or
+    enforce a metadata schema. A JSON object yields each key once, so the count
+    is the number of posts that have that key. Posts with NULL ``metadata_json``
+    contribute no rows. Only top-level keys are surfaced (nested keys are not
+    flattened), keeping facets generic.
+    """
+    rows = session.execute(
+        text(
+            "SELECT key, count(*) AS usage_count"
+            " FROM posts, jsonb_object_keys(posts.metadata_json) AS key"
+            " WHERE posts.metadata_json IS NOT NULL"
+            " GROUP BY key"
+            " ORDER BY usage_count DESC, key ASC"
+            " LIMIT :limit"
+        ).bindparams(limit=limit)
+    ).all()
+
+    return [MetadataKeyCount(key=row.key, count=row.usage_count) for row in rows]
+
+
+def get_metadata_values(
+    session: Session, key: str, *, limit: int = DEFAULT_FACET_LIMIT
+) -> list[MetadataValueCount]:
+    """Return the most-used distinct values for one metadata key.
+
+    Values are the text projection ``metadata_json ->> key`` (scalars become
+    their string form; objects/arrays become JSON text). ``limit`` + frequency
+    ordering is the defense against free-text keys with huge value cardinality:
+    the list is a "top N", not an exhaustive enumeration. A key absent from all
+    posts simply returns an empty list.
+    """
+    rows = session.execute(
+        text(
+            "SELECT (posts.metadata_json ->> :key) AS value, count(*) AS usage_count"
+            " FROM posts"
+            " WHERE jsonb_exists(posts.metadata_json, :key)"
+            "   AND (posts.metadata_json ->> :key) IS NOT NULL"
+            " GROUP BY value"
+            " ORDER BY usage_count DESC, value ASC"
+            " LIMIT :limit"
+        ).bindparams(key=key, limit=limit)
+    ).all()
+
+    return [MetadataValueCount(value=row.value, count=row.usage_count) for row in rows]
+
+
 def parse_date_bound(value: str, *, field_name: str) -> tuple[datetime, bool]:
     """Return (datetime, is_date_only) for a created_at_from/to bound.
 
@@ -207,6 +268,18 @@ def validate_post_filters(session: Session, filters: PostFilters) -> PostFilters
         raise HTTPException(
             status_code=400,
             detail="metadata_key is required when metadata_value is set",
+        )
+
+    if (
+        normalized_filters.metadata_match is not None
+        and normalized_filters.metadata_match not in ALLOWED_METADATA_MATCHES
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Invalid metadata_match. Expected one of: "
+                + ", ".join(sorted(ALLOWED_METADATA_MATCHES))
+            ),
         )
 
     if normalized_filters.my_posts_only and normalized_filters.user_id is None:
@@ -328,12 +401,25 @@ def apply_filters_to_select(
             )
         )
         if normalized.metadata_value is not None:
-            statement = statement.where(
-                text("(posts.metadata_json ->> :metadata_key) ILIKE :metadata_value").bindparams(
-                    metadata_key=normalized.metadata_key,
-                    metadata_value=f"%{normalized.metadata_value}%",
+            if normalized.metadata_match == "exact":
+                # facet-selected values come straight from the data, so an exact
+                # match is the natural semantics (and avoids one value being a
+                # substring of another). Free-text input keeps ILIKE below.
+                statement = statement.where(
+                    text("(posts.metadata_json ->> :metadata_key) = :metadata_value").bindparams(
+                        metadata_key=normalized.metadata_key,
+                        metadata_value=normalized.metadata_value,
+                    )
                 )
-            )
+            else:
+                statement = statement.where(
+                    text(
+                        "(posts.metadata_json ->> :metadata_key) ILIKE :metadata_value"
+                    ).bindparams(
+                        metadata_key=normalized.metadata_key,
+                        metadata_value=f"%{normalized.metadata_value}%",
+                    )
+                )
 
     if normalized.asset_type is not None:
         statement = statement.where(

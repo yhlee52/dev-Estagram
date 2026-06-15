@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react';
-import type { ApiTagCount } from '../api/types';
+import type { ApiMetadataKeyCount, ApiTagCount } from '../api/types';
 import type { PostAssetFilterType, PostFilters, PostSort } from '../types/filters';
+import MetadataFacetControl from './MetadataFacetControl';
 import TagSearchInput from './TagSearchInput';
 
 type PostFilterPanelProps = {
@@ -16,6 +17,8 @@ type PostFilterPanelProps = {
   hasAppliedFilters?: boolean;
   tagSuggestions?: ApiTagCount[];
   onSelectTag?: (tag: string) => void;
+  metadataKeySuggestions?: ApiMetadataKeyCount[];
+  onSelectFacet?: (key: string, value: string) => void;
 };
 
 const assetTypeOptions: Array<{
@@ -85,6 +88,8 @@ export default function PostFilterPanel({
   hasAppliedFilters = false,
   tagSuggestions = [],
   onSelectTag,
+  metadataKeySuggestions = [],
+  onSelectFacet,
 }: PostFilterPanelProps) {
   const resultLabel =
     resultCount === undefined
@@ -114,6 +119,14 @@ export default function PostFilterPanel({
         className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-4 text-base text-neutral-950 shadow-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200"
       />
 
+      {/* Facet selection (v0.4.0): fills the free-input metadata fields below
+          with a data-derived key/value (exact match). API mode only — renders
+          nothing when there are no known keys. */}
+      <MetadataFacetControl
+        keySuggestions={metadataKeySuggestions}
+        onSelectFacet={(key, value) => onSelectFacet?.(key, value)}
+      />
+
       <div className="grid gap-2 md:grid-cols-2">
         <input
           aria-label="Tag"
@@ -130,7 +143,8 @@ export default function PostFilterPanel({
           type="text"
           value={filters.metadataKey ?? ''}
           onChange={(event) => {
-            onChange({ ...filters, metadataKey: event.target.value });
+            // Manual edits revert to contains (ILIKE); exact is only for facet picks.
+            onChange({ ...filters, metadataKey: event.target.value, metadataMatch: undefined });
           }}
           placeholder="Metadata key e.g. severity"
           className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"
@@ -140,7 +154,8 @@ export default function PostFilterPanel({
           type="text"
           value={filters.metadataValue ?? ''}
           onChange={(event) => {
-            onChange({ ...filters, metadataValue: event.target.value });
+            // Manual edits revert to contains (ILIKE); exact is only for facet picks.
+            onChange({ ...filters, metadataValue: event.target.value, metadataMatch: undefined });
           }}
           placeholder="Metadata value e.g. high"
           className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400"

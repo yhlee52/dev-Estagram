@@ -29,6 +29,11 @@ export function filtersToSearchParams(filters: PostFilters): URLSearchParams {
   setTrimmed('tag', filters.tag);
   setTrimmed('metadata_key', filters.metadataKey);
   setTrimmed('metadata_value', filters.metadataValue);
+  // Only encode exact match (facet-selected); contains is the default so older
+  // shareable links without this param keep working.
+  if (filters.metadataMatch === 'exact' && filters.metadataValue?.trim()) {
+    params.set('metadata_match', 'exact');
+  }
   if (filters.assetType) {
     params.set('asset_type', filters.assetType);
   }
@@ -57,12 +62,14 @@ export function filtersFromSearchParams(params: URLSearchParams): PostFilters {
 
   const sort: PostSort = params.get('sort') === 'oldest' ? 'oldest' : 'newest';
   const myPostsOnlyRaw = params.get('my_posts_only');
+  const metadataMatch = params.get('metadata_match') === 'exact' ? 'exact' : undefined;
 
   return {
     keyword: params.get('keyword') ?? '',
     tag: params.get('tag') ?? '',
     metadataKey: params.get('metadata_key') ?? '',
     metadataValue: params.get('metadata_value') ?? '',
+    metadataMatch,
     assetType,
     accountHandle: params.get('account_handle') ?? '',
     accountId: params.get('account_id') ?? undefined,

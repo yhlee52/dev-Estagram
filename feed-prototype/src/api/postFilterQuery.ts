@@ -34,6 +34,10 @@ export const buildPostFilterQuery = (
     appendStringParam(searchParams, 'tag', filters.tag);
     appendStringParam(searchParams, 'metadata_key', filters.metadataKey);
     appendStringParam(searchParams, 'metadata_value', filters.metadataValue);
+    // Only emit exact match (the facet-selected case); contains is the default.
+    if (filters.metadataMatch === 'exact' && filters.metadataValue?.trim()) {
+      searchParams.set('metadata_match', 'exact');
+    }
     appendStringParam(searchParams, 'asset_type', filters.assetType);
     appendStringParam(searchParams, 'account_id', filters.accountId);
     appendStringParam(searchParams, 'account_handle', filters.accountHandle);

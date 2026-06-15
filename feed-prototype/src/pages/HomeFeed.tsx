@@ -9,7 +9,8 @@ import PostFilterPanel, {
   hasActivePostFilters,
 } from '../components/PostFilterPanel';
 import { getTags } from '../api/tagsApi';
-import type { ApiTagCount } from '../api/types';
+import { getMetadataKeys } from '../api/metadataApi';
+import type { ApiMetadataKeyCount, ApiTagCount } from '../api/types';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import { getApiBaseUrl } from '../config/apiConfig';
 import { getDataSourceMode } from '../config/dataSource';
@@ -26,6 +27,7 @@ const dataSourceMode = getDataSourceMode();
 const isApiDataSource = dataSourceMode === 'api';
 const PAGE_LIMIT = 20;
 const TAG_SUGGESTION_LIMIT = 50;
+const FACET_KEY_LIMIT = 50;
 
 function getFeedErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
@@ -84,6 +86,9 @@ export default function HomeFeed() {
     setDraftFilters(appliedFilters);
   }
   const [tagSuggestions, setTagSuggestions] = useState<ApiTagCount[]>([]);
+  const [metadataKeySuggestions, setMetadataKeySuggestions] = useState<
+    ApiMetadataKeyCount[]
+  >([]);
   const accounts = useEffectiveAccounts();
   const { activeUserId, followingIds } = useFollowState();
   const { activeApiUserId } = useActiveApiUser();
@@ -106,6 +111,18 @@ export default function HomeFeed() {
       })
       .catch(() => {
         /* autocomplete is an enhancement; ignore load errors */
+      });
+
+    // Known metadata keys for facet selection (v0.4.0). Also enhancement-only:
+    // on failure the panel just shows the free-input metadata fields.
+    void getMetadataKeys(FACET_KEY_LIMIT)
+      .then((keys) => {
+        if (isMounted) {
+          setMetadataKeySuggestions(keys);
+        }
+      })
+      .catch(() => {
+        /* facet selection is an enhancement; ignore load errors */
       });
 
     return () => {
@@ -338,6 +355,15 @@ export default function HomeFeed() {
             hasAppliedFilters={hasAppliedFilters}
             tagSuggestions={tagSuggestions}
             onSelectTag={(tag) => commitFilters({ ...draftFilters, keyword: '', tag })}
+            metadataKeySuggestions={metadataKeySuggestions}
+            onSelectFacet={(key, value) =>
+              commitFilters({
+                ...draftFilters,
+                metadataKey: key,
+                metadataValue: value,
+                metadataMatch: 'exact',
+              })
+            }
           />
         </div>
       ) : (

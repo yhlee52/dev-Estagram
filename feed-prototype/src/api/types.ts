@@ -121,6 +121,25 @@ export interface ApiTagListResponse {
   items: ApiTagCount[];
 }
 
+export interface ApiMetadataKeyCount {
+  key: string;
+  count: number;
+}
+
+export interface ApiMetadataKeyListResponse {
+  items: ApiMetadataKeyCount[];
+}
+
+export interface ApiMetadataValueCount {
+  value: string;
+  count: number;
+}
+
+export interface ApiMetadataValueListResponse {
+  key: string;
+  items: ApiMetadataValueCount[];
+}
+
 export interface ApiImportBatchSummary {
   id: string;
   external_id: string;

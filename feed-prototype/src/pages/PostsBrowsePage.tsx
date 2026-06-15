@@ -4,6 +4,7 @@ import { getAccounts } from '../api/accountsApi';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import { getPosts } from '../api/postsApi';
 import { getTags } from '../api/tagsApi';
+import { getMetadataKeys } from '../api/metadataApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import EmptyState from '../components/EmptyState';
 import ExploreTags from '../components/ExploreTags';
@@ -23,9 +24,10 @@ import type { PostFilters } from '../types/filters';
 import { getFeedItems } from '../utils/feed';
 import { filtersFromSearchParams, filtersToSearchParams } from '../utils/filterUrl';
 import { routeHashtagSearch } from '../utils/hashtagSearch';
-import type { ApiPostWithAssets, ApiTagCount } from '../api/types';
+import type { ApiMetadataKeyCount, ApiPostWithAssets, ApiTagCount } from '../api/types';
 
 const TAG_SUGGESTION_LIMIT = 50;
+const FACET_KEY_LIMIT = 50;
 const POPULAR_TAG_DISPLAY_LIMIT = 20;
 const RECENT_TAG_LIMIT = 12;
 const RECENT_TAG_POST_SCAN = 30;
@@ -134,6 +136,9 @@ export default function PostsBrowsePage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState('');
   const [tagSuggestions, setTagSuggestions] = useState<ApiTagCount[]>([]);
+  const [metadataKeySuggestions, setMetadataKeySuggestions] = useState<
+    ApiMetadataKeyCount[]
+  >([]);
   const accountsByIdRef = useRef<Map<string, Account>>(new Map());
 
   // Load popular tags once for the search box autocomplete (v0.1.2). Failures
@@ -153,6 +158,17 @@ export default function PostsBrowsePage() {
       })
       .catch(() => {
         /* autocomplete is an enhancement; ignore load errors */
+      });
+
+    // Known metadata keys for facet selection (v0.4.0). Enhancement-only.
+    void getMetadataKeys(FACET_KEY_LIMIT)
+      .then((keys) => {
+        if (isMounted) {
+          setMetadataKeySuggestions(keys);
+        }
+      })
+      .catch(() => {
+        /* facet selection is an enhancement; ignore load errors */
       });
 
     return () => {
@@ -332,6 +348,15 @@ export default function PostsBrowsePage() {
             hasAppliedFilters={hasAppliedFilters}
             tagSuggestions={tagSuggestions}
             onSelectTag={(tag) => commitFilters({ ...draftFilters, keyword: '', tag })}
+            metadataKeySuggestions={metadataKeySuggestions}
+            onSelectFacet={(key, value) =>
+              commitFilters({
+                ...draftFilters,
+                metadataKey: key,
+                metadataValue: value,
+                metadataMatch: 'exact',
+              })
+            }
           />
         </section>
       ) : (
