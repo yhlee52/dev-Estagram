@@ -1,6 +1,6 @@
 export type PostAssetFilterType = 'image' | 'plot' | 'table' | 'file' | 'link' | '';
 
-export type PostSort = 'newest' | 'oldest';
+export type PostSort = 'newest' | 'oldest' | 'metadata_asc' | 'metadata_desc';
 
 /**
  * How a metadata value filter is matched. `contains` (default) keeps the v0.1.x
@@ -22,4 +22,6 @@ export type PostFilters = {
   createdAtFrom?: string;
   createdAtTo?: string;
   sort?: PostSort;
+  /** Required when sort is metadata_asc/metadata_desc: the metadata key to sort by. */
+  sortMetadataKey?: string;
 };

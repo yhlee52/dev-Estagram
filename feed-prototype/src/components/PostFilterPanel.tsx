@@ -2,6 +2,7 @@ import type { FormEvent } from 'react';
 import type { ApiMetadataKeyCount, ApiTagCount } from '../api/types';
 import type { PostAssetFilterType, PostFilters, PostSort } from '../types/filters';
 import MetadataFacetControl from './MetadataFacetControl';
+import PinnedMetadataKeysControl from './PinnedMetadataKeysControl';
 import TagSearchInput from './TagSearchInput';
 
 type PostFilterPanelProps = {
@@ -66,6 +67,13 @@ export function getPostFilterValidationError(filters: PostFilters): string {
     return 'Metadata key is required when metadata value is set.';
   }
 
+  if (
+    (filters.sort === 'metadata_asc' || filters.sort === 'metadata_desc') &&
+    !filters.sortMetadataKey?.trim()
+  ) {
+    return 'Pick a metadata key to sort by.';
+  }
+
   const from = filters.createdAtFrom?.trim();
   const to = filters.createdAtTo?.trim();
   if (from && to && from > to) {
@@ -126,6 +134,10 @@ export default function PostFilterPanel({
         keySuggestions={metadataKeySuggestions}
         onSelectFacet={(key, value) => onSelectFacet?.(key, value)}
       />
+
+      {/* Pin metadata keys to show as chips on cards (v0.4.1). Display
+          preference, persisted to localStorage; independent of the filters. */}
+      <PinnedMetadataKeysControl keySuggestions={metadataKeySuggestions} />
 
       <div className="grid gap-2 md:grid-cols-2">
         <input
@@ -209,13 +221,47 @@ export default function PostFilterPanel({
           aria-label="Sort order"
           value={filters.sort ?? 'newest'}
           onChange={(event) => {
-            onChange({ ...filters, sort: event.target.value as PostSort });
+            const nextSort = event.target.value as PostSort;
+            const isMetadataSort =
+              nextSort === 'metadata_asc' || nextSort === 'metadata_desc';
+            onChange({
+              ...filters,
+              sort: nextSort,
+              // Seed a key when switching into metadata sort; clear it otherwise.
+              sortMetadataKey: isMetadataSort
+                ? filters.sortMetadataKey || metadataKeySuggestions[0]?.key || ''
+                : '',
+            });
           }}
           className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 outline-none transition focus:border-neutral-400"
         >
           <option value="newest">Newest first</option>
           <option value="oldest">Oldest first</option>
+          {metadataKeySuggestions.length > 0 ? (
+            <>
+              <option value="metadata_asc">Metadata value ↑</option>
+              <option value="metadata_desc">Metadata value ↓</option>
+            </>
+          ) : null}
         </select>
+        {(filters.sort === 'metadata_asc' || filters.sort === 'metadata_desc') &&
+        metadataKeySuggestions.length > 0 ? (
+          <select
+            aria-label="Sort metadata key"
+            value={filters.sortMetadataKey ?? ''}
+            onChange={(event) => {
+              onChange({ ...filters, sortMetadataKey: event.target.value });
+            }}
+            className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 outline-none transition focus:border-neutral-400"
+          >
+            <option value="">Sort by which key…</option>
+            {metadataKeySuggestions.map((item) => (
+              <option key={item.key} value={item.key}>
+                {item.key}
+              </option>
+            ))}
+          </select>
+        ) : null}
         <label className="flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 has-[:disabled]:text-neutral-400">
           <input
             type="checkbox"

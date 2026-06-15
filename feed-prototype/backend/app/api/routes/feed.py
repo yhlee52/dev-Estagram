@@ -45,6 +45,7 @@ def get_feed(
     created_at_from: str | None = Query(default=None),
     created_at_to: str | None = Query(default=None),
     sort: str = Query(default="newest"),
+    sort_metadata_key: str | None = Query(default=None),
     cursor: str | None = Query(default=None),
     limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
     session: Session = Depends(get_session),
@@ -67,7 +68,9 @@ def get_feed(
         created_at_from=created_at_from,
         created_at_to=created_at_to,
     )
-    pagination = PostPagination(sort=sort, cursor=cursor, limit=limit)
+    pagination = PostPagination(
+        sort=sort, cursor=cursor, limit=limit, sort_metadata_key=sort_metadata_key
+    )
 
     followed_account_ids = list(
         session.exec(

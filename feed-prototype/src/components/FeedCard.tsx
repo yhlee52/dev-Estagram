@@ -6,6 +6,7 @@ import AssetRenderer from './AssetRenderer';
 import AssetGallery from './AssetGallery';
 import MentionText from './MentionText';
 import MetadataSummary from './MetadataSummary';
+import PinnedMetadataChips from './PinnedMetadataChips';
 import PostBadges from './PostBadges';
 import TagList from './TagList';
 import { getSortedVisualAssets, isVisualAsset } from '../utils/assetUtils';
@@ -125,6 +126,8 @@ export default function FeedCard({ item }: FeedCardProps) {
               />
             ) : null}
           </div>
+
+          <PinnedMetadataChips metadata={post.metadata} />
 
           <TagList tags={postTags} />
 

@@ -47,6 +47,9 @@ export const buildPostFilterQuery = (
     // Only emit non-default sort to keep query strings clean.
     if (filters.sort && filters.sort !== 'newest') {
       searchParams.set('sort', filters.sort);
+      if (filters.sort === 'metadata_asc' || filters.sort === 'metadata_desc') {
+        appendStringParam(searchParams, 'sort_metadata_key', filters.sortMetadataKey);
+      }
     }
 
     if (filters.myPostsOnly) {

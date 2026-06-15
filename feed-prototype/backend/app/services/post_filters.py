@@ -4,7 +4,7 @@ import base64
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Iterable
+from typing import Any, Iterable
 
 from fastapi import HTTPException
 from sqlalchemy import and_, or_, text
@@ -19,7 +19,9 @@ from app.schemas.feed import MetadataKeyCount, MetadataValueCount, TagCount
 
 
 ALLOWED_ASSET_TYPES = {"image", "plot", "table", "file", "link"}
-ALLOWED_SORTS = {"newest", "oldest"}
+# Metadata value sorts (v0.4.1) need a `sort_metadata_key`; see validate_pagination.
+METADATA_SORTS = {"metadata_asc", "metadata_desc"}
+ALLOWED_SORTS = {"newest", "oldest"} | METADATA_SORTS
 ALLOWED_METADATA_MATCHES = {"contains", "exact"}
 
 DEFAULT_LIMIT = 20
@@ -55,6 +57,7 @@ class PostPagination:
     sort: str = "newest"
     cursor: str | None = None
     limit: int = DEFAULT_LIMIT
+    sort_metadata_key: str | None = None
 
 
 @dataclass(frozen=True)
@@ -318,6 +321,13 @@ def validate_pagination(pagination: PostPagination) -> PostPagination:
             detail="Invalid sort. Expected one of: " + ", ".join(sorted(ALLOWED_SORTS)),
         )
 
+    sort_metadata_key = normalize_filter_value(pagination.sort_metadata_key)
+    if sort in METADATA_SORTS and sort_metadata_key is None:
+        raise HTTPException(
+            status_code=400,
+            detail="sort_metadata_key is required for a metadata sort",
+        )
+
     limit = pagination.limit
     if limit < 1:
         raise HTTPException(status_code=400, detail="limit must be at least 1")
@@ -327,23 +337,49 @@ def validate_pagination(pagination: PostPagination) -> PostPagination:
         sort=sort,
         cursor=normalize_filter_value(pagination.cursor),
         limit=limit,
+        sort_metadata_key=sort_metadata_key,
     )
 
 
-def encode_cursor(post: Post) -> str:
-    raw = f"{post.created_at.isoformat()}|{post.id}"
+def jsonb_text(value: Any) -> str:
+    """Coerce a Python JSON value to match PostgreSQL ``->>`` text output.
+
+    Cursor values for metadata sorts must match the text projection used in the
+    ORDER BY / WHERE, so the keyset boundary lines up. Booleans need explicit
+    lowercase ("true"/"false"); other scalars match ``str()``.
+    """
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    return str(value)
+
+
+def encode_cursor(post: Post, pagination: PostPagination) -> str:
+    if pagination.sort in METADATA_SORTS:
+        key = pagination.sort_metadata_key or ""
+        sort_value = jsonb_text((post.metadata_json or {}).get(key))
+    else:
+        sort_value = post.created_at.isoformat()
+    # rsplit on decode peels off the id (post ids contain no "|"), so a metadata
+    # value containing "|" round-trips safely.
+    raw = f"{sort_value}|{post.id}"
     return base64.urlsafe_b64encode(raw.encode("utf-8")).decode("ascii")
 
 
-def decode_cursor(cursor: str) -> tuple[datetime, str]:
+def decode_cursor(cursor: str) -> tuple[str, str]:
     try:
         raw = base64.urlsafe_b64decode(cursor.encode("ascii")).decode("utf-8")
-        created_at_text, post_id = raw.split("|", 1)
-        created_at = datetime.fromisoformat(created_at_text)
+        sort_value, post_id = raw.rsplit("|", 1)
     except (ValueError, UnicodeDecodeError) as exc:
         raise HTTPException(status_code=400, detail="Invalid cursor") from exc
 
-    return created_at, post_id
+    return sort_value, post_id
+
+
+def _cursor_datetime(value: str) -> datetime:
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid cursor") from exc
 
 
 def apply_filters_to_select(
@@ -451,10 +487,14 @@ def apply_sort_and_cursor(
     statement: SelectOfScalar[Post],
     pagination: PostPagination,
 ) -> SelectOfScalar[Post]:
+    if pagination.sort in METADATA_SORTS:
+        return _apply_metadata_sort_and_cursor(statement, pagination)
+
     if pagination.sort == "oldest":
         statement = statement.order_by(col(Post.created_at).asc(), col(Post.id).asc())
         if pagination.cursor is not None:
-            cursor_created_at, cursor_id = decode_cursor(pagination.cursor)
+            cursor_value, cursor_id = decode_cursor(pagination.cursor)
+            cursor_created_at = _cursor_datetime(cursor_value)
             statement = statement.where(
                 or_(
                     Post.created_at > cursor_created_at,
@@ -464,13 +504,55 @@ def apply_sort_and_cursor(
     else:
         statement = statement.order_by(col(Post.created_at).desc(), col(Post.id).desc())
         if pagination.cursor is not None:
-            cursor_created_at, cursor_id = decode_cursor(pagination.cursor)
+            cursor_value, cursor_id = decode_cursor(pagination.cursor)
+            cursor_created_at = _cursor_datetime(cursor_value)
             statement = statement.where(
                 or_(
                     Post.created_at < cursor_created_at,
                     and_(Post.created_at == cursor_created_at, Post.id < cursor_id),
                 )
             )
+
+    return statement
+
+
+def _apply_metadata_sort_and_cursor(
+    statement: SelectOfScalar[Post],
+    pagination: PostPagination,
+) -> SelectOfScalar[Post]:
+    """Sort by a metadata key's value (v0.4.1), lexicographic text ordering.
+
+    Only posts that have a non-null value for the key participate (mirrors the
+    values facet), which keeps the keyset cursor free of NULL comparisons. The
+    value is compared as text — correct for strings and ISO dates; numeric-aware
+    ordering is a deferred follow-up. ``post id`` is the stable tie-breaker.
+    """
+    key = pagination.sort_metadata_key
+    ascending = pagination.sort == "metadata_asc"
+
+    statement = statement.where(
+        text(
+            "jsonb_exists(posts.metadata_json, :sort_key)"
+            " AND (posts.metadata_json ->> :sort_key) IS NOT NULL"
+        ).bindparams(sort_key=key)
+    )
+
+    order_dir = "ASC" if ascending else "DESC"
+    statement = statement.order_by(
+        text(f"(posts.metadata_json ->> :sort_key) {order_dir}").bindparams(sort_key=key),
+        col(Post.id).asc() if ascending else col(Post.id).desc(),
+    )
+
+    if pagination.cursor is not None:
+        cursor_value, cursor_id = decode_cursor(pagination.cursor)
+        comparator = ">" if ascending else "<"
+        statement = statement.where(
+            text(
+                f"((posts.metadata_json ->> :sort_key) {comparator} :cursor_value"
+                f" OR ((posts.metadata_json ->> :sort_key) = :cursor_value"
+                f" AND posts.id {comparator} :cursor_id))"
+            ).bindparams(sort_key=key, cursor_value=cursor_value, cursor_id=cursor_id)
+        )
 
     return statement
 
@@ -492,6 +574,8 @@ def paginate_posts(
     rows = list(session.exec(statement).all())
     has_more = len(rows) > validated_pagination.limit
     posts = rows[: validated_pagination.limit]
-    next_cursor = encode_cursor(posts[-1]) if has_more and posts else None
+    next_cursor = (
+        encode_cursor(posts[-1], validated_pagination) if has_more and posts else None
+    )
 
     return PostPage(posts=posts, next_cursor=next_cursor, has_more=has_more)
