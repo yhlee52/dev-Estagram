@@ -1,11 +1,13 @@
 import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router';
+import { usePinnedMetadataKeys } from '../hooks/usePinnedMetadataKeys';
 import type { FeedItem } from '../types/feed';
 import { formatDateTime } from '../utils/format';
 import AssetRenderer from './AssetRenderer';
 import AssetGallery from './AssetGallery';
 import MentionText from './MentionText';
 import MetadataSummary from './MetadataSummary';
+import PinnedMetadataChips from './PinnedMetadataChips';
 import PostBadges from './PostBadges';
 import TagList from './TagList';
 import { getSortedVisualAssets, isVisualAsset } from '../utils/assetUtils';
@@ -38,6 +40,7 @@ function Avatar({ src, name }: { src?: string; name: string }) {
 
 export default function FeedCard({ item }: FeedCardProps) {
   const navigate = useNavigate();
+  const { pinnedKeys } = usePinnedMetadataKeys();
   const { account, post } = item;
   const postAssets = post.assets ?? [];
   const visualAssets = getSortedVisualAssets(postAssets);
@@ -126,9 +129,11 @@ export default function FeedCard({ item }: FeedCardProps) {
             ) : null}
           </div>
 
+          <PinnedMetadataChips metadata={post.metadata} pinnedKeys={pinnedKeys} />
+
           <TagList tags={postTags} />
 
-          <MetadataSummary metadata={post.metadata} />
+          <MetadataSummary metadata={post.metadata} excludeKeys={pinnedKeys} />
 
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-neutral-400">
             <time dateTime={postCreatedAt}>

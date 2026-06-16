@@ -8,10 +8,16 @@ v0.4.x 항목을 코드 현황에 맞춰 구체화하고, 진입 전 확인할 �
 각 MINOR의 확정 scope는 착수 시 `V0_4_0_*_SCOPE.md` / `V0_4_1_*_SCOPE.md`로
 분리해 작성합니다.
 
-> **테마 진행 현황 (2026-06-14)**
-> - v0.4.0 — Facet 기반 필터: **미착수**.
-> - v0.4.1 — 카드 metadata 노출 & 값 정렬: **미착수**.
-> - v0.4.x 마지막 MINOR — UX backlog 반영: **미착수(예약 슬롯)**.
+> **테마 진행 현황 (2026-06-16 갱신 — v0.4.x 테마 완료)**
+> - v0.4.0 — Facet 기반 필터: **완료**. facet API(`/api/metadata/keys`·`/values`)
+>   + facet 선택 정확일치(`metadata_match=exact`, 자유 입력은 ILIKE 유지).
+>   상세는 `V0_4_0_FACET_FILTER_SCOPE.md`.
+> - v0.4.1 — 카드 metadata 노출 & 값 정렬: **완료**. pinned keys 카드 칩 +
+>   metadata 값 정렬(텍스트 사전순, key 보유 post만, cursor 안정).
+>   상세는 `V0_4_1_CARD_METADATA_SORT_SCOPE.md`.
+> - v0.4.2 — UX backlog 반영(테마 마지막 MINOR): **완료**. 카드 metadata 중복
+>   제거 + 정렬 기대치 안내 + 테마 문서 일괄 정리. 변경 폭으로 별도 MINOR 승격.
+>   상세는 `V0_4_2_UX_BACKLOG_SCOPE.md`. **이로써 v0.4.x 테마 완료.**
 > - 직전 테마 v0.3.x(Ingestion 신뢰성)는 **완료**(v0.3.4). 이후 `appVersion.ts`
 >   라벨은 `v0.3.5`(테마 완료 후 운영 안정화 patch — Watch 중 dev server 종료 수정 +
 >   릴리즈 문서 최신화).

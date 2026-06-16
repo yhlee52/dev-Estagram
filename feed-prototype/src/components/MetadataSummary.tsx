@@ -4,13 +4,18 @@ import { formatMetadataValue } from '../utils/format';
 type MetadataSummaryProps = {
   metadata?: PostMetadata;
   limit?: number;
+  /** Keys already surfaced elsewhere (e.g. pinned chips) to avoid duplication. */
+  excludeKeys?: string[];
 };
 
 export default function MetadataSummary({
   metadata,
   limit = 3,
+  excludeKeys = [],
 }: MetadataSummaryProps) {
-  const entries = Object.entries(metadata ?? {}).slice(0, limit);
+  const entries = Object.entries(metadata ?? {})
+    .filter(([key]) => !excludeKeys.includes(key))
+    .slice(0, limit);
 
   if (entries.length === 0) {
     return null;

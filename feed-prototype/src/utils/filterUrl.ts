@@ -8,6 +8,8 @@ const ASSET_FILTER_TYPES: PostAssetFilterType[] = [
   'link',
 ];
 
+const POST_SORTS: PostSort[] = ['newest', 'oldest', 'metadata_asc', 'metadata_desc'];
+
 /**
  * Serialize applied post filters into URL query parameters.
  *
@@ -29,6 +31,11 @@ export function filtersToSearchParams(filters: PostFilters): URLSearchParams {
   setTrimmed('tag', filters.tag);
   setTrimmed('metadata_key', filters.metadataKey);
   setTrimmed('metadata_value', filters.metadataValue);
+  // Only encode exact match (facet-selected); contains is the default so older
+  // shareable links without this param keep working.
+  if (filters.metadataMatch === 'exact' && filters.metadataValue?.trim()) {
+    params.set('metadata_match', 'exact');
+  }
   if (filters.assetType) {
     params.set('asset_type', filters.assetType);
   }
@@ -40,6 +47,9 @@ export function filtersToSearchParams(filters: PostFilters): URLSearchParams {
   setTrimmed('created_at_to', filters.createdAtTo);
   if (filters.sort && filters.sort !== 'newest') {
     params.set('sort', filters.sort);
+    if (filters.sort === 'metadata_asc' || filters.sort === 'metadata_desc') {
+      setTrimmed('sort_metadata_key', filters.sortMetadataKey);
+    }
   }
   if (filters.myPostsOnly) {
     params.set('my_posts_only', '1');
@@ -55,20 +65,26 @@ export function filtersFromSearchParams(params: URLSearchParams): PostFilters {
     ? (assetTypeRaw as PostAssetFilterType)
     : '';
 
-  const sort: PostSort = params.get('sort') === 'oldest' ? 'oldest' : 'newest';
+  const sortRaw = params.get('sort') ?? '';
+  const sort: PostSort = (POST_SORTS as string[]).includes(sortRaw)
+    ? (sortRaw as PostSort)
+    : 'newest';
   const myPostsOnlyRaw = params.get('my_posts_only');
+  const metadataMatch = params.get('metadata_match') === 'exact' ? 'exact' : undefined;
 
   return {
     keyword: params.get('keyword') ?? '',
     tag: params.get('tag') ?? '',
     metadataKey: params.get('metadata_key') ?? '',
     metadataValue: params.get('metadata_value') ?? '',
+    metadataMatch,
     assetType,
     accountHandle: params.get('account_handle') ?? '',
     accountId: params.get('account_id') ?? undefined,
     createdAtFrom: params.get('created_at_from') ?? '',
     createdAtTo: params.get('created_at_to') ?? '',
     sort,
+    sortMetadataKey: params.get('sort_metadata_key') ?? '',
     myPostsOnly: myPostsOnlyRaw === '1' || myPostsOnlyRaw === 'true',
   };
 }

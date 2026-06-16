@@ -189,11 +189,13 @@ asset 파일 복사는 opt-in이며 기존 /assets/... 경로 package는 계속 
 - v0.4.0: facet 기반 필터(기반). `GET /api/metadata/keys`류 facet API(distinct
   key/value + 사용 빈도). 필터 패널의 자유 입력 metadata key/value를 알려진
   key·value의 드롭다운/칩 선택으로 보강(자유 입력은 유지). v0.1.2 tag 자동완성과
-  같은 패턴 재사용.
-- v0.4.1: 카드 metadata 노출 & 값 정렬. 사용자가 고른 metadata key를
-  PostCard/Explore 카드에 칩으로 고정 표시(pinned keys, URL/localStorage).
-  metadata 값 기준 정렬(숫자/날짜 인식, 기존 newest/oldest sort 확장).
-- 마지막 MINOR: `UX_BACKLOG.md` 반영 예약 슬롯.
+  같은 패턴 재사용. **완료.**
+- v0.4.1: 카드 metadata 노출 & 값 정렬. 사용자가 고른 metadata key를 카드에
+  칩으로 고정 표시(pinned keys, localStorage). metadata 값 기준 정렬(텍스트
+  사전순 + key 보유 post 한정, 기존 newest/oldest sort 확장). 숫자 인식 정렬과
+  pinned keys URL 동기화는 테마 후속 후보로 보류. **완료.**
+- v0.4.2: `UX_BACKLOG.md` 반영(테마 마지막 MINOR). 카드 metadata 중복 제거 +
+  정렬 기대치 안내 + 테마 문서 일괄 정리. **이로써 v0.4.x 테마 완료.**
 
 ### v0.4.x 메타데이터 정책 (재확인)
 
@@ -234,6 +236,41 @@ like 기능은 북마크 사용 양상을 본 뒤 별도 결정합니다.
   selection을 실제 인증으로 교체. OAuth/SSO/JWT는 범위 밖.
 - v0.6.1: User:Account 1:1 → 1:N. 봇/프로그램 계정을 user가 소유하는 구조.
   bot 여부 같은 분류는 core 필드가 아닌 generic한 소유 관계로 표현.
+- v0.6.2: 소유 계정 profile self-service. 로그인한 user가 자기 소유 계정의
+  display_name/bio/avatar를 UI에서 직접 수정. account/handle처럼 식별자에
+  해당하는 값은 등록 시 고정(수정 불가).
+
+> 배경(2026-06-15 논의): 현재 계정 profile(display_name/bio/avatar)은 import
+> 패키지의 `accounts[]` 블록이 매 import마다 DB를 덮어쓴다(`upsert_account`).
+> 실서비스에서는 외부 데이터가 계속 들어오고 계정/설비가 추가·삭제되므로,
+> "누가 profile의 주인인가"를 명시해야 한다. 단순 정규화(post→Account 참조)는
+> 이미 되어 있고, 빠진 것은 소유권과 갱신 충돌 정책이다.
+
+### v0.6.x 계정 소유권 / 데이터 정책
+
+```text
+계정을 두 종류로 구분한다
+  - 소유된 개인 계정: 로그인 user가 주인. profile의 source of truth는
+    사용자 편집이며, import는 profile 필드를 덮지 않는다(skip).
+  - 봇/프로그램 계정: 소유자 없음. 기존대로 import가 profile을 관리(upsert)한다.
+
+incoming 패키지 작성 규칙
+  - 봇 계정: 기존대로 `accounts[]`에 profile 포함.
+  - 소유된 개인 계정: `accounts[]`에 넣지 않고 post가 `account_external_id`로
+    참조만 한다(format상 DB existing account 참조는 이미 허용 — 패키지 가이드 5장).
+    계정 자체는 가입(운영) 또는 seed(테스트)로 한 번 생성한다.
+
+계정 추가/삭제(라이프사이클)
+  - 신규 계정: 가입 흐름으로 생성하거나, 봇 계정은 첫 import 시 생성.
+  - 비활성/삭제: post는 account FK로만 연결되므로, 계정 삭제 시 post 처리
+    정책(보존/이관/숨김)을 v0.6.x scope에서 확정한다.
+
+테스트 데이터
+  - 로그인 가능한 테스트 개인 계정은 seed에 둔다(자격 + 소유권). seed는
+    write-once(있으면 안 덮음)라 import와 충돌하지 않는다.
+  - import 패키지(외부 생성 콘텐츠)와 seed(개발/테스트 픽스처)는 별개 경로로
+    유지한다.
+```
 
 ## v1.0.0 — 첫 major
 

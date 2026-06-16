@@ -37,6 +37,7 @@ def list_posts(
     tag: str | None = Query(default=None),
     metadata_key: str | None = Query(default=None),
     metadata_value: str | None = Query(default=None),
+    metadata_match: str | None = Query(default=None),
     asset_type: str | None = Query(default=None),
     account_id: str | None = Query(default=None),
     account_handle: str | None = Query(default=None),
@@ -45,6 +46,7 @@ def list_posts(
     created_at_from: str | None = Query(default=None),
     created_at_to: str | None = Query(default=None),
     sort: str = Query(default="newest"),
+    sort_metadata_key: str | None = Query(default=None),
     cursor: str | None = Query(default=None),
     limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
     session: Session = Depends(get_session),
@@ -57,6 +59,7 @@ def list_posts(
             tag=tag,
             metadata_key=metadata_key,
             metadata_value=metadata_value,
+            metadata_match=metadata_match,
             asset_type=asset_type,
             account_id=account_id,
             account_handle=account_handle,
@@ -65,7 +68,9 @@ def list_posts(
             created_at_from=created_at_from,
             created_at_to=created_at_to,
         ),
-        PostPagination(sort=sort, cursor=cursor, limit=limit),
+        PostPagination(
+            sort=sort, cursor=cursor, limit=limit, sort_metadata_key=sort_metadata_key
+        ),
     )
     return PaginatedPosts(
         items=[build_post_with_assets(session, post) for post in page.posts],

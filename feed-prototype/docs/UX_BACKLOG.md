@@ -20,6 +20,8 @@
 
 | 날짜 | 화면 | 내용 | 반영 버전 |
 |---|---|---|---|
+| 2026-06-16 | /, /posts (카드) | pin한 metadata key가 카드에서 pinned 칩과 `MetadataSummary`(상위 3개)에 중복 표시됨(v0.4.1에서 발생). `MetadataSummary`에 `excludeKeys` 추가하고 `FeedCard`가 pinned key를 넘겨 summary에서 제외 | v0.4.2 |
+| 2026-06-16 | /, /posts (필터 패널) | metadata 값 정렬 시 그 key를 가진 post만 보여줘 결과 수가 조용히 줄어드는 게 설명 없이 일어남. 정렬 활성 + key 선택 시 "only posts that have this metadata key are shown" 안내 문구 추가 | v0.4.2 |
 | 2026-06-14 | /me (API 모드) | 내 post가 많아지면 `getAccountPosts`로 전량을 받아 한 번에 렌더 → 페이지네이션/Load more 없음. 활동 요약이 정확한 총계를 보여줘 어차피 전량 fetch가 필요하므로, 표시 카드만 `MY_POSTS_PAGE_SIZE`(20)개씩 "Load more"로 점진 렌더(클라이언트 사이드). 서버 cursor는 중복 fetch가 되어 보류 | v0.3.4 |
 | 2026-06-14 | 전역 (삭제 확인) | post 삭제 확인이 브라우저 `window.confirm`이라 앱 톤과 이질적이고 스타일/포커스 제어가 안 됨. 공용 `ConfirmDialog` 컴포넌트(오버레이/Escape/백드롭/포커스 제어)로 교체하고 `MyPostCard`·`PostDetail` 삭제에 적용 | v0.3.4 |
 | 2026-06-14 | /posts (필터 없음) | Explore 페이지 상단 헤더 "Explore"와 그 아래 `ExploreTags` 섹션 제목 "Explore"가 같은 화면에 중복 표시됨. 섹션 제목을 "Discover"로 바꿔 중복 제거(태그/계정 진입 의미 유지) | v0.2.3 (post-dev 점검) |

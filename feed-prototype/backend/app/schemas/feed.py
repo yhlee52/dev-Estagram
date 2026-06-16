@@ -226,6 +226,25 @@ class TagListResponse(BaseModel):
     items: list[TagCount] = Field(default_factory=list)
 
 
+class MetadataKeyCount(BaseModel):
+    key: str
+    count: int
+
+
+class MetadataKeyListResponse(BaseModel):
+    items: list[MetadataKeyCount] = Field(default_factory=list)
+
+
+class MetadataValueCount(BaseModel):
+    value: str
+    count: int
+
+
+class MetadataValueListResponse(BaseModel):
+    key: str
+    items: list[MetadataValueCount] = Field(default_factory=list)
+
+
 class FollowRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
