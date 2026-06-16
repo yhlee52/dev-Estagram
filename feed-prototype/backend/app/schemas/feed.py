@@ -352,6 +352,33 @@ class UserBookmarkIdsResponse(BaseModel):
     post_ids: list[str] = Field(default_factory=list)
 
 
+class NotificationItem(BaseModel):
+    id: str
+    source_type: str
+    source_id: str
+    reasons: list[str] = Field(default_factory=list)
+    created_at: datetime
+    is_read: bool
+    post: PostWithAssets
+    account: AccountRead
+    comment: CommentRead | None = None
+    comment_author: AccountRead | None = None
+
+
+class PaginatedNotifications(BaseModel):
+    items: list[NotificationItem] = Field(default_factory=list)
+    unread_count: int = 0
+    last_read_at: datetime | None = None
+    next_cursor: str | None = None
+    has_more: bool = False
+
+
+class NotificationReadState(BaseModel):
+    user_id: str
+    unread_count: int = 0
+    last_read_at: datetime | None = None
+
+
 class FeedItem(BaseModel):
     post: PostRead
     account: AccountRead

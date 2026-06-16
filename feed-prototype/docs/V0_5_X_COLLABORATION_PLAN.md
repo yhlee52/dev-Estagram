@@ -13,9 +13,11 @@ v0.5.x 항목을 코드 현황에 맞춰 구체화하고, 진입 전 확인할 �
 > - v0.5.1 — Bookmarks(+ 비공개 메모 · Me 탭 목록): **완료**. post 북마크 토글 +
 >   비공개 메모(annotation) + Me 탭 북마크/Following 목록 + 메인 Browse
 >   `bookmarked_only` 필터. 상세는 `V0_5_1_BOOKMARKS_SCOPE.md`.
-> - v0.5.2 — In-app 알림 & mention 수신: 계획 단계.
+> - v0.5.2 — In-app 알림 & mention 수신: **완료**. 파생 알림 + user별 읽음
+>   워터마크 + `/notifications` + Home/Me 진입점. 상세는
+>   `V0_5_2_NOTIFICATIONS_SCOPE.md`.
 > - v0.5.3 — UX backlog 반영(테마 마지막 MINOR): 예약 슬롯.
-> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.5.1`. 직전 테마
+> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.5.2`. 직전 테마
 >   v0.4.x(메타데이터 일급화 & 트리아지)는 **완료**(v0.4.2). 상세는
 >   `archive/V0_4_X_METADATA_PLAN.md` 및 `archive/V0_4_*_SCOPE.md`.
 
@@ -157,6 +159,7 @@ v0.5.x도 대부분 기존 자산 위에 얇게 얹는 작업입니다.
 ### v0.5.2 — In-app 알림 & mention 수신
 
 목표: 내가 봐야 할 변화(새 post·새 댓글·나를 언급)를 앱 안에서 모아 본다.
+확정 scope는 `V0_5_2_NOTIFICATIONS_SCOPE.md`를 기준으로 한다.
 
 - **mention 수신**: "나를 언급한 목록". post 본문뿐 아니라 **댓글 본문의**
   `@myhandle`도 스캔합니다(v0.5.0 댓글 mention 렌더와 일관). 패턴 쿼리로 파생
@@ -170,11 +173,16 @@ v0.5.x도 대부분 기존 자산 위에 얇게 얹는 작업입니다.
   배지/구분선.
 - **API mode 전용**.
 
-결정 필요(scope에서):
-- 알림 저장 방식: 읽음 처리(위)를 제대로 두려면 순수 파생보다 **약한 저장형**
-  (알림/읽음 레코드 또는 user별 `last_seen`)이 유리합니다. 단순 unread 배지만
-  필요하면 파생 + localStorage(v0.4.1 동기화 패턴)로 시작 가능. 읽음 영속 범위를
-  scope에서 확정합니다.
+확정(구현 완료):
+- 알림 item 자체는 저장하지 않고 post/comment/follow/text에서 파생한다. 읽음 상태는
+  신규 `notification_state` 테이블의 user별 `last_read_at` 워터마크로 저장한다.
+- 같은 source(`post:{id}` / `comment:{id}`)가 여러 이유에 걸리면 하나의 item에
+  `reasons`를 병합한다.
+- `/notifications` route, SideNav unread badge, Home unread 진입, Me 탭 Mentions
+  요약을 제공한다. push/websocket/외부 채널은 non-goal 유지.
+
+확정 결정:
+- 알림 저장 방식: **파생 item + user별 `last_read_at` 워터마크**로 확정했습니다.
 - 실시간 push/websocket은 범위 밖(조회/폴링 기반).
 
 ### v0.5.3 — UX backlog 반영 (테마 마지막 MINOR, 예약 슬롯)
@@ -224,9 +232,9 @@ mock mode 협업 UI
 
 ## 7. 다음 행동
 
-1. v0.5.0 착수 시 `V0_5_0_COMMENTS_SCOPE.md`를 작성해 댓글 테이블 스키마·라우트
-   경로·작성자 식별·평면 댓글 확정·렌더 재사용 범위를 확정한다.
-2. 구현 후 `appVersion.ts` 라벨을 `v0.5.0`으로 올리고, `AGENTS.md` Completed
-   Scope History·`docs/README.md` 색인·`ROADMAP.md` 진행 현황을 갱신한다.
-3. v0.5.1(북마크 + Me 탭 목록), v0.5.2(알림 & mention 수신), 이어서 마지막
-   MINOR v0.5.3(UX backlog)로 진행한다.
+1. v0.5.3 착수 시 `UX_BACKLOG.md`의 Open 항목과 v0.5.x 구현 중 발견한 UX 항목을
+   확인해 `V0_5_3_*_SCOPE.md`를 작성한다.
+2. v0.5.3에서는 협업 테마 마지막 MINOR 규칙대로 UX backlog 반영과 테마 완료 문서
+   정리를 수행한다.
+3. v0.5.3 완료 후 v0.5.x 테마 문서를 archive 이동 대상으로 정리하고, 다음 테마
+   v0.6.x(Auth & Multi-user) 진입 판단으로 넘어간다.

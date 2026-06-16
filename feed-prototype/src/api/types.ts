@@ -241,6 +241,39 @@ export interface ApiUserBookmarkIdsResponse {
   post_ids: string[];
 }
 
+export type ApiNotificationReason =
+  | "followed_post"
+  | "own_post_comment"
+  | "mention"
+  | string;
+
+export interface ApiNotificationItem {
+  id: string;
+  source_type: "post" | "comment" | string;
+  source_id: string;
+  reasons: ApiNotificationReason[];
+  created_at: string;
+  is_read: boolean;
+  post: ApiPostWithAssets;
+  account: ApiAccount;
+  comment: ApiComment | null;
+  comment_author: ApiAccount | null;
+}
+
+export interface ApiPaginatedNotifications {
+  items: ApiNotificationItem[];
+  unread_count: number;
+  last_read_at: string | null;
+  next_cursor: string | null;
+  has_more: boolean;
+}
+
+export interface ApiNotificationReadState {
+  user_id: string;
+  unread_count: number;
+  last_read_at: string | null;
+}
+
 export interface ApiFollow {
   id: string;
   follower_user_id: string;

@@ -7,6 +7,7 @@ import { useActiveApiUser } from '../auth/apiActiveUser';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
 import MeBookmarksSection from '../components/MeBookmarksSection';
+import MeMentionsSection from '../components/MeMentionsSection';
 import MyPostCard from '../components/MyPostCard';
 import postsData from '../data/posts.json';
 import {
@@ -401,6 +402,8 @@ function ApiMePage() {
           )}
         </section>
       ) : null}
+
+      {account ? <MeMentionsSection userId={activeApiUserId} /> : null}
 
       {account ? <MeBookmarksSection userId={activeApiUserId} /> : null}
     </div>

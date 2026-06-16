@@ -238,9 +238,14 @@ ingestion(v0.3)·metadata 트리아지(v0.4)로 "데이터를 잘 읽는" 축이
   facet 필터·정렬 재사용, 메인 Browse엔 `bookmarked_only` 필터 토글. 같은 Me 탭
   작업으로 `UX_BACKLOG.md`의 이연 Open 항목("내가 팔로우한 계정" 목록,
   v0.2.3→v0.5.x)도 함께 처리.
-- v0.5.2: in-app 알림(팔로우 계정 새 post, 내 post의 새 댓글, 나를 언급한 새
-  post/댓글) + 읽음 처리/모두 읽음. mention 수신(post·댓글 본문 `@handle` 파생
-  쿼리, v0.1.3 렌더 규칙 재사용), Home Feed unread/since-last-visit 표시.
+- v0.5.2: in-app 알림. **완료.** 팔로우 계정 새 post, 내 post의 새 댓글, 나를
+  언급한 새 post/댓글을 앱 안에서 모아 봅니다. 신규 `notification_state` 테이블
+  (user별 `last_read_at` 읽음 워터마크) + user-scoped
+  `GET /api/users/{id}/notifications`·`POST .../read-all`. 알림 item은 post/comment/
+  follow/text에서 파생하고 같은 source의 reason을 병합합니다. mention 수신은
+  post·댓글 본문 `@handle`을 v0.1.3/v0.5.0 렌더 규칙과 같은 regex로 판정(email
+  오탐 방지). frontend는 `/notifications` 목록 + SideNav unread badge + Home unread
+  진입 + Me 탭 Mentions 요약. **API mode 전용**, external package format 무변경.
 - v0.5.3: `UX_BACKLOG.md` 반영(테마 마지막 MINOR). 이 테마에서 새로 쌓인 UX
   항목 정리 + 테마 완료 문서 일괄 정리. **이로써 v0.5.x 테마 완료.**
 

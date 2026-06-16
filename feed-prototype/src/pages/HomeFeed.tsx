@@ -18,6 +18,7 @@ import { getHomeFeedItems, type FeedScope } from '../data/feedRepository';
 import { API_FOLLOWS_CHANGE_EVENT } from '../hooks/useApiFollows';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useFollowState } from '../hooks/useFollowState';
+import { useNotifications } from '../hooks/useNotifications';
 import type { FeedItem } from '../types/feed';
 import type { PostFilters } from '../types/filters';
 import { filtersFromSearchParams, filtersToSearchParams } from '../utils/filterUrl';
@@ -92,6 +93,7 @@ export default function HomeFeed() {
   const accounts = useEffectiveAccounts();
   const { activeUserId, followingIds } = useFollowState();
   const { activeApiUserId } = useActiveApiUser();
+  const notifications = useNotifications({ limit: 1 });
   const [apiFollowRefreshKey, setApiFollowRefreshKey] = useState(0);
 
   // Load popular tags once for the search box autocomplete (v0.1.2). Failures
@@ -317,6 +319,21 @@ export default function HomeFeed() {
           </Link>
         ) : null}
       </div>
+
+      {isApiDataSource && activeApiUserId && notifications.unreadCount > 0 ? (
+        <Link
+          to="/notifications"
+          className="flex items-center justify-between gap-3 rounded-md border border-neutral-950 bg-white px-3 py-2 shadow-sm transition hover:bg-neutral-100"
+        >
+          <span className="text-sm font-bold text-neutral-950">
+            {notifications.unreadCount} unread update
+            {notifications.unreadCount === 1 ? '' : 's'}
+          </span>
+          <span className="text-xs font-bold uppercase text-neutral-500">
+            Open
+          </span>
+        </Link>
+      ) : null}
 
       {isApiDataSource ? (
         <div className="space-y-3 rounded-md border border-neutral-200 bg-neutral-100 p-3">

@@ -1,11 +1,13 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.5.1` (협업 — Annotation & Collaboration 테마 **진행 중**). v0.5.0은
+현재 릴리즈: `v0.5.2` (협업 — Annotation & Collaboration 테마 **진행 중**). v0.5.0은
 post별 평면 댓글(작성/조회/수정/삭제, 작성자 신원, 본문 `@mention`·`#hashtag` 렌더,
 카드 댓글 수 칩), v0.5.1은 북마크(post 토글 + 비공개 메모 + Me 탭 북마크/Following
-목록 + 메인 Browse `bookmarked_only` 필터) — **API mode 전용**, external package
-format 무변경. 상세는 `V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`,
-테마 진입 판단·후보 계획은 `V0_5_X_COLLABORATION_PLAN.md`를 참고하세요.
+목록 + 메인 Browse `bookmarked_only` 필터), v0.5.2는 in-app 알림/mention 수신
+(파생 알림 + user별 읽음 워터마크 + `/notifications` + Home/Me 진입점) — **API mode
+전용**, external package format 무변경. 상세는 `V0_5_0_COMMENTS_SCOPE.md`·
+`V0_5_1_BOOKMARKS_SCOPE.md`·`V0_5_2_NOTIFICATIONS_SCOPE.md`, 테마 진입 판단·후보
+계획은 `V0_5_X_COLLABORATION_PLAN.md`를 참고하세요.
 
 직전 테마 v0.4.x(메타데이터 일급화 & 트리아지)는 v0.4.0 facet 기반 필터(데이터
 파생 key/value 선택 `GET /api/metadata/keys`·`/values`, facet 선택 정확일치
@@ -26,6 +28,7 @@ v0.3.4로 완료(v0.3.5 운영 안정화 patch), v0.1.x·v0.2.x와 함께 `archi
   `V0_5_*_SCOPE.md`로 작성
 - `V0_5_0_COMMENTS_SCOPE.md`: v0.5.0(Comments, 테마 기반 작업) 상세 scope
 - `V0_5_1_BOOKMARKS_SCOPE.md`: v0.5.1(Bookmarks + 비공개 메모 · Me 탭 목록) 상세 scope
+- `V0_5_2_NOTIFICATIONS_SCOPE.md`: v0.5.2(In-app Notifications & Mentions) 상세 scope
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: external post package 작성 guide (format 중심)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog
@@ -33,7 +36,7 @@ v0.3.4로 완료(v0.3.5 운영 안정화 patch), v0.1.x·v0.2.x와 함께 `archi
 
 ## 릴리즈 운영 문서 (current release 기준, v1.0.0 안정화 단계까지 유지)
 
-파일명은 v0.0.0 시점 이름을 유지하지만, 내용은 항상 현재 릴리즈(`v0.4.2`) 기준으로
+파일명은 v0.0.0 시점 이름을 유지하지만, 내용은 항상 현재 릴리즈(`v0.5.2`) 기준으로
 갱신됩니다. v0.0.0 시점 historical 사본은 `archive/`에 보관합니다.
 
 - `RELEASE_0_0_RUNBOOK.md`: 현재 릴리즈 기준 local 실행 재현 runbook

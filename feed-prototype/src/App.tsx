@@ -9,6 +9,7 @@ import ImportBatchDetailPage from './pages/ImportBatchDetailPage';
 import MePage from './pages/MePage';
 import EditPostPage from './pages/EditPostPage';
 import NewPostPage from './pages/NewPostPage';
+import NotificationsPage from './pages/NotificationsPage';
 import PostDetail from './pages/PostDetail';
 import PostsBrowsePage from './pages/PostsBrowsePage';
 
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: 'me',
         element: <MePage />,
+      },
+      {
+        path: 'notifications',
+        element: <NotificationsPage />,
       },
       {
         path: 'imports',

@@ -8,14 +8,17 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.5.1`(협업 — Annotation & Collaboration 테마, Bookmarks)이며
+현재 릴리즈는 `v0.5.2`(협업 — Annotation & Collaboration 테마, In-app Notifications
+& Mentions)이며
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이 기준입니다.
 직전 테마 v0.4.x(메타데이터 일급화 & 트리아지)는 v0.4.2로 **완료**되었고, 현재
 v0.5.x(협업) 테마가 진행 중입니다. v0.5.0은 post별 평면 댓글, v0.5.1은 북마크
-(+ 비공개 메모 · `bookmarked_only` 필터 · Me 탭 북마크/Following 목록) — 진입
-판단/후보 계획은 `feed-prototype/docs/V0_5_X_COLLABORATION_PLAN.md`, 각 MINOR 상세
-scope는 `feed-prototype/docs/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`에
-있습니다.
+(+ 비공개 메모 · `bookmarked_only` 필터 · Me 탭 북마크/Following 목록), v0.5.2는
+in-app 알림/mention 수신(파생 알림 + user별 읽음 워터마크 + `/notifications` +
+Home/Me 진입점) — 진입 판단/후보 계획은
+`feed-prototype/docs/V0_5_X_COLLABORATION_PLAN.md`, 각 MINOR 상세 scope는
+`feed-prototype/docs/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`·
+`V0_5_2_NOTIFICATIONS_SCOPE.md`에 있습니다.
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
 - `README.md`
@@ -34,7 +37,8 @@ scope는 `feed-prototype/docs/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE
 `feed-prototype/docs/archive/`로 이동했습니다. 현재 테마 v0.5.x(협업 — Annotation
 & Collaboration)의 진입 판단·후보 계획은
 `feed-prototype/docs/V0_5_X_COLLABORATION_PLAN.md`, 구현된 상세 scope는
-`feed-prototype/docs/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`에
+`feed-prototype/docs/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`·
+`V0_5_2_NOTIFICATIONS_SCOPE.md`에
 있으며, 이후 MINOR 확정 scope는 착수 시 `docs/`에 `V0_5_*_SCOPE.md`로 새로
 작성합니다. 과거 MVP별 테스트 절차도
 `feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
@@ -53,6 +57,7 @@ core type, shared component, route, data flow에는 다음 generic concept를 �
 - Metadata
 - Comment (v0.5.0~, generic 협업 개념)
 - Bookmark (v0.5.1~, generic 협업/주석 개념)
+- Notification (v0.5.2~, generic 협업/알림 개념)
 
 core type name 또는 primary component name에 설비 리포트 전용 용어를 넣지 않습니다. 피해야 할 이름:
 
@@ -238,6 +243,16 @@ v0.5.x — 협업 (Annotation & Collaboration):
   (이연됐던 UX backlog 항목 반영) + `PostFilterPanel` "Bookmarked only" 토글
   (URL 동기화). **API mode 전용**, external package format 무변경. 회귀 스크립트
   `scripts/check_bookmarks.py`.
+- v0.5.2: notifications & mentions. 신규 `notification_state` 테이블(migration
+  `0009`: user_id PK/FK, `last_read_at`, `updated_at`)은 개별 알림 event log가
+  아니라 user별 읽음 워터마크만 저장합니다. 알림 item은 post/comment/follow/text에서
+  파생하며 source(`post:{id}`/`comment:{id}`)가 같으면 `reasons`를 병합합니다.
+  user-scoped `GET /api/users/{id}/notifications`(cursor/limit/`unread_only`,
+  `unread_count`, post/account/comment context 포함)·`POST .../read-all`(모두 읽음).
+  mention 수신은 post·댓글 본문 `@handle`을 v0.1.3/v0.5.0 렌더 규칙과 같은 regex로
+  판정(email/word 중간 `@` 오탐 방지). frontend: `/notifications` 목록 +
+  SideNav unread badge + Home unread 진입 + Me 탭 Mentions 요약. **API mode 전용**,
+  external package format 무변경. 회귀 스크립트 `scripts/check_notifications.py`.
 
 ## Roadmap & Versioning
 
