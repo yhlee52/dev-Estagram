@@ -19,7 +19,7 @@ Archived 문서는 개발 기록이나 회귀 확인에는 유용하지만, 현�
 현재 실행/검증/계획 기준 문서:
 
 - `../ROADMAP.md` (버전 트리 / 다음 테마는 v0.5.x 협업)
-- `../V0_5_X_COLLABORATION_PLAN.md` (다음 테마 v0.5.x 진입 판단/후보 계획)
+- `V0_5_X_COLLABORATION_PLAN.md` (완료 테마 v0.5.x 협업 진입 판단/후보 계획)
 - `../EXTERNAL_POST_PACKAGE_GUIDE.md`
 - `../RELEASE_0_0_RUNBOOK.md`
 - `../RELEASE_0_0_CHECKLIST.md`

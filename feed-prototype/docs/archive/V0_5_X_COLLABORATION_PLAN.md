@@ -16,8 +16,11 @@ v0.5.x 항목을 코드 현황에 맞춰 구체화하고, 진입 전 확인할 �
 > - v0.5.2 — In-app 알림 & mention 수신: **완료**. 파생 알림 + user별 읽음
 >   워터마크 + `/notifications` + Home/Me 진입점. 상세는
 >   `V0_5_2_NOTIFICATIONS_SCOPE.md`.
-> - v0.5.3 — UX backlog 반영(테마 마지막 MINOR): 예약 슬롯.
-> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.5.2`. 직전 테마
+> - v0.5.3 — UX backlog 반영(테마 마지막 MINOR): **완료**. 협업 표면 UX polish +
+>   현재 릴리즈 문서/검증 절차 wrap-up.
+>   상세는 `V0_5_3_UX_BACKLOG_SCOPE.md`.
+> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.5.3`. v0.5.x 협업
+>   테마는 **완료**. 직전 테마
 >   v0.4.x(메타데이터 일급화 & 트리아지)는 **완료**(v0.4.2). 상세는
 >   `archive/V0_4_X_METADATA_PLAN.md` 및 `archive/V0_4_*_SCOPE.md`.
 
@@ -189,8 +192,13 @@ v0.5.x도 대부분 기존 자산 위에 얇게 얹는 작업입니다.
 
 `ROADMAP.md` 규칙대로 테마 마지막 MINOR는 `UX_BACKLOG.md` 반영용으로 예약.
 이 테마(댓글/북마크/알림) 작업 중 새로 쌓이는 UX 항목을 모아 반영하고, 테마 완료
-문서를 일괄 정리합니다. (Me 탭 Following 목록은 v0.5.1에서 처리하므로, 그때까지
-backlog Open 유지 후 Resolved로 이동.)
+문서를 일괄 정리합니다. 확정 scope는 `V0_5_3_UX_BACKLOG_SCOPE.md`를 기준으로 합니다.
+
+완료 확인(2026-06-16):
+- `UX_BACKLOG.md` Open 항목은 없음.
+- 협업 표면 UX audit으로 `/notifications` Unread empty state와 Mark all read 로딩
+  비활성화, Me 탭 Bookmarks empty copy를 작게 정리했다.
+- 현재 릴리즈 문서/검증 절차를 v0.5.3 기준으로 정리했다. 이로써 v0.5.x 테마 완료.
 
 ## 4. v0.5.x 협업 정책 (재확인)
 
@@ -232,9 +240,5 @@ mock mode 협업 UI
 
 ## 7. 다음 행동
 
-1. v0.5.3 착수 시 `UX_BACKLOG.md`의 Open 항목과 v0.5.x 구현 중 발견한 UX 항목을
-   확인해 `V0_5_3_*_SCOPE.md`를 작성한다.
-2. v0.5.3에서는 협업 테마 마지막 MINOR 규칙대로 UX backlog 반영과 테마 완료 문서
-   정리를 수행한다.
-3. v0.5.3 완료 후 v0.5.x 테마 문서를 archive 이동 대상으로 정리하고, 다음 테마
-   v0.6.x(Auth & Multi-user) 진입 판단으로 넘어간다.
+1. v0.5.x 테마 문서를 archive 이동 대상으로 정리한다.
+2. 다음 테마 v0.6.x(Auth & Multi-user) 진입 판단을 준비한다.

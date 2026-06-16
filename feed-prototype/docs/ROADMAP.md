@@ -222,8 +222,8 @@ metadata 스키마 강제/검증
 ingestion(v0.3)·metadata 트리아지(v0.4)로 "데이터를 잘 읽는" 축이 갖춰졌으니,
 그 위에 사람의 입력을 얹는 단계입니다.
 
-진입 판단·후보 계획·재사용 기반은 `V0_5_X_COLLABORATION_PLAN.md`를 참고합니다.
-각 MINOR 확정 scope는 착수 시 `V0_5_*_SCOPE.md`로 작성합니다.
+진입 판단·후보 계획·재사용 기반은 `archive/V0_5_X_COLLABORATION_PLAN.md`를 참고합니다.
+각 MINOR 확정 scope는 `archive/V0_5_*_SCOPE.md`에 보관합니다.
 
 - v0.5.0: comments (테마 기반). **완료.** post별 평면 댓글 — 작성/조회/수정/삭제
   (작성자 본인). 신규 `comments` 테이블 + `GET`/`POST /api/posts/{id}/comments`·
@@ -246,8 +246,11 @@ ingestion(v0.3)·metadata 트리아지(v0.4)로 "데이터를 잘 읽는" 축이
   post·댓글 본문 `@handle`을 v0.1.3/v0.5.0 렌더 규칙과 같은 regex로 판정(email
   오탐 방지). frontend는 `/notifications` 목록 + SideNav unread badge + Home unread
   진입 + Me 탭 Mentions 요약. **API mode 전용**, external package format 무변경.
-- v0.5.3: `UX_BACKLOG.md` 반영(테마 마지막 MINOR). 이 테마에서 새로 쌓인 UX
-  항목 정리 + 테마 완료 문서 일괄 정리. **이로써 v0.5.x 테마 완료.**
+- v0.5.3: `UX_BACKLOG.md` 반영(테마 마지막 MINOR). **완료.** 현재 Open backlog는
+  없었으므로 협업 표면 UX audit으로 `/notifications` Unread empty state, Mark all
+  read 로딩 비활성화, Me 탭 Bookmarks empty copy를 작게 정리하고 현재 릴리즈
+  문서/검증 절차를 v0.5.3 기준으로 맞췄습니다. 상세는
+  `archive/V0_5_3_UX_BACKLOG_SCOPE.md`. 이로써 **v0.5.x 테마 완료**.
 
 작성자/북마크 소유자/알림 수신자는 prototype active user selection으로
 식별합니다(MVP8 1:1 ownership 체크 패턴). 실제 인증/권한은 v0.6.x입니다.

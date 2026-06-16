@@ -20,6 +20,8 @@
 
 | 날짜 | 화면 | 내용 | 반영 버전 |
 |---|---|---|---|
+| 2026-06-16 | /notifications (Unread 탭) | 읽지 않은 알림이 없을 때도 전체 알림 0건과 같은 "No notifications yet" 문구를 보여, 이미 읽은 알림이 있는 사용자에게 상태가 모호했음. Unread 탭 전용 empty state("No unread notifications")로 분리하고, Mark all read 버튼은 로딩 중에도 비활성화 | v0.5.3 |
+| 2026-06-16 | /me (Bookmarks) | 북마크 empty state가 "Tap Save"라고 안내해 데스크톱 중심 prototype의 조작 맥락과 살짝 어긋남. "Use Save..."로 바꿔 입력 장치에 덜 묶인 문구로 정리 | v0.5.3 |
 | 2026-06-14 | /me (API 모드) | Following 수만 보이고 팔로잉한 계정 목록/바로가기는 없음. v0.5.1 Me 탭에 "Following" 목록 섹션 추가(팔로우 계정 → 프로필 바로가기). 같은 Me 탭 북마크 목록 작업과 함께 반영 | v0.5.1 |
 | 2026-06-16 | /, /posts (카드) | pin한 metadata key가 카드에서 pinned 칩과 `MetadataSummary`(상위 3개)에 중복 표시됨(v0.4.1에서 발생). `MetadataSummary`에 `excludeKeys` 추가하고 `FeedCard`가 pinned key를 넘겨 summary에서 제외 | v0.4.2 |
 | 2026-06-16 | /, /posts (필터 패널) | metadata 값 정렬 시 그 key를 가진 post만 보여줘 결과 수가 조용히 줄어드는 게 설명 없이 일어남. 정렬 활성 + key 선택 시 "only posts that have this metadata key are shown" 안내 문구 추가 | v0.4.2 |

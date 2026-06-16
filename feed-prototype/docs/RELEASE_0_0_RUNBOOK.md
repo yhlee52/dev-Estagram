@@ -1,12 +1,13 @@
-# feed-prototype 실행 가이드 (v0.3.5 기준)
+# feed-prototype 실행 가이드 (v0.5.3 기준)
 
 이 문서는 `feed-prototype`을 local 환경에서 재현 실행하기 위한 기준 runbook입니다.
-현재 릴리즈 `v0.3.5`(v0.3.x 테마 완료 후 운영 안정화 patch) 기준으로 mock → API →
-외부 데이터(CLI·디렉터리 일괄 처리·Watch·managed storage)까지의 실행 방법을 정리합니다.
+현재 릴리즈 `v0.5.3`(협업 — Annotation & Collaboration theme wrap-up) 기준으로
+mock → API → 외부 데이터(CLI·디렉터리 일괄 처리·Watch·managed storage) → 협업
+기능 확인까지의 실행 방법을 정리합니다.
 
 > 파일명은 v0.0.0 release 시점의 이름(`RELEASE_0_0_RUNBOOK.md`)을 유지하지만,
 > 내용은 항상 현재 릴리즈 기준으로 갱신됩니다. external post package format은 v0.0.0
-> 시점에 동결되어 v0.1.x~v0.3.x에서 바뀌지 않았습니다.
+> 시점에 동결되어 v0.1.x~v0.5.x에서도 바뀌지 않았습니다.
 
 ## 1. 개요
 
@@ -18,6 +19,7 @@ local/internal prototype입니다. 이 runbook은 다음 흐름을 확인하는 
 - 외부 JSON post package import (단일 파일 CLI / HTTP / 디렉터리 일괄 처리 / Watch)
 - imported post의 asset, tag, metadata, filter/search, viewer 확인
 - (opt-in) asset managed storage 복사
+- API mode 협업 기능 확인(댓글, 북마크/비공개 메모, in-app 알림/mention)
 
 production-ready app은 아니며, 정식 login/JWT/session/permission system은 포함하지 않습니다.
 
@@ -133,6 +135,7 @@ curl http://127.0.0.1:8000/api/users
 curl http://127.0.0.1:8000/api/accounts
 curl http://127.0.0.1:8000/api/posts
 curl http://127.0.0.1:8000/api/imports   # import batch 이력 (v0.3.1)
+curl "http://127.0.0.1:8000/api/users/demo-user-ari/notifications"  # 알림 (v0.5.2)
 ```
 
 ## 6. Frontend API Mode 실행
@@ -161,6 +164,7 @@ npm run dev
 - Home Feed가 backend seed data를 표시합니다.
 - Accounts, Account Profile, Post Detail, Explore, Me, Imports(`/imports`) 화면이 표시됩니다.
 - Follow/unfollow, post create/edit/delete가 backend DB state에 반영됩니다.
+- Post Detail 댓글, 카드/상세 북마크, `/notifications`가 API mode에서 표시됩니다.
 
 > `VITE_DATA_SOURCE`를 `mock`에서 `api`로 바꾼 뒤에는 반드시 dev server를 재시작합니다.
 
@@ -357,6 +361,10 @@ API mode frontend에서 다음을 확인합니다.
 - Post Detail: imported post의 title, text, tag, metadata, asset이 표시되는지 확인합니다.
 - Follow/unfollow: imported account를 follow한 뒤 Home Feed 표시가 바뀌는지 확인합니다.
 - Post create/edit/delete: active API user own post에 대해 생성·수정·삭제를 확인합니다.
+- Comments: Post Detail에서 댓글 작성/수정/삭제와 `@mention`·`#hashtag` 렌더를 확인합니다.
+- Bookmarks: 카드/상세 북마크 토글, private note 저장, Me 탭 북마크 목록을 확인합니다.
+- Notifications: `/notifications` 목록, unread/all 토글, Mark all read, SideNav unread
+  badge, Home unread 진입, Me 탭 Mentions 요약을 확인합니다.
 - Image/plot lightbox: image/plot thumbnail을 클릭해 modal/lightbox가 열리는지 확인합니다.
 - Multi image/plot order: 여러 visual asset이 `sort_order` 순서로 표시되는지 확인합니다.
 - Table CSV preview: CSV table asset preview가 표시되는지 확인합니다.
@@ -412,6 +420,12 @@ user, password, port를 확인합니다.
 
 ### Migration 미적용
 Table/column 관련 오류가 나면 backend 폴더에서 `alembic upgrade head`를 실행합니다.
+
+### 협업 회귀 스크립트 TestClient 의존성
+`python -m scripts.check_comments`, `python -m scripts.check_bookmarks`,
+`python -m scripts.check_notifications`는 FastAPI/Starlette `TestClient`를 사용합니다.
+현재 Python/Starlette 조합에서 `httpx2` package를 요구하는 경우, 테스트 환경에 해당
+package를 설치한 뒤 실행합니다.
 
 ### Seed data 미삽입
 API user selection 또는 feed가 비어 있으면 `python -m app.services.seed`를 실행했는지

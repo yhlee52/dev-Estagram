@@ -1,7 +1,8 @@
-# feed-prototype 릴리즈 체크리스트 (v0.3.5 기준)
+# feed-prototype 릴리즈 체크리스트 (v0.5.3 기준)
 
-이 문서는 `feed-prototype` 릴리즈 직전 확인 항목입니다. 현재 릴리즈 `v0.3.5`(v0.3.x
-테마 완료 후 운영 안정화 patch) 기준으로 갱신됩니다.
+이 문서는 `feed-prototype` 릴리즈 직전 확인 항목입니다. 현재 릴리즈 `v0.5.3`
+(협업 — Annotation & Collaboration theme wrap-up) 기준으로
+갱신됩니다.
 
 > 파일명은 v0.0.0 release 시점의 이름(`RELEASE_0_0_CHECKLIST.md`)을 유지하지만, 내용은
 > 항상 현재 릴리즈 기준입니다. v0.0.0 시점 historical 사본은
@@ -73,12 +74,28 @@ python -m uvicorn app.main:app --reload
 - [ ] `/api/posts`가 응답합니다.
 - [ ] `/api/feed`가 응답합니다.
 - [ ] `/api/imports`(import batch 이력, v0.3.1)가 응답합니다.
+- [ ] `/api/users/{id}/notifications`(in-app 알림, v0.5.2)가 응답합니다.
 
 ```bash
 curl http://127.0.0.1:8000/health
 curl http://127.0.0.1:8000/api/posts
 curl "http://127.0.0.1:8000/api/feed?user_id=demo-user-ari"
 curl http://127.0.0.1:8000/api/imports
+curl "http://127.0.0.1:8000/api/users/demo-user-ari/notifications"
+```
+
+협업 회귀 스크립트:
+
+- [ ] `scripts/check_comments.py`가 통과합니다(v0.5.0).
+- [ ] `scripts/check_bookmarks.py`가 통과합니다(v0.5.1).
+- [ ] `scripts/check_notifications.py`가 통과합니다(v0.5.2).
+- [ ] 현재 Python 환경의 `starlette.testclient`가 `httpx2`를 요구하는 경우 해당 package
+  설치 또는 테스트 환경 조정을 먼저 완료합니다.
+
+```bash
+python -m scripts.check_comments
+python -m scripts.check_bookmarks
+python -m scripts.check_notifications
 ```
 
 ## 3. Frontend
@@ -213,6 +230,11 @@ API mode frontend에서 확인합니다.
 - [ ] post create/edit/delete가 active API user own post에 대해 동작합니다.
 - [ ] post 삭제 시 공용 `ConfirmDialog`(오버레이/Escape/백드롭)가 동작합니다(v0.3.4).
 - [ ] Me 탭(API mode) 내 post가 "Load more"로 점진 렌더됩니다(v0.3.4).
+- [ ] Post Detail 댓글 작성/수정/삭제와 댓글 mention/hashtag 렌더가 동작합니다(v0.5.0).
+- [ ] 카드/상세 북마크 토글, Post Detail private note, Me 탭 북마크 목록이 동작합니다(v0.5.1).
+- [ ] Me 탭 Following 목록이 팔로우 account 프로필로 이동합니다(v0.5.1).
+- [ ] `/notifications` 목록, unread/all 토글, Unread empty state, Mark all read,
+  SideNav unread badge, Home unread 진입, Me 탭 Mentions 요약이 동작합니다(v0.5.2~v0.5.3).
 - [ ] filter/search가 동작하고, 0건 empty state의 "Reset filters"가 동작합니다.
 - [ ] image/plot lightbox가 열리고 prev/next가 동작합니다.
 - [ ] multi image/plot이 `sort_order` 순서로 표시됩니다.
@@ -220,7 +242,7 @@ API mode frontend에서 확인합니다.
 - [ ] file/link Open original이 동작합니다.
 - [ ] broken asset fallback이 crash 없이 표시됩니다.
 - [ ] managed storage로 복사된 asset이 `/assets/managed/...`에서 정상 표시됩니다(해당 시).
-- [ ] UI 어딘가(아바타 드롭다운 등)에 현재 버전(`feed-prototype v0.3.5`)이 표시됩니다.
+- [ ] UI 어딘가(아바타 드롭다운 등)에 현재 버전(`feed-prototype v0.5.3`)이 표시됩니다.
 
 Imported post가 Home Feed에 바로 보이지 않으면 imported account follow 정책을
 확인합니다. Account Profile과 Post Detail에서도 imported post를 확인합니다.
@@ -258,8 +280,8 @@ Tag 생성 및 push (예: 현재 릴리즈):
 
 ```bash
 cd ..
-git tag v0.3.5
-git push origin v0.3.5
+git tag v0.5.3
+git push origin v0.5.3
 ```
 
 Branch 정책에 따라 `main` 또는 release branch로 merge한 뒤 tag할 수도 있습니다. 실제

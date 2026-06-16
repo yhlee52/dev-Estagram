@@ -8,17 +8,18 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.5.2`(협업 — Annotation & Collaboration 테마, In-app Notifications
-& Mentions)이며
+현재 릴리즈는 `v0.5.3`(협업 — Annotation & Collaboration 테마 완료, UX Backlog &
+Theme Wrap-up)이며
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이 기준입니다.
-직전 테마 v0.4.x(메타데이터 일급화 & 트리아지)는 v0.4.2로 **완료**되었고, 현재
-v0.5.x(협업) 테마가 진행 중입니다. v0.5.0은 post별 평면 댓글, v0.5.1은 북마크
+직전 테마 v0.4.x(메타데이터 일급화 & 트리아지)는 v0.4.2로 **완료**되었고,
+v0.5.x(협업) 테마도 v0.5.3으로 **완료**되었습니다. v0.5.0은 post별 평면 댓글, v0.5.1은 북마크
 (+ 비공개 메모 · `bookmarked_only` 필터 · Me 탭 북마크/Following 목록), v0.5.2는
 in-app 알림/mention 수신(파생 알림 + user별 읽음 워터마크 + `/notifications` +
-Home/Me 진입점) — 진입 판단/후보 계획은
-`feed-prototype/docs/V0_5_X_COLLABORATION_PLAN.md`, 각 MINOR 상세 scope는
-`feed-prototype/docs/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`·
-`V0_5_2_NOTIFICATIONS_SCOPE.md`에 있습니다.
+Home/Me 진입점), v0.5.3은 협업 표면 UX polish와 문서/검증 절차 wrap-up입니다.
+진입 판단/후보 계획은
+`feed-prototype/docs/archive/V0_5_X_COLLABORATION_PLAN.md`, 각 MINOR 상세 scope는
+`feed-prototype/docs/archive/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`·
+`V0_5_2_NOTIFICATIONS_SCOPE.md`·`V0_5_3_UX_BACKLOG_SCOPE.md`에 있습니다.
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
 - `README.md`
@@ -34,13 +35,11 @@ Home/Me 진입점) — 진입 판단/후보 계획은
 참고합니다. v0.4.x 테마가 완료되어 그 scope 문서
 (`V0_4_0_FACET_FILTER_SCOPE.md` ~ `V0_4_2_UX_BACKLOG_SCOPE.md`)와 진입 판단/후보
 계획(`V0_4_X_METADATA_PLAN.md`)은 완료 테마 v0.1.x~v0.3.x와 함께
-`feed-prototype/docs/archive/`로 이동했습니다. 현재 테마 v0.5.x(협업 — Annotation
+`feed-prototype/docs/archive/`로 이동했습니다. 완료된 v0.5.x(협업 — Annotation
 & Collaboration)의 진입 판단·후보 계획은
-`feed-prototype/docs/V0_5_X_COLLABORATION_PLAN.md`, 구현된 상세 scope는
-`feed-prototype/docs/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`·
-`V0_5_2_NOTIFICATIONS_SCOPE.md`에
-있으며, 이후 MINOR 확정 scope는 착수 시 `docs/`에 `V0_5_*_SCOPE.md`로 새로
-작성합니다. 과거 MVP별 테스트 절차도
+`feed-prototype/docs/archive/V0_5_X_COLLABORATION_PLAN.md`, 구현된 상세 scope는
+`feed-prototype/docs/archive/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`·
+`V0_5_2_NOTIFICATIONS_SCOPE.md`·`V0_5_3_UX_BACKLOG_SCOPE.md`에 있습니다. 과거 MVP별 테스트 절차도
 `feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
 현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.
 
@@ -72,8 +71,8 @@ core type name 또는 primary component name에 설비 리포트 전용 용어�
 
 ## Current Implementation Scope
 
-v0.0.0 기준선은 MVP1-MVP12로 구축되었고, 그 위에 v0.1.x~v0.4.x 테마가 쌓였으며
-현재 v0.5.x(협업) 테마가 진행 중입니다. 상세 단계 기록은 아래 "Completed Scope
+v0.0.0 기준선은 MVP1-MVP12로 구축되었고, 그 위에 v0.1.x~v0.5.x 테마가 쌓였으며
+현재 v0.5.x(협업) 테마가 완료되었습니다. 상세 단계 기록은 아래 "Completed Scope
 History"를, 버전 트리는 `ROADMAP.md`를 참고합니다.
 
 현재 제약:
@@ -253,6 +252,10 @@ v0.5.x — 협업 (Annotation & Collaboration):
   판정(email/word 중간 `@` 오탐 방지). frontend: `/notifications` 목록 +
   SideNav unread badge + Home unread 진입 + Me 탭 Mentions 요약. **API mode 전용**,
   external package format 무변경. 회귀 스크립트 `scripts/check_notifications.py`.
+- v0.5.3: UX backlog & theme wrap-up(테마 마지막 MINOR). 신규 core feature 없이
+  협업 표면을 audit해 `/notifications` Unread empty state와 Mark all read 로딩
+  비활성화, Me 탭 Bookmarks empty copy를 작게 정리했다. 현재 릴리즈 문서와 검증
+  절차를 v0.5.3 기준으로 맞추며 v0.5.x(협업) 테마 완료.
 
 ## Roadmap & Versioning
 

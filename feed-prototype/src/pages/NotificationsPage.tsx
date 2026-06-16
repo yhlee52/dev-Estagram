@@ -94,6 +94,15 @@ export default function NotificationsPage() {
     loadMore,
     markAllRead,
   } = useNotifications({ limit: PAGE_LIMIT, unreadOnly });
+  const emptyState = unreadOnly
+    ? {
+        title: 'No unread notifications',
+        description: "You're caught up. Switch to All to review earlier updates.",
+      }
+    : {
+        title: 'No notifications yet',
+        description: 'Follow accounts, comment, and mention people to see updates here.',
+      };
 
   if (!activeApiUserId) {
     return (
@@ -121,7 +130,7 @@ export default function NotificationsPage() {
           <button
             type="button"
             className="h-9 shrink-0 rounded-md bg-neutral-950 px-3 text-xs font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
-            disabled={isMarkingRead || unreadCount === 0}
+            disabled={isLoading || isMarkingRead || unreadCount === 0}
             onClick={markAllRead}
           >
             {isMarkingRead ? 'Marking...' : 'Mark all read'}
@@ -180,10 +189,7 @@ export default function NotificationsPage() {
           ) : null}
         </div>
       ) : (
-        <EmptyState
-          title="No notifications yet"
-          description="Follow accounts, comment, and mention people to see updates here."
-        />
+        <EmptyState title={emptyState.title} description={emptyState.description} />
       )}
     </div>
   );

@@ -167,7 +167,7 @@ export default function MeBookmarksSection({ userId }: MeBookmarksSectionProps) 
       ) : (
         <EmptyState
           title="No bookmarks yet"
-          description="Tap Save on any post to bookmark it and add a private note."
+          description="Use Save on any post to bookmark it and add a private note."
         />
       )}
     </section>
