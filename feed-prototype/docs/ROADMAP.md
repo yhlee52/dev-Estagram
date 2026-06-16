@@ -231,10 +231,11 @@ ingestion(v0.3)·metadata 트리아지(v0.4)로 "데이터를 잘 읽는" 축이
   (display_name/avatar) + 본문 `@mention`(계정 링크)·`#hashtag`(`/posts?tag=`
   링크) 렌더(공용 `MentionText`로 caption·댓글 앱 전역 적용) + 카드 댓글 수 칩
   (트리아지 신호). `Follow` join 테이블 패턴 재사용.
-- v0.5.1: bookmark. post 북마크 토글 + 비공개 메모(annotation) + Me 탭 북마크
-  목록. 신규 `bookmarks` 테이블(`note` optional, `UniqueConstraint(user, post)`)
-  + `POST`/`DELETE`/`PATCH /api/bookmarks`·`GET /api/bookmarks`. 북마크 목록은
-  v0.4.x facet 필터·정렬 재사용, 메인 피드엔 `bookmarked_only` 플래그. 같은 Me 탭
+- v0.5.1: bookmark. **완료.** post 북마크 토글 + 비공개 메모(annotation) + Me 탭
+  북마크 목록. 신규 `bookmarks` 테이블(`note` optional, `UniqueConstraint(user,
+  post)`) + user-scoped `POST`/`GET`/`PATCH`/`DELETE /api/users/{id}/bookmarks/
+  {post}`·`GET /api/users/{id}/bookmarks`·`.../bookmark-ids`. 북마크 목록은 v0.4.x
+  facet 필터·정렬 재사용, 메인 Browse엔 `bookmarked_only` 필터 토글. 같은 Me 탭
   작업으로 `UX_BACKLOG.md`의 이연 Open 항목("내가 팔로우한 계정" 목록,
   v0.2.3→v0.5.x)도 함께 처리.
 - v0.5.2: in-app 알림(팔로우 계정 새 post, 내 post의 새 댓글, 나를 언급한 새

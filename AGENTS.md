@@ -8,13 +8,14 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.5.0`(협업 — Annotation & Collaboration 테마 기반 작업)이며
+현재 릴리즈는 `v0.5.1`(협업 — Annotation & Collaboration 테마, Bookmarks)이며
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이 기준입니다.
 직전 테마 v0.4.x(메타데이터 일급화 & 트리아지)는 v0.4.2로 **완료**되었고, 현재
-v0.5.x(협업) 테마가 진행 중입니다. v0.5.0은 post별 평면 댓글(작성/조회/수정/삭제,
-작성자 신원, 카드 댓글 수) — 진입 판단/후보 계획은
-`feed-prototype/docs/V0_5_X_COLLABORATION_PLAN.md`, v0.5.0 상세 scope는
-`feed-prototype/docs/V0_5_0_COMMENTS_SCOPE.md`에 있습니다.
+v0.5.x(협업) 테마가 진행 중입니다. v0.5.0은 post별 평면 댓글, v0.5.1은 북마크
+(+ 비공개 메모 · `bookmarked_only` 필터 · Me 탭 북마크/Following 목록) — 진입
+판단/후보 계획은 `feed-prototype/docs/V0_5_X_COLLABORATION_PLAN.md`, 각 MINOR 상세
+scope는 `feed-prototype/docs/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`에
+있습니다.
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
 - `README.md`
@@ -32,9 +33,10 @@ v0.5.x(협업) 테마가 진행 중입니다. v0.5.0은 post별 평면 댓글(�
 계획(`V0_4_X_METADATA_PLAN.md`)은 완료 테마 v0.1.x~v0.3.x와 함께
 `feed-prototype/docs/archive/`로 이동했습니다. 현재 테마 v0.5.x(협업 — Annotation
 & Collaboration)의 진입 판단·후보 계획은
-`feed-prototype/docs/V0_5_X_COLLABORATION_PLAN.md`, 구현된 v0.5.0 상세 scope는
-`feed-prototype/docs/V0_5_0_COMMENTS_SCOPE.md`에 있으며, 이후 MINOR 확정 scope는
-착수 시 `docs/`에 `V0_5_*_SCOPE.md`로 새로 작성합니다. 과거 MVP별 테스트 절차도
+`feed-prototype/docs/V0_5_X_COLLABORATION_PLAN.md`, 구현된 상세 scope는
+`feed-prototype/docs/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`에
+있으며, 이후 MINOR 확정 scope는 착수 시 `docs/`에 `V0_5_*_SCOPE.md`로 새로
+작성합니다. 과거 MVP별 테스트 절차도
 `feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
 현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.
 
@@ -50,6 +52,7 @@ core type, shared component, route, data flow에는 다음 generic concept를 �
 - Asset
 - Metadata
 - Comment (v0.5.0~, generic 협업 개념)
+- Bookmark (v0.5.1~, generic 협업/주석 개념)
 
 core type name 또는 primary component name에 설비 리포트 전용 용어를 넣지 않습니다. 피해야 할 이름:
 
@@ -219,6 +222,22 @@ v0.5.x — 협업 (Annotation & Collaboration):
   상태) + `FeedCard` `💬 N` 칩. **API mode 전용**, external package format 무변경.
   회귀 스크립트 `scripts/check_comments.py`. `Follow` join 테이블 + `follows`
   라우트 패턴 재사용.
+- v0.5.1: bookmarks(+ 비공개 메모 · Me 탭 목록). 신규 `bookmarks` 테이블
+  (migration `0008`: id/user_id FK/post_id FK/note nullable/created_at,
+  `UniqueConstraint(user_id, post_id)`). user-scoped 라우트(`follows` 패턴):
+  `POST`/`GET`/`PATCH`/`DELETE /api/users/{id}/bookmarks/{post}`(추가 멱등·단건
+  조회·메모 편집·제거), `GET /api/users/{id}/bookmarks`(필터/정렬/cursor를
+  `paginate_posts`로 재사용 — bookmarked base_select 위에 얹고 post마다 note·
+  account·comment_count 부착), `GET /api/users/{id}/bookmark-ids`(카드 토글 상태용).
+  `PostFilters.bookmarked_only` 추가(`my_posts_only`와 동형, user_id 필수) — feed/
+  posts 라우트에 통과해 메인 Browse 필터 패널에서 facet·정렬과 결합. 소유는
+  prototype active user selection. post 삭제 시 북마크도 함께 삭제. frontend:
+  `useBookmarks`(모듈 캐시 + 이벤트 동기화 훅, follows 패턴) + `BookmarkButton`
+  (카드 토글) + `BookmarkPanel`(PostDetail 토글 + 비공개 메모 편집) +
+  `MeBookmarksSection`(Me 탭 북마크 목록 + 인라인 메모) + Me 탭 Following 목록
+  (이연됐던 UX backlog 항목 반영) + `PostFilterPanel` "Bookmarked only" 토글
+  (URL 동기화). **API mode 전용**, external package format 무변경. 회귀 스크립트
+  `scripts/check_bookmarks.py`.
 
 ## Roadmap & Versioning
 

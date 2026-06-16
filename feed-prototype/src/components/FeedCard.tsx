@@ -1,10 +1,12 @@
 import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router';
+import { isApiMode } from '../config/dataSource';
 import { usePinnedMetadataKeys } from '../hooks/usePinnedMetadataKeys';
 import type { FeedItem } from '../types/feed';
 import { formatDateTime } from '../utils/format';
 import AssetRenderer from './AssetRenderer';
 import AssetGallery from './AssetGallery';
+import BookmarkButton from './BookmarkButton';
 import MentionText from './MentionText';
 import MetadataSummary from './MetadataSummary';
 import PinnedMetadataChips from './PinnedMetadataChips';
@@ -81,21 +83,24 @@ export default function FeedCard({ item }: FeedCardProps) {
       onClick={goToPost}
       onKeyDown={handleKeyDown}
     >
-      <button
-        type="button"
-        className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
-        onClick={goToAccount}
-      >
-        <Avatar src={account.avatarUrl} name={account.displayName} />
-        <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-neutral-950">
-            {account.displayName}
+      <div className="flex items-center justify-between gap-2 pr-3">
+        <button
+          type="button"
+          className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3.5 text-left"
+          onClick={goToAccount}
+        >
+          <Avatar src={account.avatarUrl} name={account.displayName} />
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold text-neutral-950">
+              {account.displayName}
+            </span>
+            <span className="block truncate text-xs text-neutral-500">
+              @{account.handle}
+            </span>
           </span>
-          <span className="block truncate text-xs text-neutral-500">
-            @{account.handle}
-          </span>
-        </span>
-      </button>
+        </button>
+        {isApiMode() ? <BookmarkButton postId={post.id} /> : null}
+      </div>
 
       <div className="space-y-4 px-4 pb-4">
         {postAssets.length > 0 ? (

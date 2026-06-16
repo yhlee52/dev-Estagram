@@ -1,11 +1,11 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.5.0` (협업 — Annotation & Collaboration 테마 **진행 중**). v0.5.0은
+현재 릴리즈: `v0.5.1` (협업 — Annotation & Collaboration 테마 **진행 중**). v0.5.0은
 post별 평면 댓글(작성/조회/수정/삭제, 작성자 신원, 본문 `@mention`·`#hashtag` 렌더,
-카드 댓글 수 칩) — **API mode 전용**, external package format 무변경. 본문 `#tag`
-링크 렌더는 공용 `MentionText`라 post caption에도 적용됩니다. 상세는
-`V0_5_0_COMMENTS_SCOPE.md`, 테마 진입 판단·후보 계획은
-`V0_5_X_COLLABORATION_PLAN.md`를 참고하세요.
+카드 댓글 수 칩), v0.5.1은 북마크(post 토글 + 비공개 메모 + Me 탭 북마크/Following
+목록 + 메인 Browse `bookmarked_only` 필터) — **API mode 전용**, external package
+format 무변경. 상세는 `V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`,
+테마 진입 판단·후보 계획은 `V0_5_X_COLLABORATION_PLAN.md`를 참고하세요.
 
 직전 테마 v0.4.x(메타데이터 일급화 & 트리아지)는 v0.4.0 facet 기반 필터(데이터
 파생 key/value 선택 `GET /api/metadata/keys`·`/values`, facet 선택 정확일치
@@ -25,6 +25,7 @@ v0.3.4로 완료(v0.3.5 운영 안정화 patch), v0.1.x·v0.2.x와 함께 `archi
   판단과 MINOR 계획·재사용 기반 (현재 테마). 이후 MINOR 확정 scope는
   `V0_5_*_SCOPE.md`로 작성
 - `V0_5_0_COMMENTS_SCOPE.md`: v0.5.0(Comments, 테마 기반 작업) 상세 scope
+- `V0_5_1_BOOKMARKS_SCOPE.md`: v0.5.1(Bookmarks + 비공개 메모 · Me 탭 목록) 상세 scope
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: external post package 작성 guide (format 중심)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog

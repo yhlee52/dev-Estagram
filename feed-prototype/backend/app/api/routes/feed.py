@@ -43,6 +43,7 @@ def get_feed(
     account_id: str | None = Query(default=None),
     account_handle: str | None = Query(default=None),
     my_posts_only: bool = Query(default=False),
+    bookmarked_only: bool = Query(default=False),
     created_at_from: str | None = Query(default=None),
     created_at_to: str | None = Query(default=None),
     sort: str = Query(default="newest"),
@@ -66,6 +67,7 @@ def get_feed(
         account_handle=account_handle,
         user_id=user_id,
         my_posts_only=my_posts_only,
+        bookmarked_only=bookmarked_only,
         created_at_from=created_at_from,
         created_at_to=created_at_to,
     )

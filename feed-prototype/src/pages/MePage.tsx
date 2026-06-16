@@ -6,6 +6,7 @@ import { getUser } from '../api/usersApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
+import MeBookmarksSection from '../components/MeBookmarksSection';
 import MyPostCard from '../components/MyPostCard';
 import postsData from '../data/posts.json';
 import {
@@ -143,6 +144,7 @@ function ApiMePage() {
   const apiFollows = useApiFollows(activeApiUserId);
   const [user, setUser] = useState<User | undefined>();
   const [account, setAccount] = useState<Account | undefined>();
+  const [allAccounts, setAllAccounts] = useState<Account[]>([]);
   const [myPosts, setMyPosts] = useState<FeedItem[]>([]);
   const [visibleCount, setVisibleCount] = useState(MY_POSTS_PAGE_SIZE);
   const [isLoading, setIsLoading] = useState(true);
@@ -165,9 +167,13 @@ function ApiMePage() {
           getUser(activeApiUserId),
           getAccounts(),
         ]);
-        const myApiAccount = accounts
-          .map(mapApiAccountToAccount)
-          .find((candidate) => getAccountUserId(candidate) === activeApiUserId);
+        const mappedAccounts = accounts.map(mapApiAccountToAccount);
+        if (isMounted) {
+          setAllAccounts(mappedAccounts);
+        }
+        const myApiAccount = mappedAccounts.find(
+          (candidate) => getAccountUserId(candidate) === activeApiUserId,
+        );
 
         if (!myApiAccount) {
           if (isMounted) {
@@ -259,6 +265,11 @@ function ApiMePage() {
       )
     : { postCount: 0, recentPostCount: 0, lastActiveAt: null };
 
+  const followingIdSet = new Set(apiFollows.followingIds);
+  const followedAccounts = allAccounts.filter((candidate) =>
+    followingIdSet.has(candidate.id),
+  );
+
   const handlePostDeleted = (postId: string) => {
     setMyPosts((current) => current.filter((item) => item.post.id !== postId));
   };
@@ -348,6 +359,50 @@ function ApiMePage() {
           description="This API user does not have an account in the backend database yet."
         />
       )}
+
+      {account ? (
+        <section className="space-y-3">
+          <div className="flex items-end justify-between px-1">
+            <h2 className="text-sm font-bold text-neutral-950">Following</h2>
+            <span className="text-xs font-medium text-neutral-400">
+              {followedAccounts.length} account
+              {followedAccounts.length === 1 ? '' : 's'}
+            </span>
+          </div>
+
+          {followedAccounts.length > 0 ? (
+            <ul className="space-y-2">
+              {followedAccounts.map((followed) => (
+                <li key={followed.id}>
+                  <Link
+                    to={`/accounts/${followed.id}`}
+                    className="flex items-center gap-3 rounded-md border border-neutral-200 bg-white p-3 shadow-sm transition hover:border-neutral-300"
+                  >
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-sm font-bold text-neutral-600">
+                      {followed.displayName.trim().charAt(0).toUpperCase() || 'A'}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-bold text-neutral-950">
+                        {followed.displayName}
+                      </span>
+                      <span className="block truncate text-xs text-neutral-500">
+                        @{followed.handle}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState
+              title="Not following anyone yet"
+              description="Follow accounts to see them here and in your home feed."
+            />
+          )}
+        </section>
+      ) : null}
+
+      {account ? <MeBookmarksSection userId={activeApiUserId} /> : null}
     </div>
   );
 }

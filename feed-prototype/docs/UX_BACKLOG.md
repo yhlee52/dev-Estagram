@@ -14,12 +14,13 @@
 
 | 날짜 | 화면 | 내용 | 메모 |
 |---|---|---|---|
-| 2026-06-14 | /me (API 모드) | Following 수만 보이고 팔로잉한 계정 목록/바로가기는 없음. 우측 레일 FollowShortcuts와 중복되지 않게 "내가 팔로우한 계정" 진입을 Me 탭에서도 제공할지 검토 | v0.2.3 점검 중 발견. 북마크/언급됨과 함께 v0.5.x 협업 단계에서 같이 다루는 게 자연스러움 |
+| _(없음)_ | | | |
 
 ## Resolved
 
 | 날짜 | 화면 | 내용 | 반영 버전 |
 |---|---|---|---|
+| 2026-06-14 | /me (API 모드) | Following 수만 보이고 팔로잉한 계정 목록/바로가기는 없음. v0.5.1 Me 탭에 "Following" 목록 섹션 추가(팔로우 계정 → 프로필 바로가기). 같은 Me 탭 북마크 목록 작업과 함께 반영 | v0.5.1 |
 | 2026-06-16 | /, /posts (카드) | pin한 metadata key가 카드에서 pinned 칩과 `MetadataSummary`(상위 3개)에 중복 표시됨(v0.4.1에서 발생). `MetadataSummary`에 `excludeKeys` 추가하고 `FeedCard`가 pinned key를 넘겨 summary에서 제외 | v0.4.2 |
 | 2026-06-16 | /, /posts (필터 패널) | metadata 값 정렬 시 그 key를 가진 post만 보여줘 결과 수가 조용히 줄어드는 게 설명 없이 일어남. 정렬 활성 + key 선택 시 "only posts that have this metadata key are shown" 안내 문구 추가 | v0.4.2 |
 | 2026-06-14 | /me (API 모드) | 내 post가 많아지면 `getAccountPosts`로 전량을 받아 한 번에 렌더 → 페이지네이션/Load more 없음. 활동 요약이 정확한 총계를 보여줘 어차피 전량 fetch가 필요하므로, 표시 카드만 `MY_POSTS_PAGE_SIZE`(20)개씩 "Load more"로 점진 렌더(클라이언트 사이드). 서버 cursor는 중복 fetch가 되어 보류 | v0.3.4 |

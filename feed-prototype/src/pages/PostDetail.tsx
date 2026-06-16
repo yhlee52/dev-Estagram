@@ -6,6 +6,7 @@ import { deletePost, getPost } from '../api/postsApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import AssetRenderer from '../components/AssetRenderer';
 import AssetGallery from '../components/AssetGallery';
+import BookmarkPanel from '../components/BookmarkPanel';
 import CommentsSection from '../components/CommentsSection';
 import ConfirmDialog from '../components/ConfirmDialog';
 import EmptyState from '../components/EmptyState';
@@ -400,6 +401,8 @@ export default function PostDetail() {
       ) : null}
 
       {post.metadata ? <MetadataTable metadata={post.metadata} /> : null}
+
+      {isApiDataSource ? <BookmarkPanel postId={post.id} /> : null}
 
       {isApiDataSource ? <CommentsSection postId={post.id} /> : null}
     </article>

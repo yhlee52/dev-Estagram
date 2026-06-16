@@ -6,6 +6,7 @@ from sqlmodel import Session, col, select
 from app.api.deps import get_session
 from app.models.account import Account
 from app.models.asset import PostAsset
+from app.models.bookmark import Bookmark
 from app.models.comment import Comment
 from app.models.post import Post, utc_now
 from app.models.user import User
@@ -45,6 +46,7 @@ def list_posts(
     account_handle: str | None = Query(default=None),
     user_id: str | None = Query(default=None),
     my_posts_only: bool = Query(default=False),
+    bookmarked_only: bool = Query(default=False),
     created_at_from: str | None = Query(default=None),
     created_at_to: str | None = Query(default=None),
     sort: str = Query(default="newest"),
@@ -67,6 +69,7 @@ def list_posts(
             account_handle=account_handle,
             user_id=user_id,
             my_posts_only=my_posts_only,
+            bookmarked_only=bookmarked_only,
             created_at_from=created_at_from,
             created_at_to=created_at_to,
         ),
@@ -244,6 +247,9 @@ def delete_post(
 
     for comment in session.exec(select(Comment).where(Comment.post_id == post_id)).all():
         session.delete(comment)
+
+    for bookmark in session.exec(select(Bookmark).where(Bookmark.post_id == post_id)).all():
+        session.delete(bookmark)
 
     session.delete(post)
     session.commit()

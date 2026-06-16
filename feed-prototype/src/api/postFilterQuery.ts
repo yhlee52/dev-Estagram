@@ -56,6 +56,11 @@ export const buildPostFilterQuery = (
       searchParams.set('my_posts_only', 'true');
       appendStringParam(searchParams, 'user_id', options.userId);
     }
+
+    if (filters.bookmarkedOnly) {
+      searchParams.set('bookmarked_only', 'true');
+      appendStringParam(searchParams, 'user_id', options.userId);
+    }
   }
 
   appendStringParam(searchParams, 'cursor', options.cursor);

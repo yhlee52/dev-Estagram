@@ -211,6 +211,36 @@ export interface ApiCommentCreatePayload {
 
 export type ApiCommentUpdatePayload = ApiCommentCreatePayload;
 
+export interface ApiBookmark {
+  id: string;
+  user_id: string;
+  post_id: string;
+  note: string | null;
+  created_at: string;
+}
+
+export interface ApiBookmarkNoteBody {
+  note?: string | null;
+}
+
+export interface ApiBookmarkedPost {
+  post: ApiPostWithAssets;
+  account: ApiAccount;
+  note: string | null;
+  bookmarked_at: string;
+}
+
+export interface ApiPaginatedBookmarks {
+  items: ApiBookmarkedPost[];
+  next_cursor: string | null;
+  has_more: boolean;
+}
+
+export interface ApiUserBookmarkIdsResponse {
+  user_id: string;
+  post_ids: string[];
+}
+
 export interface ApiFollow {
   id: string;
   follower_user_id: string;

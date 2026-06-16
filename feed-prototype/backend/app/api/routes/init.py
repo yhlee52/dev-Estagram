@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.routes.accounts import router as accounts_router
+from app.api.routes.bookmarks import router as bookmarks_router
 from app.api.routes.comments import router as comments_router
 from app.api.routes.feed import router as feed_router
 from app.api.routes.follows import router as follows_router
@@ -18,6 +19,7 @@ api_router.include_router(users_router)
 api_router.include_router(accounts_router)
 api_router.include_router(posts_router)
 api_router.include_router(comments_router)
+api_router.include_router(bookmarks_router)
 api_router.include_router(imports_router)
 api_router.include_router(tags_router)
 api_router.include_router(metadata_router)

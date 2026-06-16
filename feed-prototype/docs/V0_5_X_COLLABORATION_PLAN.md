@@ -10,10 +10,12 @@ v0.5.x 항목을 코드 현황에 맞춰 구체화하고, 진입 전 확인할 �
 > **테마 진행 현황 (2026-06-16 갱신)**
 > - v0.5.0 — Comments: **완료**. post별 평면 댓글(작성/조회/수정/삭제, 작성자
 >   신원, 본문 `@mention` 렌더, 카드 댓글 수). 상세는 `V0_5_0_COMMENTS_SCOPE.md`.
-> - v0.5.1 — Bookmarks(+ Me 탭 목록): 계획 단계.
+> - v0.5.1 — Bookmarks(+ 비공개 메모 · Me 탭 목록): **완료**. post 북마크 토글 +
+>   비공개 메모(annotation) + Me 탭 북마크/Following 목록 + 메인 Browse
+>   `bookmarked_only` 필터. 상세는 `V0_5_1_BOOKMARKS_SCOPE.md`.
 > - v0.5.2 — In-app 알림 & mention 수신: 계획 단계.
 > - v0.5.3 — UX backlog 반영(테마 마지막 MINOR): 예약 슬롯.
-> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.5.0`. 직전 테마
+> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.5.1`. 직전 테마
 >   v0.4.x(메타데이터 일급화 & 트리아지)는 **완료**(v0.4.2). 상세는
 >   `archive/V0_4_X_METADATA_PLAN.md` 및 `archive/V0_4_*_SCOPE.md`.
 

@@ -13,6 +13,7 @@ from sqlmodel.sql.expression import SelectOfScalar
 
 from app.models.account import Account
 from app.models.asset import PostAsset
+from app.models.bookmark import Bookmark
 from app.models.post import Post
 from app.models.user import User
 from app.schemas.feed import MetadataKeyCount, MetadataValueCount, TagCount
@@ -48,6 +49,7 @@ class PostFilters:
     account_handle: str | None = None
     user_id: str | None = None
     my_posts_only: bool = False
+    bookmarked_only: bool = False
     created_at_from: str | None = None
     created_at_to: str | None = None
 
@@ -91,6 +93,7 @@ def normalize_post_filters(filters: PostFilters) -> PostFilters:
         account_handle=normalize_filter_value(filters.account_handle),
         user_id=normalize_filter_value(filters.user_id),
         my_posts_only=filters.my_posts_only,
+        bookmarked_only=filters.bookmarked_only,
         created_at_from=normalize_filter_value(filters.created_at_from),
         created_at_to=normalize_filter_value(filters.created_at_to),
     )
@@ -294,6 +297,12 @@ def validate_post_filters(session: Session, filters: PostFilters) -> PostFilters
     if normalized_filters.my_posts_only and normalized_filters.user_id is not None:
         get_user_account_id(session, normalized_filters.user_id)
 
+    if normalized_filters.bookmarked_only and normalized_filters.user_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="user_id is required when bookmarked_only is true",
+        )
+
     bound_from = (
         parse_date_bound(normalized_filters.created_at_from, field_name="created_at_from")[0]
         if normalized_filters.created_at_from is not None
@@ -408,6 +417,13 @@ def apply_filters_to_select(
     if normalized.my_posts_only and normalized.user_id is not None:
         my_account_id = get_user_account_id(session, normalized.user_id)
         statement = statement.where(Post.account_id == my_account_id)
+
+    if normalized.bookmarked_only and normalized.user_id is not None:
+        statement = statement.where(
+            col(Post.id).in_(
+                select(Bookmark.post_id).where(Bookmark.user_id == normalized.user_id)
+            )
+        )
 
     if normalized.keyword is not None:
         pattern = f"%{normalized.keyword}%"

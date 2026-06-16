@@ -315,6 +315,43 @@ class CommentUpdate(CommentCreate):
     pass
 
 
+class BookmarkRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    user_id: str
+    post_id: str
+    note: str | None = None
+    created_at: datetime
+
+
+class BookmarkNoteBody(BaseModel):
+    note: str | None = None
+
+    @field_validator("note")
+    @classmethod
+    def normalize_note(cls, value: str | None) -> str | None:
+        return normalize_optional_text(value)
+
+
+class BookmarkedPost(BaseModel):
+    post: PostWithAssets
+    account: AccountRead
+    note: str | None = None
+    bookmarked_at: datetime
+
+
+class PaginatedBookmarks(BaseModel):
+    items: list[BookmarkedPost] = Field(default_factory=list)
+    next_cursor: str | None = None
+    has_more: bool = False
+
+
+class UserBookmarkIdsResponse(BaseModel):
+    user_id: str
+    post_ids: list[str] = Field(default_factory=list)
+
+
 class FeedItem(BaseModel):
     post: PostRead
     account: AccountRead
