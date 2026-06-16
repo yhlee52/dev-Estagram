@@ -54,6 +54,7 @@ export default function FeedCard({ item }: FeedCardProps) {
   const postUpdatedAt = post.updatedAt ?? post.updated_at ?? '';
   const shouldShowUpdatedAt =
     postUpdatedAt && postCreatedAt && postUpdatedAt !== postCreatedAt;
+  const commentCount = post.commentCount ?? 0;
 
   const goToPost = () => {
     navigate(`/posts/${post.id}`);
@@ -135,7 +136,7 @@ export default function FeedCard({ item }: FeedCardProps) {
 
           <MetadataSummary metadata={post.metadata} excludeKeys={pinnedKeys} />
 
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-neutral-400">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-neutral-400">
             <time dateTime={postCreatedAt}>
               Created: {formatDateTime(postCreatedAt)}
             </time>
@@ -143,6 +144,15 @@ export default function FeedCard({ item }: FeedCardProps) {
               <time dateTime={postUpdatedAt}>
                 Updated: {formatDateTime(postUpdatedAt)}
               </time>
+            ) : null}
+            {commentCount > 0 ? (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 font-semibold text-neutral-600"
+                aria-label={`${commentCount} comment${commentCount === 1 ? '' : 's'}`}
+              >
+                <span aria-hidden="true">💬</span>
+                {commentCount}
+              </span>
             ) : null}
           </div>
         </div>

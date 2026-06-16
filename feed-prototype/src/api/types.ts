@@ -61,6 +61,8 @@ export interface ApiPost {
   imported_at?: string | null;
   created_at: string;
   updated_at: string;
+  // Derived count of comments on this post (v0.5.0); absent on mock/legacy data.
+  comment_count?: number;
 }
 
 export interface ApiPostAssetPayload {
@@ -183,6 +185,31 @@ export interface ApiImportBatchDetailResponse {
   batch: ApiImportBatchSummary;
   posts: ApiImportBatchPost[];
 }
+
+export interface ApiComment {
+  id: string;
+  post_id: string;
+  author_user_id: string;
+  text: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApiCommentWithAuthor {
+  comment: ApiComment;
+  author: ApiAccount;
+}
+
+export interface ApiCommentListResponse {
+  items: ApiCommentWithAuthor[];
+}
+
+export interface ApiCommentCreatePayload {
+  user_id: string;
+  text: string;
+}
+
+export type ApiCommentUpdatePayload = ApiCommentCreatePayload;
 
 export interface ApiFollow {
   id: string;

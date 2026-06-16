@@ -6,6 +6,7 @@ import { deletePost, getPost } from '../api/postsApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import AssetRenderer from '../components/AssetRenderer';
 import AssetGallery from '../components/AssetGallery';
+import CommentsSection from '../components/CommentsSection';
 import ConfirmDialog from '../components/ConfirmDialog';
 import EmptyState from '../components/EmptyState';
 import MentionText from '../components/MentionText';
@@ -399,6 +400,8 @@ export default function PostDetail() {
       ) : null}
 
       {post.metadata ? <MetadataTable metadata={post.metadata} /> : null}
+
+      {isApiDataSource ? <CommentsSection postId={post.id} /> : null}
     </article>
   );
 }

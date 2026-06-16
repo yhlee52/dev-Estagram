@@ -225,11 +225,12 @@ ingestion(v0.3)·metadata 트리아지(v0.4)로 "데이터를 잘 읽는" 축이
 진입 판단·후보 계획·재사용 기반은 `V0_5_X_COLLABORATION_PLAN.md`를 참고합니다.
 각 MINOR 확정 scope는 착수 시 `V0_5_*_SCOPE.md`로 작성합니다.
 
-- v0.5.0: comments (테마 기반). post별 평면 댓글 — 작성/조회/수정/삭제(작성자
-  본인). 신규 `comments` 테이블 + `GET`/`POST /api/posts/{id}/comments`·`PATCH`/
-  `DELETE /api/comments/{id}`. PostDetail 댓글 섹션 + 작성자 신원(display_name/
-  avatar) + 본문 `@handle`/`#tag` 렌더(v0.1.3 재사용) + 카드 댓글 수 칩(트리아지
-  신호). `Follow` join 테이블 패턴 재사용.
+- v0.5.0: comments (테마 기반). **완료.** post별 평면 댓글 — 작성/조회/수정/삭제
+  (작성자 본인). 신규 `comments` 테이블 + `GET`/`POST /api/posts/{id}/comments`·
+  `PATCH`/`DELETE /api/comments/{id}`. PostDetail 댓글 섹션 + 작성자 신원
+  (display_name/avatar) + 본문 `@mention`(계정 링크)·`#hashtag`(`/posts?tag=`
+  링크) 렌더(공용 `MentionText`로 caption·댓글 앱 전역 적용) + 카드 댓글 수 칩
+  (트리아지 신호). `Follow` join 테이블 패턴 재사용.
 - v0.5.1: bookmark. post 북마크 토글 + 비공개 메모(annotation) + Me 탭 북마크
   목록. 신규 `bookmarks` 테이블(`note` optional, `UniqueConstraint(user, post)`)
   + `POST`/`DELETE`/`PATCH /api/bookmarks`·`GET /api/bookmarks`. 북마크 목록은

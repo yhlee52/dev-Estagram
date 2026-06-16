@@ -14,6 +14,7 @@ from app.schemas.feed import (
     PostRead,
     UserRead,
 )
+from app.services.comments import get_comment_counts
 from app.services.post_filters import (
     DEFAULT_LIMIT,
     MAX_LIMIT,
@@ -98,10 +99,13 @@ def get_feed(
 
     accounts_by_id = get_accounts_by_id(session, [post.account_id for post in page.posts])
     assets_by_post_id = get_assets_by_post_id(session, [post.id for post in page.posts])
+    comment_counts = get_comment_counts(session, [post.id for post in page.posts])
 
     items = [
         FeedItem(
-            post=PostRead.model_validate(post),
+            post=PostRead.model_validate(post).model_copy(
+                update={"comment_count": comment_counts.get(post.id, 0)}
+            ),
             account=AccountRead.model_validate(accounts_by_id[post.account_id]),
             assets=[
                 PostAssetRead.model_validate(asset)

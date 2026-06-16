@@ -1,36 +1,40 @@
 /**
- * Split post text into plain-text and `@mention` segments (v0.1.3).
+ * Split free text into plain-text, `@mention`, and `#hashtag` segments.
  *
- * Post text uses `@handle` to refer to an account. This parser only finds the
- * candidate handles; whether a handle actually exists (and should become a
- * link) is decided by the caller against the account directory. Unknown handles
- * stay as plain text — see `MentionText`.
+ * Post and comment text use `@handle` to refer to an account (v0.1.3) and
+ * `#tag` to refer to a tag (v0.5.0). This parser only finds the candidate
+ * tokens; whether a handle exists (and should link) is decided by the caller
+ * against the account directory, while a hashtag always links to the tag
+ * filter. Unknown handles stay as plain text — see `MentionText`.
  *
  * Handle shape mirrors the handles we store (e.g. `mina.notes`,
  * `cafe.route.bot`): a run of word characters with single `.`/`-` separators
- * between runs. Because separators must sit between word characters, a trailing
- * `.`/`-` (sentence punctuation like "ask @mina.notes.") is left out of the
- * handle. An `@` glued to the end of a word (e.g. an email's `user@host`) is not
- * treated as a mention.
+ * between runs. Hashtags follow the same shape but must start with a letter, so
+ * issue-number noise like `#42` is left as text. Because a token glued to the
+ * end of a word (an email's `user@host`, or `C#`) is not a reference, an `@`/`#`
+ * preceded by a word character is not treated as a token.
  */
 
-export type MentionSegment =
+export type RichTextSegment =
   | { type: 'text'; value: string }
-  | { type: 'mention'; handle: string; raw: string };
+  | { type: 'mention'; handle: string; raw: string }
+  | { type: 'hashtag'; tag: string; raw: string };
 
-const MENTION_PATTERN = /@([a-zA-Z0-9_]+(?:[.-][a-zA-Z0-9_]+)*)/g;
+const MENTION_PATTERN = '@([a-zA-Z0-9_]+(?:[.-][a-zA-Z0-9_]+)*)';
+const HASHTAG_PATTERN = '#([a-zA-Z][a-zA-Z0-9_]*(?:[.-][a-zA-Z0-9_]+)*)';
+const TOKEN_PATTERN = new RegExp(`(?:${MENTION_PATTERN})|(?:${HASHTAG_PATTERN})`, 'g');
 const WORD_CHAR = /[a-zA-Z0-9_]/;
 
-export function parseMentionSegments(text: string): MentionSegment[] {
-  const segments: MentionSegment[] = [];
+export function parseRichTextSegments(text: string): RichTextSegment[] {
+  const segments: RichTextSegment[] = [];
   let lastIndex = 0;
 
-  for (const match of text.matchAll(MENTION_PATTERN)) {
+  for (const match of text.matchAll(TOKEN_PATTERN)) {
     const matchStart = match.index ?? 0;
     const precedingChar = matchStart > 0 ? text[matchStart - 1] : '';
 
-    // An `@` preceded by a word character is part of a token (e.g. an email
-    // address), not a mention. Skip it; it stays inside the next text segment.
+    // An `@`/`#` preceded by a word character is part of a token (e.g. an email
+    // address or `C#`), not a reference. Skip it; it stays in the next segment.
     if (WORD_CHAR.test(precedingChar)) {
       continue;
     }
@@ -39,8 +43,14 @@ export function parseMentionSegments(text: string): MentionSegment[] {
       segments.push({ type: 'text', value: text.slice(lastIndex, matchStart) });
     }
 
-    segments.push({ type: 'mention', handle: match[1], raw: match[0] });
-    lastIndex = matchStart + match[0].length;
+    const raw = match[0];
+    if (raw[0] === '@') {
+      segments.push({ type: 'mention', handle: match[1], raw });
+    } else {
+      segments.push({ type: 'hashtag', tag: match[2], raw });
+    }
+
+    lastIndex = matchStart + raw.length;
   }
 
   if (lastIndex < text.length) {

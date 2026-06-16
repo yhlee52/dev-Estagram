@@ -7,13 +7,14 @@ v0.5.0~v0.5.3 후보 계획 문서입니다.
 v0.5.x 항목을 코드 현황에 맞춰 구체화하고, 진입 전 확인할 사항을 정리합니다.
 각 MINOR의 확정 scope는 착수 시 `V0_5_0_*_SCOPE.md` 등으로 분리해 작성합니다.
 
-> **테마 진행 현황 (2026-06-16 기준 — 미착수)**
-> - v0.5.0 — Comments: 계획 단계.
+> **테마 진행 현황 (2026-06-16 갱신)**
+> - v0.5.0 — Comments: **완료**. post별 평면 댓글(작성/조회/수정/삭제, 작성자
+>   신원, 본문 `@mention` 렌더, 카드 댓글 수). 상세는 `V0_5_0_COMMENTS_SCOPE.md`.
 > - v0.5.1 — Bookmarks(+ Me 탭 목록): 계획 단계.
 > - v0.5.2 — In-app 알림 & mention 수신: 계획 단계.
 > - v0.5.3 — UX backlog 반영(테마 마지막 MINOR): 예약 슬롯.
-> - 직전 테마 v0.4.x(메타데이터 일급화 & 트리아지)는 **완료**(v0.4.2). 버전
->   라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.4.2`. 상세는
+> - 버전 라벨(`appVersion.ts`의 `APP_RELEASE_LABEL`)은 `v0.5.0`. 직전 테마
+>   v0.4.x(메타데이터 일급화 & 트리아지)는 **완료**(v0.4.2). 상세는
 >   `archive/V0_4_X_METADATA_PLAN.md` 및 `archive/V0_4_*_SCOPE.md`.
 
 ## 1. v0.4.x 완료 / 진입 판단
@@ -110,17 +111,19 @@ v0.5.x도 대부분 기존 자산 위에 얇게 얹는 작업입니다.
   본인 삭제). 작성자는 active user selection(`user_id`).
 - **작성자 신원 표시**: 각 댓글에 작성자 account의 `display_name`/avatar를
   `AccountRead`로 렌더(누가 썼는지 보이게).
-- **본문 렌더**: 댓글 텍스트의 `@handle`/`#tag`를 v0.1.x 렌더 규칙으로 표시
-  (렌더만, 저장 없음 → format·도메인 안전). v0.5.2 mention 수신과 연결.
+- **본문 렌더**: 댓글 텍스트의 `@mention`(계정 링크)과 `#hashtag`(`/posts?tag=`
+  필터 링크)를 공용 파서로 표시(렌더만, 저장 없음 → format·도메인 안전).
+  `MentionText`가 caption·댓글 양쪽에서 쓰여 앱 전역 적용. v0.5.2 mention 수신과 연결.
 - **카드 댓글 수 칩**: `FeedCard`에 댓글 수(`💬 N`)를 표시해 "논의가 붙은 post"를
   트리아지 신호로 노출. 집계는 `GROUP BY post_id` count(`get_top_tags` 패턴).
 - frontend: PostDetail 댓글 섹션(목록 + 작성 폼 + 본인 댓글 수정/삭제 +
   로딩/0건/실패 상태). **API mode 전용**.
 - 회귀 안전: post 조회/필터/정렬 경로 불변. 댓글은 별도 테이블·라우트.
 
-확정(이번 후보 반영):
+확정(구현 완료):
 - 평면(flat) 댓글만. 대댓글 threading은 non-goal.
-- 댓글 본문 `@handle`/`#tag`는 v0.1.x 렌더 재사용(저장 없음).
+- 댓글·caption 본문에 `@mention`(계정 링크) + `#hashtag`(`/posts?tag=` 링크)
+  렌더(저장 없음, 공용 `MentionText`로 앱 전역 적용).
 - 작성자 수정 허용(`updated_at` + `PATCH`). 타인 댓글 수정/삭제는 불가
   (active user = 작성자 체크, authorization 시스템 아님 — v0.6.x).
 

@@ -104,6 +104,7 @@ export const mapApiPostToPost = (
   importedAt: post.imported_at ?? undefined,
   tags: post.tags ?? getStringArray(post.metadata_json, 'tags'),
   assets: assets.map(mapApiAssetToPostAsset),
+  commentCount: post.comment_count ?? 0,
   metadata_json: metadataOrUndefined(post.metadata_json),
   metadata: {
     ...(post.metadata_json ?? {}),
