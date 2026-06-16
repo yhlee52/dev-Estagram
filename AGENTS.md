@@ -8,10 +8,12 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.3.5`(테마 완료 후 운영 안정화 patch)이며
+현재 릴리즈는 `v0.4.2`(메타데이터 일급화 & 트리아지 테마 완료)이며
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이 기준입니다.
-v0.3.x 테마는 v0.3.4(UX backlog 반영)로 완료되었고, v0.3.5는 `process_incoming
---watch` 중 Vite dev server 종료 문제 수정 + 릴리즈 문서 최신화에 한정된 patch입니다.
+v0.4.x 테마는 v0.4.0(facet 기반 필터) → v0.4.1(카드 metadata 칩 & 값 정렬) →
+v0.4.2(UX backlog 반영, 테마 마지막 MINOR)로 **완료**되었습니다. 다음 테마는
+v0.5.x(협업 — Annotation & Collaboration)이며, 진입 판단/후보 계획은
+`feed-prototype/docs/V0_5_X_COLLABORATION_PLAN.md`에 있습니다(아직 미착수).
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
 - `README.md`
@@ -24,14 +26,14 @@ v0.3.x 테마는 v0.3.4(UX backlog 반영)로 완료되었고, v0.3.5는 `proces
 - `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
 
 버전별 상세 scope는 `feed-prototype/docs/`의 `V0_x_y_*_SCOPE.md` 문서를
-참고합니다. v0.3.x 테마가 완료되어 그 scope 문서
-(`V0_3_0_HTTP_IMPORT_SCOPE.md` ~ `V0_3_4_UX_BACKLOG_SCOPE.md`)와 진입 판단/후보
-계획(`V0_3_X_INGESTION_PLAN.md`)은 완료 테마 v0.1.x~v0.2.x와 함께
-`feed-prototype/docs/archive/`로 이동했습니다. 다음 테마(v0.4.x 메타데이터 일급화
-& 트리아지)의 진입 판단·후보 계획은 `feed-prototype/docs/V0_4_X_METADATA_PLAN.md`에
-있으며, 각 MINOR 확정 scope는 착수 시 `docs/`에 `V0_4_*_SCOPE.md`로 새로
-작성합니다. 과거 MVP별 테스트 절차도 `feed-prototype/docs/archive/` 아래에
-historical reference로 보관됩니다.
+참고합니다. v0.4.x 테마가 완료되어 그 scope 문서
+(`V0_4_0_FACET_FILTER_SCOPE.md` ~ `V0_4_2_UX_BACKLOG_SCOPE.md`)와 진입 판단/후보
+계획(`V0_4_X_METADATA_PLAN.md`)은 완료 테마 v0.1.x~v0.3.x와 함께
+`feed-prototype/docs/archive/`로 이동했습니다. 다음 테마(v0.5.x 협업 — Annotation
+& Collaboration)의 진입 판단·후보 계획은
+`feed-prototype/docs/V0_5_X_COLLABORATION_PLAN.md`에 있으며, 각 MINOR 확정 scope는
+착수 시 `docs/`에 `V0_5_*_SCOPE.md`로 새로 작성합니다. 과거 MVP별 테스트 절차도
+`feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
 현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.
 
 ## Core Domain
@@ -59,7 +61,7 @@ core type name 또는 primary component name에 설비 리포트 전용 용어�
 
 ## Current Implementation Scope
 
-v0.0.0 기준선은 MVP1-MVP12로 구축되었고, 그 위에 v0.1.x·v0.2.x 테마가 쌓였습니다.
+v0.0.0 기준선은 MVP1-MVP12로 구축되었고, 그 위에 v0.1.x~v0.4.x 테마가 쌓였습니다.
 상세 단계 기록은 아래 "Completed Scope History"를, 버전 트리는 `ROADMAP.md`를
 참고합니다.
 
@@ -171,6 +173,30 @@ v0.3.x — Ingestion 신뢰성 (Ingestion Hardening):
   `server.watch.ignored`로 두 런타임 데이터 경로를 제외해 해결(파일은 계속 serve,
   불필요한 full reload도 제거). 릴리즈 runbook/checklist를 현재 버전 기준으로
   재작성. 코드 변경은 `vite.config.ts` 1개, DB/format/frontend 동작 변경 없음.
+
+v0.4.x — 메타데이터 일급화 & 트리아지 (Metadata-first Reading):
+
+- v0.4.0: facet 기반 필터(테마 기반). 데이터에서 파생한 distinct metadata
+  key/value를 빈도순으로 반환하는 `GET /api/metadata/keys`·`GET /api/metadata/values`
+  (`get_top_tags` 집계 패턴 재사용, `jsonb_object_keys`/`->>`, `limit` 기본 20).
+  `PostFilters.metadata_match`(`contains` 기본 = 기존 ILIKE 부분일치 / `exact` =
+  정확일치) 추가로 facet 선택은 정확일치, 자유 입력은 기존 동작 유지(회귀 안전).
+  필터 패널은 자유 입력 옆에 key 드롭다운 → value 드롭다운/칩(facet 선택 시
+  `metadata_key`/`metadata_value` 채우고 `metadata_match=exact`). **API mode 전용**,
+  DB 스키마/format 변경 없음. 회귀 스크립트 `scripts/check_metadata_facets.py`.
+- v0.4.1: 카드 metadata 노출 & 값 정렬. `sort=metadata_asc|metadata_desc` +
+  `sort_metadata_key`로 `(metadata_json ->> key)` 텍스트 사전순 정렬(그 key를 가진
+  non-null post 한정, `post id` tie-breaker, cursor를 정렬 모드별 자기완결 인코딩으로
+  확장 — 값에 `|` 포함 케이스 안전). pinned keys: 사용자가 고른 key를 `FeedCard`에
+  칩으로 고정(`usePinnedMetadataKeys`, localStorage + storage/custom event 동기화,
+  URL 동기화는 범위 밖). 칩/정렬 모두 generic key-value(도메인 의미 모름).
+  숫자 인식 정렬은 테마 후속으로 보류. **API mode 전용**, 기본 sort=newest 동작 불변.
+- v0.4.2: UX backlog 반영(테마 마지막 MINOR). (1) 카드 metadata 중복 제거 —
+  `MetadataSummary`에 `excludeKeys` 추가하고 `FeedCard`가 pinned key를 넘겨 칩과
+  summary 이중 표시 제거(`PinnedMetadataChips`를 `pinnedKeys` prop화). (2) metadata
+  값 정렬 시 그 key 보유 post만 보여 결과 수가 조용히 줄어드는 데 대한 안내 문구를
+  필터 패널에 추가. (3) 테마 완료 문서 일괄 정리. 기능 추가 없는 폴리시+문서 중심.
+  이로써 v0.4.x(메타데이터 일급화 & 트리아지) 테마 완료.
 
 ## Roadmap & Versioning
 

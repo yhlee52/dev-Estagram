@@ -1,30 +1,26 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.4.2` (메타데이터 일급화 & 트리아지 테마 **완료**). v0.4.0 facet
-기반 필터(데이터 파생 key/value 선택 `GET /api/metadata/keys`·`/values`, facet
-선택 정확일치 `metadata_match=exact`, 자유 입력 ILIKE 유지) → v0.4.1 카드 metadata
-칩(pinned keys, localStorage) + 값 정렬(텍스트 사전순, key 보유 post 한정, cursor
-안정) → v0.4.2 UX 정리(카드 metadata 중복 제거 + 정렬 기대치 안내 + 문서 일괄
-갱신). 상세는 `V0_4_0_FACET_FILTER_SCOPE.md` ~ `V0_4_2_UX_BACKLOG_SCOPE.md`와
-`V0_4_X_METADATA_PLAN.md`.
+현재 릴리즈: `v0.4.2` (메타데이터 일급화 & 트리아지 테마 **완료**). **다음 테마는
+v0.5.x(협업 — Annotation & Collaboration)이며 아직 미착수입니다.** 진입 판단·후보
+계획은 `V0_5_X_COLLABORATION_PLAN.md`를 참고하세요.
 
-직전 테마 v0.3.x(Ingestion 신뢰성)는 v0.3.4로 **완료**, v0.3.5는 운영 안정화
-patch — v0.3.0(HTTP import)·v0.3.1(Import Batch 이력)·v0.3.2(자동 이동/일괄 처리/
-Watch)·v0.3.3(asset managed storage 복사 opt-in)·v0.3.4(UX backlog: Me 탭 Load
-more + 공용 ConfirmDialog) 완료. v0.3.x 진입 판단·후보
-(`archive/V0_3_X_INGESTION_PLAN.md`)와 각 MINOR scope 문서
-(`archive/V0_3_0_HTTP_IMPORT_SCOPE.md` ~ `archive/V0_3_4_UX_BACKLOG_SCOPE.md`)는
-`archive/`로 이동했습니다(아래 Archive 섹션).
+직전 테마 v0.4.x(메타데이터 일급화 & 트리아지)는 v0.4.0 facet 기반 필터(데이터
+파생 key/value 선택 `GET /api/metadata/keys`·`/values`, facet 선택 정확일치
+`metadata_match=exact`) → v0.4.1 카드 metadata 칩(pinned keys, localStorage) + 값
+정렬(텍스트 사전순, key 보유 post 한정, cursor 안정) → v0.4.2 UX 정리(카드
+metadata 중복 제거 + 정렬 기대치 안내 + 문서 일괄 갱신)로 **완료**. v0.4.x 진입
+판단·후보(`archive/V0_4_X_METADATA_PLAN.md`)와 각 MINOR scope 문서
+(`archive/V0_4_0_FACET_FILTER_SCOPE.md` ~ `archive/V0_4_2_UX_BACKLOG_SCOPE.md`)는
+`archive/`로 이동했습니다(아래 Archive 섹션). 그 직전 v0.3.x(Ingestion 신뢰성)는
+v0.3.4로 완료(v0.3.5 운영 안정화 patch), v0.1.x·v0.2.x와 함께 `archive/`에 보관.
 
 ## 현행 문서 (먼저 볼 것)
 
 - `../README.md`: mock mode, API mode, external import mode 실행 guide
 - `ROADMAP.md`: v0.0.0 이후 업데이트 로드맵 (버전 트리, 테마별 scope)
-- `V0_4_X_METADATA_PLAN.md`: v0.4.x(메타데이터 일급화 & 트리아지) 진입 판단과
-  MINOR 계획·진행 현황 (현재 테마, 완료)
-- `V0_4_0_FACET_FILTER_SCOPE.md`: v0.4.0(Facet 기반 필터) 상세 scope
-- `V0_4_1_CARD_METADATA_SORT_SCOPE.md`: v0.4.1(카드 metadata 칩 & 값 정렬) 상세 scope
-- `V0_4_2_UX_BACKLOG_SCOPE.md`: v0.4.2(UX backlog 반영, 테마 마지막 MINOR) 상세 scope
+- `V0_5_X_COLLABORATION_PLAN.md`: v0.5.x(협업 — Annotation & Collaboration) 진입
+  판단과 MINOR 계획·재사용 기반 (다음 테마, 미착수). 착수 시 각 MINOR 확정 scope를
+  `V0_5_*_SCOPE.md`로 작성
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: external post package 작성 guide (format 중심)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog
@@ -57,6 +53,10 @@ more + 공용 ConfirmDialog) 완료. v0.3.x 진입 판단·후보
   `archive/V0_3_4_UX_BACKLOG_SCOPE.md`: v0.3.x(Ingestion 신뢰성) — 진입 판단/후보
   계획과 HTTP import, Import Batch 이력, 자동 이동/일괄 처리/Watch, asset managed
   storage 복사(opt-in), UX backlog 반영 scope
+- `archive/V0_4_X_METADATA_PLAN.md` + `archive/V0_4_0_FACET_FILTER_SCOPE.md` ~
+  `archive/V0_4_2_UX_BACKLOG_SCOPE.md`: v0.4.x(메타데이터 일급화 & 트리아지) —
+  진입 판단/후보 계획과 facet 기반 필터, 카드 metadata 칩 & 값 정렬, UX backlog
+  반영 scope
 
 MVP-era 참고 문서:
 
