@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
-import { getAccountPosts, getAccounts } from '../api/accountsApi';
+import {
+  getAccountPosts,
+  getAccounts,
+  updateAccountProfile,
+} from '../api/accountsApi';
 import { getUser } from '../api/usersApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import EmptyState from '../components/EmptyState';
@@ -107,6 +111,22 @@ function getProfileErrorMessage(error: unknown): string {
   return 'Could not load your API profile. Check the backend server and try again.';
 }
 
+function getProfileSaveErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError) {
+    if (error.status === 403) {
+      return 'Only this account user can edit this profile.';
+    }
+
+    return `The backend API returned ${error.status}. ${error.message}`;
+  }
+
+  return 'Could not save this profile. Check the backend server and try again.';
+}
+
 function getAccountUserId(account: Account): string {
   const userId = account.metadata?.user_id;
 
@@ -132,6 +152,129 @@ function NewPostButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
     >
       New Post
     </Link>
+  );
+}
+
+function AccountProfileEditor({
+  account,
+  userId,
+  onUpdated,
+}: {
+  account: Account;
+  userId: string;
+  onUpdated: (account: Account) => void;
+}) {
+  const [displayName, setDisplayName] = useState(account.displayName);
+  const [bio, setBio] = useState(account.bio ?? '');
+  const [avatarUrl, setAvatarUrl] = useState(account.avatarUrl ?? '');
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    setDisplayName(account.displayName);
+    setBio(account.bio ?? '');
+    setAvatarUrl(account.avatarUrl ?? '');
+    setMessage('');
+    setError('');
+  }, [account.id, account.displayName, account.bio, account.avatarUrl]);
+
+  const trimmedDisplayName = displayName.trim();
+  const hasChanges =
+    trimmedDisplayName !== account.displayName ||
+    bio.trim() !== (account.bio ?? '') ||
+    avatarUrl.trim() !== (account.avatarUrl ?? '');
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSaving || !trimmedDisplayName || !hasChanges) {
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const updated = await updateAccountProfile(account.id, {
+        user_id: userId,
+        display_name: trimmedDisplayName,
+        bio: bio.trim() || null,
+        avatar_url: avatarUrl.trim() || null,
+      });
+      onUpdated(mapApiAccountToAccount(updated));
+      setMessage('Profile saved.');
+    } catch (saveError) {
+      setError(getProfileSaveErrorMessage(saveError));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <section className="space-y-3 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-sm font-bold text-neutral-950">Account Profile</h2>
+          <p className="truncate text-xs font-semibold text-neutral-500">
+            @{account.handle}
+          </p>
+        </div>
+        <Avatar
+          src={avatarUrl.trim() || account.avatarUrl}
+          name={trimmedDisplayName || account.displayName}
+        />
+      </div>
+
+      <form className="space-y-3" onSubmit={handleSubmit}>
+        <label className="block space-y-1">
+          <span className="text-xs font-bold uppercase text-neutral-400">
+            Display name
+          </span>
+          <input
+            className="h-10 w-full rounded-md border border-neutral-200 px-3 text-sm font-semibold text-neutral-900 outline-none transition focus:border-neutral-400"
+            value={displayName}
+            maxLength={120}
+            onChange={(event) => setDisplayName(event.target.value)}
+          />
+        </label>
+
+        <label className="block space-y-1">
+          <span className="text-xs font-bold uppercase text-neutral-400">Bio</span>
+          <textarea
+            className="min-h-24 w-full resize-y rounded-md border border-neutral-200 px-3 py-2 text-sm leading-6 text-neutral-900 outline-none transition focus:border-neutral-400"
+            value={bio}
+            maxLength={500}
+            onChange={(event) => setBio(event.target.value)}
+          />
+        </label>
+
+        <label className="block space-y-1">
+          <span className="text-xs font-bold uppercase text-neutral-400">
+            Avatar URL
+          </span>
+          <input
+            className="h-10 w-full rounded-md border border-neutral-200 px-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-400"
+            value={avatarUrl}
+            maxLength={1000}
+            onChange={(event) => setAvatarUrl(event.target.value)}
+          />
+        </label>
+
+        <div className="flex items-center justify-between gap-3">
+          <p className="min-h-5 text-xs font-semibold text-neutral-500">
+            {message || error}
+          </p>
+          <button
+            type="submit"
+            className="h-10 shrink-0 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
+            disabled={isSaving || !trimmedDisplayName || !hasChanges}
+          >
+            {isSaving ? 'Saving...' : 'Save Profile'}
+          </button>
+        </div>
+      </form>
+    </section>
   );
 }
 
@@ -275,6 +418,22 @@ function ApiMePage() {
     setMyPosts((current) => current.filter((item) => item.post.id !== postId));
   };
 
+  const handleAccountUpdated = (updatedAccount: Account) => {
+    setAccount(updatedAccount);
+    setAllAccounts((current) =>
+      current.map((candidate) =>
+        candidate.id === updatedAccount.id ? updatedAccount : candidate,
+      ),
+    );
+    setMyPosts((current) =>
+      current.map((item) =>
+        item.account.id === updatedAccount.id
+          ? { ...item, account: updatedAccount }
+          : item,
+      ),
+    );
+  };
+
   return (
     <div className="space-y-4">
       <section className="space-y-4 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
@@ -315,6 +474,14 @@ function ApiMePage() {
 
         {account ? <NewPostButton /> : null}
       </section>
+
+      {account ? (
+        <AccountProfileEditor
+          account={account}
+          userId={activeApiUserId}
+          onUpdated={handleAccountUpdated}
+        />
+      ) : null}
 
       {account ? (
         <section className="space-y-3">

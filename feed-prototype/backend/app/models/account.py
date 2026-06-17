@@ -19,5 +19,6 @@ class Account(SQLModel, table=True):
     bio: str | None = None
     avatar_url: str | None = None
     kind: str = "person"
+    profile_source: str = "user"
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)

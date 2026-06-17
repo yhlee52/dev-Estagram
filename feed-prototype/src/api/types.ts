@@ -27,8 +27,16 @@ export interface ApiAccount {
   bio: string | null;
   avatar_url: string | null;
   kind: string;
+  profile_source: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface ApiAccountProfileUpdatePayload {
+  user_id: string;
+  display_name?: string | null;
+  bio?: string | null;
+  avatar_url?: string | null;
 }
 
 export interface ApiUserRegistrationResponse {

@@ -2,10 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, col, select
 
 from app.api.deps import get_session
-from app.models.account import Account
+from app.models.account import Account, utc_now
 from app.models.asset import PostAsset
 from app.models.post import Post
-from app.schemas.feed import AccountRead, PostAssetRead, PostRead, PostWithAssets
+from app.schemas.feed import (
+    AccountProfileUpdate,
+    AccountRead,
+    PostAssetRead,
+    PostRead,
+    PostWithAssets,
+)
 from app.services.comments import get_comment_counts
 from app.services.post_filters import PostFilters, apply_filters_to_select
 
@@ -24,6 +30,34 @@ def get_account(account_id: str, session: Session = Depends(get_session)) -> Acc
     if account is None:
         raise HTTPException(status_code=404, detail="Account not found")
 
+    return account
+
+
+@router.patch("/{account_id}", response_model=AccountRead)
+def update_account_profile(
+    account_id: str,
+    profile_update: AccountProfileUpdate,
+    session: Session = Depends(get_session),
+) -> Account:
+    account = session.get(Account, account_id)
+    if account is None:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    if account.user_id != profile_update.user_id:
+        raise HTTPException(status_code=403, detail="Account is not owned by user")
+
+    if profile_update.display_name is not None:
+        account.display_name = profile_update.display_name
+    if "bio" in profile_update.model_fields_set:
+        account.bio = profile_update.bio
+    if "avatar_url" in profile_update.model_fields_set:
+        account.avatar_url = profile_update.avatar_url
+
+    account.profile_source = "user"
+    account.updated_at = utc_now()
+    session.add(account)
+    session.commit()
+    session.refresh(account)
     return account
 
 

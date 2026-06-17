@@ -1,7 +1,11 @@
-import { apiGet } from "./client";
+import { apiGet, apiPatch } from "./client";
 import { buildPostFilterQuery } from "./postFilterQuery";
 import { getActiveApiUserId } from "../auth/apiActiveUser";
-import type { ApiAccount, ApiPostWithAssets } from "./types";
+import type {
+  ApiAccount,
+  ApiAccountProfileUpdatePayload,
+  ApiPostWithAssets,
+} from "./types";
 import type { PostFilters } from "../types/filters";
 
 export const getAccounts = (): Promise<ApiAccount[]> =>
@@ -9,6 +13,12 @@ export const getAccounts = (): Promise<ApiAccount[]> =>
 
 export const getAccount = (accountId: string): Promise<ApiAccount> =>
   apiGet<ApiAccount>(`/api/accounts/${encodeURIComponent(accountId)}`);
+
+export const updateAccountProfile = (
+  accountId: string,
+  payload: ApiAccountProfileUpdatePayload,
+): Promise<ApiAccount> =>
+  apiPatch<ApiAccount>(`/api/accounts/${encodeURIComponent(accountId)}`, payload);
 
 export const getAccountPosts = (
   accountId: string,

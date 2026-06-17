@@ -57,8 +57,42 @@ class AccountRead(BaseModel):
     bio: str | None = None
     avatar_url: str | None = None
     kind: str
+    profile_source: str
     created_at: datetime
     updated_at: datetime
+
+
+class AccountProfileUpdate(BaseModel):
+    user_id: str | int
+    display_name: str | None = Field(default=None, max_length=120)
+    bio: str | None = Field(default=None, max_length=500)
+    avatar_url: str | None = Field(default=None, max_length=1000)
+
+    @field_validator("user_id")
+    @classmethod
+    def validate_user_id(cls, value: str | int) -> str:
+        normalized_value = str(value).strip()
+        if not normalized_value:
+            raise ValueError("User id is required.")
+
+        return normalized_value
+
+    @field_validator("display_name")
+    @classmethod
+    def validate_display_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+
+        normalized_value = value.strip()
+        if not normalized_value:
+            raise ValueError("Display name cannot be empty.")
+
+        return normalized_value
+
+    @field_validator("bio", "avatar_url")
+    @classmethod
+    def validate_optional_text(cls, value: str | None) -> str | None:
+        return normalize_optional_text(value)
 
 
 class UserRegistrationResponse(BaseModel):

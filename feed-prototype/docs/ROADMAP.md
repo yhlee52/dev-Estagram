@@ -293,7 +293,8 @@ external package에 댓글/북마크 싣기 (format 변경 필요)
 - v0.6.2: 내 account profile self-service. 로그인한 user가 자기 1:1 account의
   display_name/bio/avatar를 UI에서 직접 수정. account/handle처럼 식별자에
   해당하는 값은 등록 시 고정(수정 불가). Profile asset은 post asset과 분리된
-  profile 전용 storage 정책으로 다룬다.
+  profile 전용 storage 정책으로 다룬다. 상세 scope와 검증은
+  `V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md`를 따른다.
 
 > 배경(2026-06-17 결정): v0.6.x에서는 User:Account 1:N으로 확장하지 않고 1:1
 > 원칙을 유지한다. 설비/봇 계정도 별도의 로그인 user로 취급하면, post/comment/

@@ -46,6 +46,7 @@ ACCOUNTS = [
         "bio": "Personal notes and image posts.",
         "avatar_url": "/uploads/demo/avatars/ari-notes.png",
         "kind": "person",
+        "profile_source": "user",
     },
     {
         "id": "demo-account-mika",
@@ -55,6 +56,7 @@ ACCOUNTS = [
         "bio": "Project progress and small tables.",
         "avatar_url": "/uploads/demo/avatars/mika-project.png",
         "kind": "project",
+        "profile_source": "user",
     },
     {
         "id": "demo-account-nova",
@@ -64,6 +66,7 @@ ACCOUNTS = [
         "bio": "Automated digest examples for local feed testing.",
         "avatar_url": "/uploads/demo/avatars/nova-digest.png",
         "kind": "bot",
+        "profile_source": "user",
     },
 ]
 

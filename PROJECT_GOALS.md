@@ -71,7 +71,8 @@ server-side session으로 prototype active API user selection을 대체합니다
 v0.6.x에서도 User:Account 1:1 원칙을 유지하며, 봇/프로그램/설비 계정은 별도
 로그인 User + 1:1 Account로 취급합니다. v0.6.0 상세 scope는
 `feed-prototype/docs/V0_6_0_AUTH_SCOPE.md`, v0.6.1 identity scope는
-`feed-prototype/docs/V0_6_1_ACCOUNT_IDENTITY_SCOPE.md`를 참고합니다. v0.3.0부터
+`feed-prototype/docs/V0_6_1_ACCOUNT_IDENTITY_SCOPE.md`, v0.6.2 profile scope는
+`feed-prototype/docs/V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md`를 참고합니다. v0.3.0부터
 mock mode는 "UI 데모 전용 동결" 상태가 되며, 신규 기능은 API mode에만 추가합니다.
 
 ## 개발 원칙

@@ -85,6 +85,7 @@ def create_user_with_account(
         display_name=display_name,
         bio=user_create.bio,
         kind="person",
+        profile_source="user",
     )
     session.add(account)
 

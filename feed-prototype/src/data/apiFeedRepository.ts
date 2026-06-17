@@ -61,6 +61,7 @@ export const mapApiAccountToAccount = (account: ApiAccount): Account => ({
       : undefined,
   metadata: {
     user_id: account.user_id,
+    profile_source: account.profile_source,
     created_at: account.created_at,
     updated_at: account.updated_at,
   },
