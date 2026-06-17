@@ -296,6 +296,17 @@ external package에 댓글/북마크 싣기 (format 변경 필요)
   해당하는 값은 등록 시 고정(수정 불가). Profile asset은 post asset과 분리된
   profile 전용 storage 정책으로 다룬다. 상세 scope와 검증은
   `V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md`를 따른다.
+- v0.6.3: auth hardening & cleanup. 신규 도메인 기능 없이 인증 표면의 운영성/품질을
+  보강한다. (1) 운영자 password reset CLI(`scripts/reset_password.py`)로 V0_6_0
+  Password Policy의 운영자 reset 경로를 실제 구현, (2) session 만료/무효 시 frontend가
+  401을 받아 로그인 화면으로 복귀, (3) 로그인 화면의 dead code 정리. session cookie
+  `secure` 분리·write endpoint의 session-only 인가·로그인 화면 user 목록 숨김은
+  비-localhost 이전 시점으로 명시 이연. 상세 scope와 검증은
+  `V0_6_3_AUTH_HARDENING_SCOPE.md`를 따른다.
+- v0.6.4: 계정 라이프사이클 (탈퇴/비활성 + post 보존). 계정을 그만 쓰는 경로를
+  soft deactivation으로 다루고, 기존 post/협업 데이터는 보존한다. ROADMAP 제약의
+  "비활성/삭제 시 post 처리 정책 별도 확정"을 이 MINOR에서 닫는다. 상세 scope와
+  검증은 `V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`를 따른다.
 
 > 배경(2026-06-17 결정): v0.6.x에서는 User:Account 1:N으로 확장하지 않고 1:1
 > 원칙을 유지한다. 설비/봇 계정도 별도의 로그인 user로 취급하면, post/comment/

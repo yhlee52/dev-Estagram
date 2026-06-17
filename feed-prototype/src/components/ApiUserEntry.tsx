@@ -10,11 +10,6 @@ import { getApiBaseUrl } from '../config/apiConfig';
 
 type ApiUserEntryMode = 'entry' | 'registration';
 
-interface MissingUserPrompt {
-  inputValue: string;
-  handleCandidate: string;
-}
-
 interface RegistrationFormState {
   handle: string;
   password: string;
@@ -94,8 +89,6 @@ export default function ApiUserEntry() {
   const [entryValue, setEntryValue] = useState('');
   const [password, setPassword] = useState('');
   const [entryMode, setEntryMode] = useState<ApiUserEntryMode>('entry');
-  const [missingUserPrompt, setMissingUserPrompt] =
-    useState<MissingUserPrompt | null>(null);
   const [registrationForm, setRegistrationForm] =
     useState<RegistrationFormState>({
       handle: '',
@@ -154,7 +147,6 @@ export default function ApiUserEntry() {
     const trimmedValue = entryValue.trim();
 
     setError('');
-    setMissingUserPrompt(null);
 
     if (!trimmedValue) {
       setError('Enter a backend user id or handle.');
@@ -180,8 +172,7 @@ export default function ApiUserEntry() {
   };
 
   const handleStartRegistration = () => {
-    const handleCandidate =
-      missingUserPrompt?.handleCandidate ?? normalizeApiHandleCandidate(entryValue);
+    const handleCandidate = normalizeApiHandleCandidate(entryValue);
     setRegistrationForm({
       handle: handleCandidate,
       password: '',
@@ -196,7 +187,6 @@ export default function ApiUserEntry() {
 
   const handleBackToEntry = () => {
     setEntryMode('entry');
-    setMissingUserPrompt(null);
     setRegistrationResult(null);
     setRegistrationError('');
     setIsRegistering(false);
@@ -426,7 +416,6 @@ export default function ApiUserEntry() {
                 disabled={isSubmitting}
                 onChange={(event) => {
                   setEntryValue(event.target.value);
-                  setMissingUserPrompt(null);
                   setError('');
                 }}
               />
@@ -452,38 +441,6 @@ export default function ApiUserEntry() {
               <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
                 {error}
               </p>
-            ) : null}
-
-            {missingUserPrompt ? (
-              <div className="space-y-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
-                <div className="space-y-1">
-                  <p className="text-sm font-bold text-neutral-900">
-                    User not found.
-                  </p>
-                  <p className="text-sm font-semibold leading-6 text-neutral-700">
-                    Register "{missingUserPrompt.handleCandidate}" as a new API user?
-                  </p>
-                  <p className="text-xs font-medium leading-5 text-neutral-500">
-                    Entered value: {missingUserPrompt.inputValue}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    className="h-10 rounded-md bg-neutral-950 px-3 text-sm font-bold text-white transition hover:bg-neutral-800"
-                    onClick={handleStartRegistration}
-                  >
-                    Register user
-                  </button>
-                  <button
-                    type="button"
-                    className="h-10 rounded-md border border-neutral-200 bg-white px-3 text-sm font-bold text-neutral-700 transition hover:bg-neutral-100"
-                    onClick={handleBackToEntry}
-                  >
-                    Try again
-                  </button>
-                </div>
-              </div>
             ) : null}
 
             <button
@@ -529,7 +486,6 @@ export default function ApiUserEntry() {
                     className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-left transition hover:bg-neutral-100"
                     onClick={() => {
                       setEntryValue(user.handle);
-                      setMissingUserPrompt(null);
                       setError('');
                     }}
                   >

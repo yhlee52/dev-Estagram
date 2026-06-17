@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getAuthSession, logout } from '../api/authApi';
 import type { ApiUser } from '../api/types';
+import { UNAUTHORIZED_EVENT } from './authEvents';
 
 export const ACTIVE_API_USER_ID_STORAGE_KEY =
   'feed-prototype:active-api-user-id';
@@ -93,12 +94,20 @@ export const useActiveApiUser = () => {
       setActiveApiUserState(getActiveApiUser());
     };
 
+    // A 401 on an authenticated call means the session expired/revoked. Drop
+    // the active user so the AppShell login gate takes over (v0.6.3).
+    const handleUnauthorized = () => {
+      clearActiveApiUser();
+    };
+
     window.addEventListener('storage', syncActiveApiUser);
     window.addEventListener(ACTIVE_API_USER_EVENT, syncActiveApiUser);
+    window.addEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
 
     return () => {
       window.removeEventListener('storage', syncActiveApiUser);
       window.removeEventListener(ACTIVE_API_USER_EVENT, syncActiveApiUser);
+      window.removeEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
     };
   }, []);
 
