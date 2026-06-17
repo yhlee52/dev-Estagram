@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { getAuthSession, logout } from '../api/authApi';
 import type { ApiUser } from '../api/types';
 
 export const ACTIVE_API_USER_ID_STORAGE_KEY =
@@ -62,6 +63,30 @@ export const useActiveApiUser = () => {
   const [activeApiUser, setActiveApiUserState] = useState<ActiveApiUser | null>(
     getActiveApiUser,
   );
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSession = async () => {
+      try {
+        const session = await getAuthSession();
+        setActiveApiUser(session.user);
+      } catch {
+        clearActiveApiUser();
+      } finally {
+        if (isMounted) {
+          setIsLoadingSession(false);
+        }
+      }
+    };
+
+    void loadSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const syncActiveApiUser = () => {
@@ -78,12 +103,15 @@ export const useActiveApiUser = () => {
   }, []);
 
   const clear = useCallback(() => {
-    clearActiveApiUser();
+    void logout().finally(() => {
+      clearActiveApiUser();
+    });
   }, []);
 
   return {
     activeApiUser,
     activeApiUserId: activeApiUser?.id ?? '',
     clearActiveApiUser: clear,
+    isLoadingSession,
   };
 };

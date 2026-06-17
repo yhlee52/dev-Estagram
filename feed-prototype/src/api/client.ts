@@ -94,6 +94,7 @@ const apiRequest = async <T>(
   try {
     response = await fetch(buildApiUrl(path), {
       ...init,
+      credentials: "include",
       headers: {
         Accept: "application/json",
         ...init.headers,

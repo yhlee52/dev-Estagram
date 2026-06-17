@@ -284,7 +284,8 @@ external package에 댓글/북마크 싣기 (format 변경 필요)
 
 - v0.6.0: password 로그인 + server-side session. 현재 prototype user
   selection을 실제 인증으로 교체. OAuth/SSO/JWT는 범위 밖. Password는 서버에
-  hash로 저장하고, 로그인 화면에서 현재 password 기반 변경을 지원한다.
+  hash로 저장하고, 로그인 화면에서 현재 password 기반 변경을 지원한다. 상세 scope와
+  검증은 `V0_6_0_AUTH_SCOPE.md`를 따른다.
 - v0.6.1: User:Account 1:1 운영 정책 정리. 봇/프로그램/설비 계정도 로그인 가능한
   별도 user로 취급하며, 하나의 user는 정확히 하나의 account를 가진다는 원칙을
   유지한다. 계정 전환은 "다른 user로 로그인"하는 문제로 다루고, user가 여러

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
+import { changePassword } from '../api/authApi';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import {
   getAccountPosts,
@@ -125,6 +126,18 @@ function getProfileSaveErrorMessage(error: unknown): string {
   }
 
   return 'Could not save this profile. Check the backend server and try again.';
+}
+
+function getPasswordChangeErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError) {
+    return `The backend API returned ${error.status}. ${error.message}`;
+  }
+
+  return 'Could not change this password. Check the backend server and try again.';
 }
 
 function getAccountUserId(account: Account): string {
@@ -271,6 +284,104 @@ function AccountProfileEditor({
             disabled={isSaving || !trimmedDisplayName || !hasChanges}
           >
             {isSaving ? 'Saving...' : 'Save Profile'}
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
+function PasswordChangePanel() {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSaving) {
+      return;
+    }
+
+    setMessage('');
+    setError('');
+
+    if (newPassword.length < 4) {
+      setError('New password must be at least 4 characters.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await changePassword({
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      setCurrentPassword('');
+      setNewPassword('');
+      setMessage('Password changed.');
+    } catch (changeError) {
+      setError(getPasswordChangeErrorMessage(changeError));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <section className="space-y-3 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+      <div className="space-y-1">
+        <h2 className="text-sm font-bold text-neutral-950">Password</h2>
+        <p className="text-xs font-semibold leading-5 text-neutral-500">
+          Change the password for this API user.
+        </p>
+      </div>
+
+      <form className="space-y-3" onSubmit={handleSubmit}>
+        <label className="block space-y-1">
+          <span className="text-xs font-bold uppercase text-neutral-400">
+            Current password
+          </span>
+          <input
+            className="h-10 w-full rounded-md border border-neutral-200 px-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-400"
+            value={currentPassword}
+            type="password"
+            autoComplete="current-password"
+            onChange={(event) => {
+              setCurrentPassword(event.target.value);
+              setError('');
+              setMessage('');
+            }}
+          />
+        </label>
+
+        <label className="block space-y-1">
+          <span className="text-xs font-bold uppercase text-neutral-400">
+            New password
+          </span>
+          <input
+            className="h-10 w-full rounded-md border border-neutral-200 px-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-400"
+            value={newPassword}
+            type="password"
+            autoComplete="new-password"
+            onChange={(event) => {
+              setNewPassword(event.target.value);
+              setError('');
+              setMessage('');
+            }}
+          />
+        </label>
+
+        <div className="flex items-center justify-between gap-3">
+          <p className="min-h-5 text-xs font-semibold text-neutral-500">
+            {message || error}
+          </p>
+          <button
+            type="submit"
+            className="h-10 shrink-0 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
+            disabled={isSaving || !currentPassword || !newPassword}
+          >
+            {isSaving ? 'Saving...' : 'Change Password'}
           </button>
         </div>
       </form>
@@ -482,6 +593,8 @@ function ApiMePage() {
           onUpdated={handleAccountUpdated}
         />
       ) : null}
+
+      {account ? <PasswordChangePanel /> : null}
 
       {account ? (
         <section className="space-y-3">

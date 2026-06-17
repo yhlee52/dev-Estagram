@@ -18,6 +18,8 @@ User:Account 1:1 원칙은 유지합니다.
 - Logout은 session을 서버에서 폐기하고 client state를 정리합니다.
 - 로그인 화면에서 현재 password를 알고 있는 사용자가 password를 변경할 수 있게 합니다.
 - Password는 서버에 평문 저장하지 않고 hash로 저장합니다.
+- Seed user의 초기 password는 handle과 같습니다(`ari`/`mika`/`nova`).
+- Imported account paired user의 초기 password는 generated import user handle입니다.
 - 기존 v0.5.x 협업 데이터의 작성자/소유자/수신자 기준은 user_id 그대로 유지하되,
   v0.6.0 이후에는 request session의 로그인 user를 기준으로 검증합니다.
 
@@ -54,7 +56,9 @@ Account
 
 ## Password Policy
 
-- `users` 또는 별도 credential table에 password hash를 저장합니다.
+- 별도 `user_credentials` table에 password hash를 저장합니다.
+- `user_sessions` table에 server-side session을 저장하고 browser에는 httpOnly cookie만
+  둡니다.
 - Seed/test 계정에는 개발용 초기 password를 부여합니다.
 - Password 변경은 `current_password` 검증 후 `new_password` hash로 교체합니다.
 - Password 분실은 정식 복구 기능을 만들지 않습니다. 프로토타입에서는 운영자가
@@ -64,8 +68,9 @@ Account
 
 - Session은 server-side로 저장하고 browser에는 httpOnly cookie만 둡니다.
 - Session 조회 endpoint는 현재 로그인 user와 1:1 account를 반환합니다.
-- API write endpoint는 request body/query의 `user_id` 신뢰에서 session user 기준으로
-  이동합니다.
+- v0.6.0의 frontend는 session user를 active API user로 사용하고 기존 user-scoped
+  API에 그 user id를 전달합니다. 각 write endpoint를 session-only signature로
+  바꾸는 작업은 후속 hardening으로 둡니다.
 - v0.6.0 구현 중 기존 route 호환이 필요하면 migration window를 둘 수 있지만,
   최종 동작은 session user가 authoritative합니다.
 

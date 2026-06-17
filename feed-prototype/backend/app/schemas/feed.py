@@ -33,6 +33,7 @@ class UserRead(BaseModel):
 
 class UserCreate(BaseModel):
     handle: str
+    password: str
     display_name: str | None = None
     bio: str | None = None
 
@@ -40,6 +41,14 @@ class UserCreate(BaseModel):
     @classmethod
     def validate_handle(cls, value: str) -> str:
         return normalize_user_handle(value)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if len(value) < 4:
+            raise ValueError("Password must be at least 4 characters.")
+
+        return value
 
     @field_validator("display_name", "bio")
     @classmethod
@@ -98,6 +107,54 @@ class AccountProfileUpdate(BaseModel):
 class UserRegistrationResponse(BaseModel):
     user: UserRead
     account: AccountRead
+
+
+class AuthLoginRequest(BaseModel):
+    login: str
+    password: str
+
+    @field_validator("login")
+    @classmethod
+    def validate_login(cls, value: str) -> str:
+        normalized_value = value.strip()
+        if not normalized_value:
+            raise ValueError("Login is required.")
+
+        return normalized_value
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if not value:
+            raise ValueError("Password is required.")
+
+        return value
+
+
+class AuthPasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+    @field_validator("current_password")
+    @classmethod
+    def validate_current_password(cls, value: str) -> str:
+        if not value:
+            raise ValueError("Current password is required.")
+
+        return value
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, value: str) -> str:
+        if len(value) < 4:
+            raise ValueError("New password must be at least 4 characters.")
+
+        return value
+
+
+class AuthSessionResponse(BaseModel):
+    user: UserRead
+    account: AccountRead | None = None
 
 
 class PostAssetRead(BaseModel):

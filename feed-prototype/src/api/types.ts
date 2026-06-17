@@ -15,6 +15,7 @@ export interface ApiUser {
 
 export interface ApiUserCreatePayload {
   handle: string;
+  password: string;
   display_name?: string | null;
   bio?: string | null;
 }
@@ -42,6 +43,16 @@ export interface ApiAccountProfileUpdatePayload {
 export interface ApiUserRegistrationResponse {
   user: ApiUser;
   account: ApiAccount;
+}
+
+export interface ApiAuthSession {
+  user: ApiUser;
+  account: ApiAccount | null;
+}
+
+export interface ApiPasswordChangePayload {
+  current_password: string;
+  new_password: string;
 }
 
 export interface ApiPostAsset {
