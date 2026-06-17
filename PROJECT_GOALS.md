@@ -15,15 +15,18 @@ core concept:
 - Follow
 - Asset
 - Metadata
+- Comment
+- Bookmark
+- Notification
 
 core type name, shared component name, route, data flow에 설비/리포트 전용 용어를 넣지 않습니다. `Equipment`, `Chamber`, `Sensor`, `Recipe`, `Severity`, `Report` 같은 이름을 피합니다. domain-specific value는 `metadata_json`, `post.metadata`, asset metadata에 넣습니다.
 
 ## 현재 릴리즈
 
-현재 릴리즈는 `v0.3.5`(테마 완료 후 운영 안정화 patch)입니다. v0.3.x(Ingestion
-신뢰성) 테마는 v0.3.4(UX backlog 반영, 테마 마지막 MINOR)로 완료되었고, v0.3.5는
-`process_incoming --watch` 중 Vite dev server가 종료되던 문제 수정과 릴리즈 문서
-최신화에 한정된 patch입니다. 버전 라벨 기준은
+현재 릴리즈는 `v0.5.3`(협업 — Annotation & Collaboration 테마 완료, UX Backlog &
+Theme Wrap-up)입니다. v0.5.0은 post별 댓글, v0.5.1은 북마크와 비공개 메모,
+v0.5.2는 in-app 알림/mention 수신, v0.5.3은 협업 표면 UX polish와 문서/검증 절차
+wrap-up입니다. 버전 라벨 기준은
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
 
 이 문서는 제품의 변하지 않는 목표/원칙을 정의합니다. 버전별 테마와 순서는
@@ -56,16 +59,19 @@ v0.0.0 위에 쌓인 테마:
   디렉터리 일괄 처리 CLI + 폴링 Watch(v0.3.2), asset managed storage 복사 opt-in
   (v0.3.3), UX backlog 반영(Me 탭 Load more + 공용 ConfirmDialog, v0.3.4). 테마 완료.
   테마 완료 후 v0.3.5에서 Watch 중 Vite dev server 종료 문제 수정 + 릴리즈 문서 최신화.
+- v0.4.x (메타데이터 일급화 & 트리아지): facet 기반 metadata key/value 필터,
+  카드 metadata 칩, metadata 값 정렬, UX 정리. 테마 완료.
+- v0.5.x (협업): post별 댓글(v0.5.0), 북마크/비공개 메모(v0.5.1), in-app
+  알림/mention 수신(v0.5.2), 협업 표면 UX polish와 문서 wrap-up(v0.5.3). 테마 완료.
 
 ## 다음 테마
 
-v0.3.x(Ingestion 신뢰성) 테마는 완료되었습니다. v0.3.0(HTTP Import API)·
-v0.3.1(import batch 이력 API + 최소 UI)·v0.3.2(자동 이동/일괄 처리 CLI/Watch)·
-v0.3.3(asset managed storage 복사 opt-in)·v0.3.4(UX backlog 반영) 모두 완료.
-다음 테마는 v0.4.x(메타데이터 일급화 & 트리아지)입니다. v0.3.x 진입 판단과 후보
-이력은 `feed-prototype/docs/archive/V0_3_X_INGESTION_PLAN.md`를 참고합니다.
-v0.3.0부터 mock mode는 "UI 데모 전용 동결" 상태가 되며, 신규 기능은 API mode에만
-추가합니다.
+다음 테마는 v0.6.x(인증 & 멀티유저)입니다. v0.6.0은 password 로그인 +
+server-side session으로 prototype active API user selection을 대체합니다.
+v0.6.x에서도 User:Account 1:1 원칙을 유지하며, 봇/프로그램/설비 계정은 별도
+로그인 User + 1:1 Account로 취급합니다. v0.6.0 상세 scope는
+`feed-prototype/docs/V0_6_0_AUTH_SCOPE.md`를 참고합니다. v0.3.0부터 mock mode는
+"UI 데모 전용 동결" 상태가 되며, 신규 기능은 API mode에만 추가합니다.
 
 ## 개발 원칙
 
@@ -75,7 +81,8 @@ v0.3.0부터 mock mode는 "UI 데모 전용 동결" 상태가 되며, 신규 기
 - frontend data access는 선택된 repository/API mode 뒤에 둡니다.
 - backend data access는 FastAPI 뒤에 둡니다.
 - frontend는 PostgreSQL에 직접 연결하지 않습니다.
-- 현 단계에서는 `User`와 `Account`를 1:1로 유지합니다(1:N은 v0.6.x).
+- 현 단계에서는 `User`와 `Account`를 1:1로 유지합니다. v0.6.x에서도 1:N ownership
+  모델을 도입하지 않습니다.
 - active API user selection은 local prototype state이며 authentication이 아닙니다.
 - external post package JSON format은 동결 상태입니다(기존 필드 변경/삭제/필수화
   금지, 새 필드는 optional로만). 자세한 규칙은 `AGENTS.md`의 External Package
