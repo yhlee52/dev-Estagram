@@ -14,7 +14,7 @@ import sys
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
-from sqlmodel import select
+from sqlmodel import or_, select
 
 from app.db.session import create_session
 from app.main import app
@@ -190,6 +190,24 @@ def run_checks(client: TestClient) -> list[str]:
 
 def cleanup() -> None:
     with create_session() as session:
+        test_user_ids = (USER, USER_OTHER, generated_user_id(FOLLOWED_ACCT_EXT))
+
+        for follow in session.exec(
+            select(Follow).where(
+                or_(
+                    Follow.follower_user_id.in_(test_user_ids),
+                    Follow.following_account_id.in_(
+                        select(Account.id).where(
+                            Account.external_id.in_(
+                                (MY_ACCT_EXT, FOLLOWED_ACCT_EXT, OTHER_ACCT_EXT)
+                            )
+                        )
+                    ),
+                )
+            )
+        ).all():
+            session.delete(follow)
+
         for post_ext in (MY_POST_EXT, FOLLOWED_POST_EXT, OTHER_POST_EXT):
             post = session.exec(select(Post).where(Post.external_id == post_ext)).first()
             if post is not None:
@@ -204,17 +222,13 @@ def cleanup() -> None:
                 select(Account).where(Account.external_id == account_ext)
             ).first()
             if account is not None:
-                for follow in session.exec(
-                    select(Follow).where(Follow.following_account_id == account.id)
-                ).all():
-                    session.delete(follow)
                 session.delete(account)
 
         state = session.get(NotificationState, USER)
         if state is not None:
             session.delete(state)
 
-        for user_id in (USER, USER_OTHER, generated_user_id(FOLLOWED_ACCT_EXT)):
+        for user_id in test_user_ids:
             user = session.get(User, user_id)
             if user is not None:
                 session.delete(user)
