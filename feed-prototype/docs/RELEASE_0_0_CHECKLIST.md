@@ -1,7 +1,7 @@
-# feed-prototype 릴리즈 체크리스트 (v0.5.3 기준)
+# feed-prototype 릴리즈 체크리스트 (v0.6.3 기준)
 
-이 문서는 `feed-prototype` 릴리즈 직전 확인 항목입니다. 현재 릴리즈 `v0.5.3`
-(협업 — Annotation & Collaboration theme wrap-up) 기준으로
+이 문서는 `feed-prototype` 릴리즈 직전 확인 항목입니다. 현재 릴리즈 `v0.6.3`
+(인증 & 멀티유저 theme — auth hardening & cleanup) 기준으로
 갱신됩니다.
 
 > 파일명은 v0.0.0 release 시점의 이름(`RELEASE_0_0_CHECKLIST.md`)을 유지하지만, 내용은
@@ -75,6 +75,7 @@ python -m uvicorn app.main:app --reload
 - [ ] `/api/feed`가 응답합니다.
 - [ ] `/api/imports`(import batch 이력, v0.3.1)가 응답합니다.
 - [ ] `/api/users/{id}/notifications`(in-app 알림, v0.5.2)가 응답합니다.
+- [ ] `/api/auth/login` → `/api/auth/session`(password 로그인 + session, v0.6.0)이 동작합니다.
 
 ```bash
 curl http://127.0.0.1:8000/health
@@ -82,6 +83,9 @@ curl http://127.0.0.1:8000/api/posts
 curl "http://127.0.0.1:8000/api/feed?user_id=demo-user-ari"
 curl http://127.0.0.1:8000/api/imports
 curl "http://127.0.0.1:8000/api/users/demo-user-ari/notifications"
+curl -c cookies.txt -X POST http://127.0.0.1:8000/api/auth/login \
+  -H "Content-Type: application/json" --data '{"login":"ari","password":"ari"}'
+curl -b cookies.txt http://127.0.0.1:8000/api/auth/session
 ```
 
 협업 회귀 스크립트:
@@ -96,6 +100,18 @@ curl "http://127.0.0.1:8000/api/users/demo-user-ari/notifications"
 python -m scripts.check_comments
 python -m scripts.check_bookmarks
 python -m scripts.check_notifications
+```
+
+인증 & identity / profile 회귀 스크립트 (v0.6.x):
+
+- [ ] `scripts/check_account_identity.py`가 통과합니다(v0.6.1, User:Account 1:1).
+- [ ] `scripts/check_account_profile.py`가 통과합니다(v0.6.2, profile self-service).
+- [ ] (선택) `scripts/reset_password.py`로 임의 seed user의 password를 재설정하고
+  이전 password 실패 / 새 password 로그인 성공을 확인합니다(v0.6.3).
+
+```bash
+python -m scripts.check_account_identity
+python -m scripts.check_account_profile
 ```
 
 ## 3. Frontend
@@ -221,6 +237,14 @@ python -m app.services.import_external_posts --input ../data/external_posts/exam
 
 API mode frontend에서 확인합니다.
 
+- [ ] 로그인 화면에서 seed user(id/handle + password, 예: `ari`/`ari`)로 로그인됩니다(v0.6.0).
+- [ ] 잘못된 password가 거부되고, 새로고침해도 session으로 로그인 상태가 유지됩니다(v0.6.0).
+- [ ] 로그인 화면에서 신규 API user 등록(user+1:1 account 생성)이 동작합니다.
+- [ ] Logout으로 로그인 화면에 복귀하고, 서버 session 만료/삭제 시 다음 호출에서 자동
+  복귀합니다(v0.6.3).
+- [ ] Me 탭에서 내 account profile(display name/bio/avatar URL) 편집이 저장되고 Me 헤더·
+  내 post 카드 account 표시가 즉시 갱신됩니다. handle/kind는 바뀌지 않습니다(v0.6.2).
+- [ ] Me 탭 password 변경 후 이전 password 실패 / 새 password 로그인 성공입니다(v0.6.0).
 - [ ] Home Feed가 표시됩니다.
 - [ ] Explore(Posts) / Accounts / Me 탭이 표시됩니다.
 - [ ] Imports(`/imports`) 탭에서 batch 목록·상세가 표시됩니다(API mode 전용, mock에는 미노출).
@@ -242,7 +266,7 @@ API mode frontend에서 확인합니다.
 - [ ] file/link Open original이 동작합니다.
 - [ ] broken asset fallback이 crash 없이 표시됩니다.
 - [ ] managed storage로 복사된 asset이 `/assets/managed/...`에서 정상 표시됩니다(해당 시).
-- [ ] UI 어딘가(아바타 드롭다운 등)에 현재 버전(`feed-prototype v0.5.3`)이 표시됩니다.
+- [ ] UI 어딘가(아바타 드롭다운 등)에 현재 버전(`feed-prototype v0.6.3`)이 표시됩니다.
 
 Imported post가 Home Feed에 바로 보이지 않으면 imported account follow 정책을
 확인합니다. Account Profile과 Post Detail에서도 imported post를 확인합니다.
@@ -255,8 +279,12 @@ Imported post가 Home Feed에 바로 보이지 않으면 imported account follow
 - [ ] `EXTERNAL_POST_PACKAGE_GUIDE.md`가 존재합니다.
 - [ ] `../data/external_posts/README.md`가 존재합니다.
 - [ ] `ROADMAP.md`의 버전 트리가 현재 릴리즈를 반영합니다.
+- [ ] `V0_6_0`~`V0_6_3` scope 문서가 존재하고, `V0_6_4`(계정 라이프사이클)는 계획으로
+  표시되어 있습니다.
 - [ ] Sample package 설명과 각 sample `assets/README.md`가 존재합니다.
-- [ ] limitations(production-ready 아님, login/JWT/session/permission 없음)가 명시되어 있습니다.
+- [ ] limitations가 명시되어 있습니다: production-ready 아님. password 로그인 +
+  server-side session은 있으나 OAuth/SSO/JWT/RBAC는 없고, write endpoint는 아직
+  user_id 기반 인가(비-localhost 이전 시 session-only 전환 예정)입니다.
 - [ ] external import 전 `DATABASE_URL` 확인이 문서화되어 있습니다.
 
 ## 7. Release Tag
@@ -280,8 +308,8 @@ Tag 생성 및 push (예: 현재 릴리즈):
 
 ```bash
 cd ..
-git tag v0.5.3
-git push origin v0.5.3
+git tag v0.6.3
+git push origin v0.6.3
 ```
 
 Branch 정책에 따라 `main` 또는 release branch로 merge한 뒤 tag할 수도 있습니다. 실제

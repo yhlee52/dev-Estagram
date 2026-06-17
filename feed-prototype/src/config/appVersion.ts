@@ -1,2 +1,2 @@
-export const APP_VERSION = "v0.6.2";
+export const APP_VERSION = "v0.6.3";
 export const APP_RELEASE_LABEL = `feed-prototype ${APP_VERSION}`;
