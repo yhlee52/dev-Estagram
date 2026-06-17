@@ -6,6 +6,8 @@ from sqlmodel import Session, col, select
 from app.api.deps import get_session
 from app.models.account import Account
 from app.models.asset import PostAsset
+from app.models.bookmark import Bookmark
+from app.models.comment import Comment
 from app.models.post import Post, utc_now
 from app.models.user import User
 from app.schemas.feed import (
@@ -19,6 +21,7 @@ from app.schemas.feed import (
     PostUpdate,
     PostWithAssets,
 )
+from app.services.comments import get_comment_counts
 from app.services.post_filters import (
     DEFAULT_LIMIT,
     MAX_LIMIT,
@@ -43,6 +46,7 @@ def list_posts(
     account_handle: str | None = Query(default=None),
     user_id: str | None = Query(default=None),
     my_posts_only: bool = Query(default=False),
+    bookmarked_only: bool = Query(default=False),
     created_at_from: str | None = Query(default=None),
     created_at_to: str | None = Query(default=None),
     sort: str = Query(default="newest"),
@@ -65,6 +69,7 @@ def list_posts(
             account_handle=account_handle,
             user_id=user_id,
             my_posts_only=my_posts_only,
+            bookmarked_only=bookmarked_only,
             created_at_from=created_at_from,
             created_at_to=created_at_to,
         ),
@@ -72,8 +77,12 @@ def list_posts(
             sort=sort, cursor=cursor, limit=limit, sort_metadata_key=sort_metadata_key
         ),
     )
+    comment_counts = get_comment_counts(session, [post.id for post in page.posts])
     return PaginatedPosts(
-        items=[build_post_with_assets(session, post) for post in page.posts],
+        items=[
+            build_post_with_assets(session, post, comment_counts.get(post.id, 0))
+            for post in page.posts
+        ],
         next_cursor=page.next_cursor,
         has_more=page.has_more,
     )
@@ -105,10 +114,15 @@ def get_post_assets(session: Session, post_id: str) -> list[PostAsset]:
     return list(assets)
 
 
-def build_post_with_assets(session: Session, post: Post) -> PostWithAssets:
+def build_post_with_assets(
+    session: Session, post: Post, comment_count: int = 0
+) -> PostWithAssets:
     assets = get_post_assets(session, post.id)
+    post_read = PostRead.model_validate(post).model_copy(
+        update={"comment_count": comment_count}
+    )
     return PostWithAssets(
-        **PostRead.model_validate(post).model_dump(),
+        **post_read.model_dump(),
         assets=[PostAssetRead.model_validate(asset) for asset in assets],
     )
 
@@ -177,7 +191,8 @@ def get_post(post_id: str, session: Session = Depends(get_session)) -> PostWithA
     if post is None:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    return build_post_with_assets(session, post)
+    comment_count = get_comment_counts(session, [post.id]).get(post.id, 0)
+    return build_post_with_assets(session, post, comment_count)
 
 
 @router.patch("/{post_id}", response_model=PostWithAssets)
@@ -229,6 +244,12 @@ def delete_post(
 
     for asset in get_post_assets(session, post_id):
         session.delete(asset)
+
+    for comment in session.exec(select(Comment).where(Comment.post_id == post_id)).all():
+        session.delete(comment)
+
+    for bookmark in session.exec(select(Bookmark).where(Bookmark.post_id == post_id)).all():
+        session.delete(bookmark)
 
     session.delete(post)
     session.commit()

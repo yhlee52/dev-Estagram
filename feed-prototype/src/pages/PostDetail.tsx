@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import { getAccount } from '../api/accountsApi';
 import { deletePost, getPost } from '../api/postsApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import AssetRenderer from '../components/AssetRenderer';
 import AssetGallery from '../components/AssetGallery';
+import BookmarkPanel from '../components/BookmarkPanel';
+import CommentsSection from '../components/CommentsSection';
 import ConfirmDialog from '../components/ConfirmDialog';
 import EmptyState from '../components/EmptyState';
 import MentionText from '../components/MentionText';
@@ -84,6 +86,7 @@ function getAccountUserId(account: Account): string {
 }
 
 export default function PostDetail() {
+  const location = useLocation();
   const navigate = useNavigate();
   const { postId } = useParams();
   const accounts = useEffectiveAccounts();
@@ -151,6 +154,14 @@ export default function PostDetail() {
     postUpdatedAt && postCreatedAt && postUpdatedAt !== postCreatedAt;
   const isOwnApiPost =
     isApiDataSource && account ? getAccountUserId(account) === activeApiUserId : false;
+
+  useEffect(() => {
+    if (isLoading || location.hash !== '#comments') {
+      return;
+    }
+
+    document.getElementById('comments')?.scrollIntoView({ block: 'start' });
+  }, [isLoading, location.hash, post?.id]);
 
   const handleConfirmDelete = async () => {
     if (!postId || !account || !activeApiUserId || isDeleting) {
@@ -263,6 +274,14 @@ export default function PostDetail() {
           >
             Account
           </Link>
+          {isApiDataSource ? (
+            <Link
+              className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
+              to="#comments"
+            >
+              Comments
+            </Link>
+          ) : null}
           <Link className="rounded-md bg-neutral-950 px-3 py-2 text-sm font-bold text-white" to="/">
             Home
           </Link>
@@ -399,6 +418,10 @@ export default function PostDetail() {
       ) : null}
 
       {post.metadata ? <MetadataTable metadata={post.metadata} /> : null}
+
+      {isApiDataSource ? <BookmarkPanel postId={post.id} /> : null}
+
+      {isApiDataSource ? <CommentsSection postId={post.id} /> : null}
     </article>
   );
 }

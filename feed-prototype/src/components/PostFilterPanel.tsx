@@ -42,6 +42,7 @@ export const emptyPostFilters: PostFilters = {
   assetType: '',
   accountHandle: '',
   myPostsOnly: false,
+  bookmarkedOnly: false,
   createdAtFrom: '',
   createdAtTo: '',
   sort: 'newest',
@@ -57,6 +58,7 @@ export function hasActivePostFilters(filters: PostFilters): boolean {
       filters.accountId ||
       filters.accountHandle?.trim() ||
       filters.myPostsOnly ||
+      filters.bookmarkedOnly ||
       filters.createdAtFrom?.trim() ||
       filters.createdAtTo?.trim(),
   );
@@ -273,6 +275,18 @@ export default function PostFilterPanel({
             className="size-4 accent-neutral-950"
           />
           My posts only
+        </label>
+        <label className="flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 has-[:disabled]:text-neutral-400">
+          <input
+            type="checkbox"
+            checked={Boolean(filters.bookmarkedOnly)}
+            disabled={!activeUserId}
+            onChange={(event) => {
+              onChange({ ...filters, bookmarkedOnly: event.target.checked });
+            }}
+            className="size-4 accent-neutral-950"
+          />
+          Bookmarked only
         </label>
         <div className="flex gap-2">
           <button

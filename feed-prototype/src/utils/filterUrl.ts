@@ -54,6 +54,9 @@ export function filtersToSearchParams(filters: PostFilters): URLSearchParams {
   if (filters.myPostsOnly) {
     params.set('my_posts_only', '1');
   }
+  if (filters.bookmarkedOnly) {
+    params.set('bookmarked_only', '1');
+  }
 
   return params;
 }
@@ -70,6 +73,7 @@ export function filtersFromSearchParams(params: URLSearchParams): PostFilters {
     ? (sortRaw as PostSort)
     : 'newest';
   const myPostsOnlyRaw = params.get('my_posts_only');
+  const bookmarkedOnlyRaw = params.get('bookmarked_only');
   const metadataMatch = params.get('metadata_match') === 'exact' ? 'exact' : undefined;
 
   return {
@@ -86,5 +90,6 @@ export function filtersFromSearchParams(params: URLSearchParams): PostFilters {
     sort,
     sortMetadataKey: params.get('sort_metadata_key') ?? '',
     myPostsOnly: myPostsOnlyRaw === '1' || myPostsOnlyRaw === 'true',
+    bookmarkedOnly: bookmarkedOnlyRaw === '1' || bookmarkedOnlyRaw === 'true',
   };
 }

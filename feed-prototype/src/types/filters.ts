@@ -19,6 +19,7 @@ export type PostFilters = {
   accountId?: string | number;
   accountHandle?: string;
   myPostsOnly?: boolean;
+  bookmarkedOnly?: boolean;
   createdAtFrom?: string;
   createdAtTo?: string;
   sort?: PostSort;

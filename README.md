@@ -2,9 +2,9 @@
 
 `feed-prototype`은 범용 `Account` / `Post` / `Feed` prototype입니다.
 
-현재 릴리즈: `v0.3.5` (테마 완료 후 운영 안정화 patch — `process_incoming --watch`
-실행 중 Vite dev server가 종료되던 문제 수정 + 릴리즈 문서 최신화). v0.3.x(Ingestion
-신뢰성) 테마는 v0.3.4로 완료되었습니다. 버전 라벨 기준은
+현재 릴리즈: `v0.5.3` (협업 — Annotation & Collaboration 테마 완료). v0.5.0은
+post별 댓글, v0.5.1은 북마크와 비공개 메모, v0.5.2는 in-app 알림/mention 수신,
+v0.5.3은 협업 표면 UX polish와 문서/검증 절차 wrap-up입니다. 버전 라벨 기준은
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
 
 사용 시나리오:
@@ -13,11 +13,9 @@
 2. 외부 분석 프로그램이 생성한 plot, table, file, link, tag, metadata 포함 리포트 post를 보여주는 feed UI
 
 `v0.0.0`이 첫 번째 공유 가능한 internal/local prototype release였고, 그 위에
-v0.1.x(탐색과 발견)와 v0.2.x(레이아웃 & UI 개편) 테마가 쌓였으며, v0.3.x(Ingestion
-신뢰성) 테마가 v0.3.0 HTTP Import API, v0.3.1 Import Batch 이력, v0.3.2 자동
-이동/디렉터리 일괄 처리/Watch, v0.3.3 asset managed storage 복사(opt-in), v0.3.4 UX
-backlog 반영으로 완료되었습니다. 일반 SNS-like feed와 external
-report feed를 모두 데모할 수 있지만,
+v0.1.x(탐색과 발견), v0.2.x(레이아웃 & UI 개편), v0.3.x(Ingestion 신뢰성),
+v0.4.x(메타데이터 일급화 & 트리아지), v0.5.x(협업) 테마가 쌓였습니다. 일반
+SNS-like feed와 external report feed를 모두 데모할 수 있지만,
 production-ready 제품은 아닙니다. 전체 버전 트리는
 `feed-prototype/docs/ROADMAP.md`를 참고하세요.
 
@@ -32,6 +30,9 @@ core domain은 generic하게 유지합니다.
 - Follow
 - Asset
 - Metadata
+- Comment
+- Bookmark
+- Notification
 
 설비/리포트 전용 값이 필요하면 core model이나 component 이름으로 만들지 않고 `metadata_json`, `post.metadata`, asset metadata에 둡니다. 예를 들어 반도체 설비 분석 scenario의 recipe, chamber, severity 같은 값은 metadata value로만 취급합니다.
 

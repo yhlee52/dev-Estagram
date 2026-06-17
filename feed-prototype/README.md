@@ -2,9 +2,17 @@
 
 `feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
 
-현재 릴리즈: `v0.3.5` (테마 완료 후 운영 안정화 patch). v0.3.x(Ingestion 신뢰성) 테마는 v0.3.4로 완료되었고, v0.3.5는 Watch 중 Vite dev server가 종료되던 문제를 수정하고 릴리즈 문서를 현재 버전 기준으로 최신화한 patch입니다.
+현재 릴리즈: `v0.5.3` (협업 — Annotation & Collaboration 테마 완료). v0.5.0은
+post별 평면 댓글, v0.5.1은 북마크(+ 비공개 메모 · Me 탭 북마크/Following 목록),
+v0.5.2는 in-app 알림/mention 수신(파생 알림 + user별 읽음 워터마크 +
+`/notifications`)을 추가했고, v0.5.3은 협업 표면 UX polish와 문서/검증 절차를
+정리한 wrap-up 슬롯입니다.
 
-이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부 import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다. v0.0.0 기준선 위에 v0.1.x(탐색과 발견) 테마의 pagination·날짜 필터·정렬·해시태그·@mention 기능이 추가되었고, v0.2.x(레이아웃 & UI 개편) 테마에서 데스크톱 3컬럼 레이아웃·헤더 정리·Explore/Accounts/Me 탭 활성화가 추가되었습니다. v0.3.x(Ingestion 신뢰성) 테마는 v0.3.0에서 HTTP import API(`POST /api/imports`), v0.3.1에서 Import batch 이력(`import_batch` 테이블 + `GET /api/imports` + `/imports` UI), v0.3.2에서 `incoming/` 자동 이동·디렉터리 일괄 처리 CLI·폴링 Watch(`process_incoming`), v0.3.3에서 asset managed storage 복사(opt-in), v0.3.4에서 UX backlog 반영(Me 탭 Load more + 공용 ConfirmDialog)을 추가하며 테마를 완료했습니다. 테마 완료 후 v0.3.5에서 `process_incoming --watch` 실행 중 managed storage·external_posts 파일 churn으로 Vite dev server가 종료되던 문제를 `vite.config.ts`의 `server.watch.ignored`로 해결하고 릴리즈 runbook/checklist를 최신화했습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
+이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부
+import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다.
+v0.0.0 기준선 위에 v0.1.x(탐색과 발견), v0.2.x(레이아웃 & UI), v0.3.x(Ingestion
+신뢰성), v0.4.x(메타데이터 일급화 & 트리아지), v0.5.x(협업) 테마가 순서대로
+쌓였습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
 
 ## 포함된 기능
 
@@ -31,6 +39,18 @@
 - 디렉터리 일괄 처리/자동 이동/Watch: `process_incoming` CLI가 `incoming/`의 package(단일 `.json` 또는 `feed_posts.json` 포함 디렉터리)를 일괄 import하고 성공→`archive/`/실패→`failed/`로 자동 이동(이름 충돌 시 타임스탬프 접미사), `--watch --interval N` 단순 폴링, `--dry-run`은 DB·파일 무변경. 단일 파일 `--input` CLI·HTTP import는 파일 이동 없음 (v0.3.2)
 - Asset managed storage 복사(opt-in): `MANAGE_ASSET_STORAGE`를 켜면 import 시 asset url이 **상대 로컬 경로**일 때만 패키지 디렉터리 기준으로 파일을 `public/assets/managed/`로 복사하고 DB url을 `/assets/managed/...`로 재작성. `/assets/...`·`http(s)://` url은 무손상, 기본 OFF, CLI/`process_incoming` 경로만 적용(HTTP import 미적용), 복사 실패·원본 누락은 원본 url 유지. DB 스키마/format 변경 없음 (v0.3.3)
 - UX backlog 반영: Me 탭(API 모드) 내 post를 `MY_POSTS_PAGE_SIZE`(20)개씩 "Load more"로 점진 렌더(클라이언트 사이드 윈도잉, 백엔드 변경 없음), post 삭제 확인을 브라우저 `window.confirm` 대신 공용 `ConfirmDialog`(오버레이/Escape/백드롭/포커스 제어)로 교체. v0.3.x 테마 완료 (v0.3.4)
+- Metadata-first reading: 데이터에서 파생한 metadata key/value facet API와 필터 패널
+  선택 UI, 카드 pinned metadata chip, metadata value sort, 중복 metadata 표시 제거와
+  정렬 안내. **API mode 전용**, generic key-value 기반 (v0.4.x)
+- Comments: post별 평면 댓글 작성/조회/수정/삭제, 작성자 account 신원, 댓글 수 칩,
+  caption/comment 본문의 `@mention`·`#hashtag` 렌더. **API mode 전용** (v0.5.0)
+- Bookmarks: post 북마크 토글, 비공개 메모, Me 탭 북마크/Following 목록,
+  메인 Browse `bookmarked_only` 필터. **API mode 전용** (v0.5.1)
+- Notifications & mentions: 팔로우 계정 새 post, 내 post의 새 댓글, 나를 언급한
+  post/comment를 `/notifications`에서 확인하고 모두 읽음 처리. 알림 item은 파생하고
+  읽음 상태만 user별 워터마크로 저장합니다. **API mode 전용** (v0.5.2)
+- Collaboration UX wrap-up: `/notifications` Unread empty state와 Me 탭 Bookmarks
+  empty copy를 정리하고 현재 릴리즈 문서/검증 절차를 갱신했습니다. (v0.5.3)
 
 ## 포함되지 않은 기능
 

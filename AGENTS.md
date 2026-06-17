@@ -8,10 +8,18 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.3.5`(테마 완료 후 운영 안정화 patch)이며
+현재 릴리즈는 `v0.5.3`(협업 — Annotation & Collaboration 테마 완료, UX Backlog &
+Theme Wrap-up)이며
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이 기준입니다.
-v0.3.x 테마는 v0.3.4(UX backlog 반영)로 완료되었고, v0.3.5는 `process_incoming
---watch` 중 Vite dev server 종료 문제 수정 + 릴리즈 문서 최신화에 한정된 patch입니다.
+직전 테마 v0.4.x(메타데이터 일급화 & 트리아지)는 v0.4.2로 **완료**되었고,
+v0.5.x(협업) 테마도 v0.5.3으로 **완료**되었습니다. v0.5.0은 post별 평면 댓글, v0.5.1은 북마크
+(+ 비공개 메모 · `bookmarked_only` 필터 · Me 탭 북마크/Following 목록), v0.5.2는
+in-app 알림/mention 수신(파생 알림 + user별 읽음 워터마크 + `/notifications` +
+Home/Me 진입점), v0.5.3은 협업 표면 UX polish와 문서/검증 절차 wrap-up입니다.
+진입 판단/후보 계획은
+`feed-prototype/docs/archive/V0_5_X_COLLABORATION_PLAN.md`, 각 MINOR 상세 scope는
+`feed-prototype/docs/archive/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`·
+`V0_5_2_NOTIFICATIONS_SCOPE.md`·`V0_5_3_UX_BACKLOG_SCOPE.md`에 있습니다.
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
 - `README.md`
@@ -24,14 +32,15 @@ v0.3.x 테마는 v0.3.4(UX backlog 반영)로 완료되었고, v0.3.5는 `proces
 - `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
 
 버전별 상세 scope는 `feed-prototype/docs/`의 `V0_x_y_*_SCOPE.md` 문서를
-참고합니다. v0.3.x 테마가 완료되어 그 scope 문서
-(`V0_3_0_HTTP_IMPORT_SCOPE.md` ~ `V0_3_4_UX_BACKLOG_SCOPE.md`)와 진입 판단/후보
-계획(`V0_3_X_INGESTION_PLAN.md`)은 완료 테마 v0.1.x~v0.2.x와 함께
-`feed-prototype/docs/archive/`로 이동했습니다. 다음 테마(v0.4.x 메타데이터 일급화
-& 트리아지)의 진입 판단·후보 계획은 `feed-prototype/docs/V0_4_X_METADATA_PLAN.md`에
-있으며, 각 MINOR 확정 scope는 착수 시 `docs/`에 `V0_4_*_SCOPE.md`로 새로
-작성합니다. 과거 MVP별 테스트 절차도 `feed-prototype/docs/archive/` 아래에
-historical reference로 보관됩니다.
+참고합니다. v0.4.x 테마가 완료되어 그 scope 문서
+(`V0_4_0_FACET_FILTER_SCOPE.md` ~ `V0_4_2_UX_BACKLOG_SCOPE.md`)와 진입 판단/후보
+계획(`V0_4_X_METADATA_PLAN.md`)은 완료 테마 v0.1.x~v0.3.x와 함께
+`feed-prototype/docs/archive/`로 이동했습니다. 완료된 v0.5.x(협업 — Annotation
+& Collaboration)의 진입 판단·후보 계획은
+`feed-prototype/docs/archive/V0_5_X_COLLABORATION_PLAN.md`, 구현된 상세 scope는
+`feed-prototype/docs/archive/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`·
+`V0_5_2_NOTIFICATIONS_SCOPE.md`·`V0_5_3_UX_BACKLOG_SCOPE.md`에 있습니다. 과거 MVP별 테스트 절차도
+`feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
 현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.
 
 ## Core Domain
@@ -45,6 +54,9 @@ core type, shared component, route, data flow에는 다음 generic concept를 �
 - Follow
 - Asset
 - Metadata
+- Comment (v0.5.0~, generic 협업 개념)
+- Bookmark (v0.5.1~, generic 협업/주석 개념)
+- Notification (v0.5.2~, generic 협업/알림 개념)
 
 core type name 또는 primary component name에 설비 리포트 전용 용어를 넣지 않습니다. 피해야 할 이름:
 
@@ -59,9 +71,9 @@ core type name 또는 primary component name에 설비 리포트 전용 용어�
 
 ## Current Implementation Scope
 
-v0.0.0 기준선은 MVP1-MVP12로 구축되었고, 그 위에 v0.1.x·v0.2.x 테마가 쌓였습니다.
-상세 단계 기록은 아래 "Completed Scope History"를, 버전 트리는 `ROADMAP.md`를
-참고합니다.
+v0.0.0 기준선은 MVP1-MVP12로 구축되었고, 그 위에 v0.1.x~v0.5.x 테마가 쌓였으며
+현재 v0.5.x(협업) 테마가 완료되었습니다. 상세 단계 기록은 아래 "Completed Scope
+History"를, 버전 트리는 `ROADMAP.md`를 참고합니다.
 
 현재 제약:
 
@@ -171,6 +183,79 @@ v0.3.x — Ingestion 신뢰성 (Ingestion Hardening):
   `server.watch.ignored`로 두 런타임 데이터 경로를 제외해 해결(파일은 계속 serve,
   불필요한 full reload도 제거). 릴리즈 runbook/checklist를 현재 버전 기준으로
   재작성. 코드 변경은 `vite.config.ts` 1개, DB/format/frontend 동작 변경 없음.
+
+v0.4.x — 메타데이터 일급화 & 트리아지 (Metadata-first Reading):
+
+- v0.4.0: facet 기반 필터(테마 기반). 데이터에서 파생한 distinct metadata
+  key/value를 빈도순으로 반환하는 `GET /api/metadata/keys`·`GET /api/metadata/values`
+  (`get_top_tags` 집계 패턴 재사용, `jsonb_object_keys`/`->>`, `limit` 기본 20).
+  `PostFilters.metadata_match`(`contains` 기본 = 기존 ILIKE 부분일치 / `exact` =
+  정확일치) 추가로 facet 선택은 정확일치, 자유 입력은 기존 동작 유지(회귀 안전).
+  필터 패널은 자유 입력 옆에 key 드롭다운 → value 드롭다운/칩(facet 선택 시
+  `metadata_key`/`metadata_value` 채우고 `metadata_match=exact`). **API mode 전용**,
+  DB 스키마/format 변경 없음. 회귀 스크립트 `scripts/check_metadata_facets.py`.
+- v0.4.1: 카드 metadata 노출 & 값 정렬. `sort=metadata_asc|metadata_desc` +
+  `sort_metadata_key`로 `(metadata_json ->> key)` 텍스트 사전순 정렬(그 key를 가진
+  non-null post 한정, `post id` tie-breaker, cursor를 정렬 모드별 자기완결 인코딩으로
+  확장 — 값에 `|` 포함 케이스 안전). pinned keys: 사용자가 고른 key를 `FeedCard`에
+  칩으로 고정(`usePinnedMetadataKeys`, localStorage + storage/custom event 동기화,
+  URL 동기화는 범위 밖). 칩/정렬 모두 generic key-value(도메인 의미 모름).
+  숫자 인식 정렬은 테마 후속으로 보류. **API mode 전용**, 기본 sort=newest 동작 불변.
+- v0.4.2: UX backlog 반영(테마 마지막 MINOR). (1) 카드 metadata 중복 제거 —
+  `MetadataSummary`에 `excludeKeys` 추가하고 `FeedCard`가 pinned key를 넘겨 칩과
+  summary 이중 표시 제거(`PinnedMetadataChips`를 `pinnedKeys` prop화). (2) metadata
+  값 정렬 시 그 key 보유 post만 보여 결과 수가 조용히 줄어드는 데 대한 안내 문구를
+  필터 패널에 추가. (3) 테마 완료 문서 일괄 정리. 기능 추가 없는 폴리시+문서 중심.
+  이로써 v0.4.x(메타데이터 일급화 & 트리아지) 테마 완료.
+
+v0.5.x — 협업 (Annotation & Collaboration):
+
+- v0.5.0: comments(테마 기반). 신규 `comments` 테이블(migration `0007`:
+  id/post_id FK/author_user_id FK/text/created_at/updated_at)에 post별 평면 댓글을
+  저장. `GET /api/posts/{id}/comments?sort=oldest|newest`(작성자 account 신원
+  포함)·`POST`(작성, 빈 text 422)·`PATCH /api/comments/{id}`(작성자 본인 수정 +
+  `updated_at`)·`DELETE /api/comments/{id}?user_id=`(작성자 본인 삭제, 타인 403).
+  작성자/소유는 prototype active user selection(MVP8 ownership 체크 수준, real
+  auth 아님 — v0.6.x). 카드 댓글 수는 `PostRead.comment_count`(additive, 기본 0)로
+  노출하며 feed/posts/accounts 목록 빌더가 `get_comment_counts`(단일 `GROUP BY`)
+  배치 집계로 채움(N+1 회피). post 삭제 시 자식 댓글 함께 삭제. 본문 렌더는 v0.1.3
+  mention 파서를 `parseRichTextSegments`로 일반화해 `@mention`(계정 링크)과
+  `#hashtag`(`/posts?tag=` 링크)를 처리 — 공용 `MentionText`라 caption·댓글에 앱
+  전역 적용(저장/format 무변경). frontend:
+  PostDetail `CommentsSection`(목록/정렬 토글/작성/본인 수정·삭제/로딩·0건·실패
+  상태) + `FeedCard` `💬 N` 칩. **API mode 전용**, external package format 무변경.
+  회귀 스크립트 `scripts/check_comments.py`. `Follow` join 테이블 + `follows`
+  라우트 패턴 재사용.
+- v0.5.1: bookmarks(+ 비공개 메모 · Me 탭 목록). 신규 `bookmarks` 테이블
+  (migration `0008`: id/user_id FK/post_id FK/note nullable/created_at,
+  `UniqueConstraint(user_id, post_id)`). user-scoped 라우트(`follows` 패턴):
+  `POST`/`GET`/`PATCH`/`DELETE /api/users/{id}/bookmarks/{post}`(추가 멱등·단건
+  조회·메모 편집·제거), `GET /api/users/{id}/bookmarks`(필터/정렬/cursor를
+  `paginate_posts`로 재사용 — bookmarked base_select 위에 얹고 post마다 note·
+  account·comment_count 부착), `GET /api/users/{id}/bookmark-ids`(카드 토글 상태용).
+  `PostFilters.bookmarked_only` 추가(`my_posts_only`와 동형, user_id 필수) — feed/
+  posts 라우트에 통과해 메인 Browse 필터 패널에서 facet·정렬과 결합. 소유는
+  prototype active user selection. post 삭제 시 북마크도 함께 삭제. frontend:
+  `useBookmarks`(모듈 캐시 + 이벤트 동기화 훅, follows 패턴) + `BookmarkButton`
+  (카드 토글) + `BookmarkPanel`(PostDetail 토글 + 비공개 메모 편집) +
+  `MeBookmarksSection`(Me 탭 북마크 목록 + 인라인 메모) + Me 탭 Following 목록
+  (이연됐던 UX backlog 항목 반영) + `PostFilterPanel` "Bookmarked only" 토글
+  (URL 동기화). **API mode 전용**, external package format 무변경. 회귀 스크립트
+  `scripts/check_bookmarks.py`.
+- v0.5.2: notifications & mentions. 신규 `notification_state` 테이블(migration
+  `0009`: user_id PK/FK, `last_read_at`, `updated_at`)은 개별 알림 event log가
+  아니라 user별 읽음 워터마크만 저장합니다. 알림 item은 post/comment/follow/text에서
+  파생하며 source(`post:{id}`/`comment:{id}`)가 같으면 `reasons`를 병합합니다.
+  user-scoped `GET /api/users/{id}/notifications`(cursor/limit/`unread_only`,
+  `unread_count`, post/account/comment context 포함)·`POST .../read-all`(모두 읽음).
+  mention 수신은 post·댓글 본문 `@handle`을 v0.1.3/v0.5.0 렌더 규칙과 같은 regex로
+  판정(email/word 중간 `@` 오탐 방지). frontend: `/notifications` 목록 +
+  SideNav unread badge + Home unread 진입 + Me 탭 Mentions 요약. **API mode 전용**,
+  external package format 무변경. 회귀 스크립트 `scripts/check_notifications.py`.
+- v0.5.3: UX backlog & theme wrap-up(테마 마지막 MINOR). 신규 core feature 없이
+  협업 표면을 audit해 `/notifications` Unread empty state와 Mark all read 로딩
+  비활성화, Me 탭 Bookmarks empty copy를 작게 정리했다. 현재 릴리즈 문서와 검증
+  절차를 v0.5.3 기준으로 맞추며 v0.5.x(협업) 테마 완료.
 
 ## Roadmap & Versioning
 

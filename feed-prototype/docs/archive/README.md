@@ -4,10 +4,10 @@
 
 보관 대상:
 
-- **완료된 테마의 scope 문서** (`V0_1_*`, `V0_2_*`, `V0_3_*`): 해당 테마가 완료되면
-  이곳으로 옮깁니다. 구현 당시의 goals/non-goals 기록이며, 현재 동작은 코드와 현행
-  문서가 기준입니다. v0.3.x(Ingestion 신뢰성)는 진입 판단/후보 계획
-  (`V0_3_X_INGESTION_PLAN.md`)과 0.3.0~0.3.4 scope 문서를 함께 보관합니다.
+- **완료된 테마의 scope 문서** (`V0_1_*`, `V0_2_*`, `V0_3_*`, `V0_4_*`): 해당 테마가
+  완료되면 이곳으로 옮깁니다. 구현 당시의 goals/non-goals 기록이며, 현재 동작은
+  코드와 현행 문서가 기준입니다. 각 테마의 진입 판단/후보 계획(`V0_3_X_INGESTION_PLAN.md`,
+  `V0_4_X_METADATA_PLAN.md`)과 그 테마의 MINOR scope 문서를 함께 보관합니다.
 - **MVP-era 참고 문서** (`MVP10_EXTERNAL_POST_FORMAT.md`, `MVP12_ASSET_VIEWER_SCOPE.md`):
   format history / 과거 scope 상세.
 - **historical MVP validation / v0.0.0 문서** (`MVP*_TEST_PROCEDURE.md`,
@@ -18,7 +18,8 @@ Archived 문서는 개발 기록이나 회귀 확인에는 유용하지만, 현�
 
 현재 실행/검증/계획 기준 문서:
 
-- `../ROADMAP.md` (버전 트리 / 다음 테마는 v0.4.x)
+- `../ROADMAP.md` (버전 트리 / 다음 테마는 v0.5.x 협업)
+- `V0_5_X_COLLABORATION_PLAN.md` (완료 테마 v0.5.x 협업 진입 판단/후보 계획)
 - `../EXTERNAL_POST_PACKAGE_GUIDE.md`
 - `../RELEASE_0_0_RUNBOOK.md`
 - `../RELEASE_0_0_CHECKLIST.md`

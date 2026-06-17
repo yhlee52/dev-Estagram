@@ -218,15 +218,65 @@ metadata 스키마 강제/검증
 
 ## v0.5.x — 협업 (Annotation & Collaboration)
 
-목표: 봇/사람이 올린 post에 사람의 판단과 반응을 기록.
+목표: 봇/사람이 올린 post에 사람의 판단과 반응을 기록. 읽기(v0.1)·UI(v0.2)·
+ingestion(v0.3)·metadata 트리아지(v0.4)로 "데이터를 잘 읽는" 축이 갖춰졌으니,
+그 위에 사람의 입력을 얹는 단계입니다.
 
-- v0.5.0: comments (post별 댓글, 작성/삭제).
-- v0.5.1: bookmark (post 북마크, Me 탭에 북마크 목록).
-- v0.5.2: in-app 알림(팔로우 계정 새 post, 내 post의 새 댓글),
-  mention 수신(나를 언급한 post 목록, mention 알림),
-  Home Feed unread/since-last-visit 표시.
+진입 판단·후보 계획·재사용 기반은 `archive/V0_5_X_COLLABORATION_PLAN.md`를 참고합니다.
+각 MINOR 확정 scope는 `archive/V0_5_*_SCOPE.md`에 보관합니다.
 
+- v0.5.0: comments (테마 기반). **완료.** post별 평면 댓글 — 작성/조회/수정/삭제
+  (작성자 본인). 신규 `comments` 테이블 + `GET`/`POST /api/posts/{id}/comments`·
+  `PATCH`/`DELETE /api/comments/{id}`. PostDetail 댓글 섹션 + 작성자 신원
+  (display_name/avatar) + 본문 `@mention`(계정 링크)·`#hashtag`(`/posts?tag=`
+  링크) 렌더(공용 `MentionText`로 caption·댓글 앱 전역 적용) + 카드 댓글 수 칩
+  (트리아지 신호). `Follow` join 테이블 패턴 재사용.
+- v0.5.1: bookmark. **완료.** post 북마크 토글 + 비공개 메모(annotation) + Me 탭
+  북마크 목록. 신규 `bookmarks` 테이블(`note` optional, `UniqueConstraint(user,
+  post)`) + user-scoped `POST`/`GET`/`PATCH`/`DELETE /api/users/{id}/bookmarks/
+  {post}`·`GET /api/users/{id}/bookmarks`·`.../bookmark-ids`. 북마크 목록은 v0.4.x
+  facet 필터·정렬 재사용, 메인 Browse엔 `bookmarked_only` 필터 토글. 같은 Me 탭
+  작업으로 `UX_BACKLOG.md`의 이연 Open 항목("내가 팔로우한 계정" 목록,
+  v0.2.3→v0.5.x)도 함께 처리.
+- v0.5.2: in-app 알림. **완료.** 팔로우 계정 새 post, 내 post의 새 댓글, 나를
+  언급한 새 post/댓글을 앱 안에서 모아 봅니다. 신규 `notification_state` 테이블
+  (user별 `last_read_at` 읽음 워터마크) + user-scoped
+  `GET /api/users/{id}/notifications`·`POST .../read-all`. 알림 item은 post/comment/
+  follow/text에서 파생하고 같은 source의 reason을 병합합니다. mention 수신은
+  post·댓글 본문 `@handle`을 v0.1.3/v0.5.0 렌더 규칙과 같은 regex로 판정(email
+  오탐 방지). frontend는 `/notifications` 목록 + SideNav unread badge + Home unread
+  진입 + Me 탭 Mentions 요약. **API mode 전용**, external package format 무변경.
+- v0.5.3: `UX_BACKLOG.md` 반영(테마 마지막 MINOR). **완료.** 현재 Open backlog는
+  없었으므로 협업 표면 UX audit으로 `/notifications` Unread empty state, Mark all
+  read 로딩 비활성화, Me 탭 Bookmarks empty copy를 작게 정리하고 현재 릴리즈
+  문서/검증 절차를 v0.5.3 기준으로 맞췄습니다. 상세는
+  `archive/V0_5_3_UX_BACKLOG_SCOPE.md`. 이로써 **v0.5.x 테마 완료**.
+
+작성자/북마크 소유자/알림 수신자는 prototype active user selection으로
+식별합니다(MVP8 1:1 ownership 체크 패턴). 실제 인증/권한은 v0.6.x입니다.
 like 기능은 북마크 사용 양상을 본 뒤 별도 결정합니다.
+
+### v0.5.x 협업 정책 / 제약
+
+```text
+인증/JWT/session/OAuth는 범위 밖 (v0.6.x) — 작성자/소유자는 active user selection
+Comment·Bookmark·Notification은 generic 협업 개념이라 새 core type으로 허용
+  (설비 전용 용어 Chamber/Recipe/Severity와 다름 — 도메인 값은 계속 metadata로)
+협업 데이터는 앱 내부 행동이며 external package JSON format을 바꾸지 않는다
+mock mode는 데모 전용 동결 — 협업 기능은 API mode 전용
+```
+
+### v0.5.x non-goals
+
+```text
+인증/로그인/권한 시스템 (v0.6.x)
+like / reaction — 북마크 사용 양상을 본 뒤 별도 결정
+북마크 폴더/컬렉션 — post-theme 후보로 이연
+외부 알림 채널 (메일, 메신저) — "그 이후 후보"
+실시간 push / websocket (in-app 조회/폴링까지)
+댓글 대댓글(threading) / 리치 텍스트 / 멘션 자동완성 (렌더만)
+external package에 댓글/북마크 싣기 (format 변경 필요)
+```
 
 ## v0.6.x — 인증 & 멀티유저
 

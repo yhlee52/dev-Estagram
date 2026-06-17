@@ -69,6 +69,7 @@ export interface Post {
   assets: PostAsset[];
   metadata_json?: PostMetadata;
   metadata?: PostMetadata;
+  commentCount?: number;
 }
 
 export interface FollowState {

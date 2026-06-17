@@ -6,6 +6,7 @@ from app.models.account import Account
 from app.models.asset import PostAsset
 from app.models.post import Post
 from app.schemas.feed import AccountRead, PostAssetRead, PostRead, PostWithAssets
+from app.services.comments import get_comment_counts
 from app.services.post_filters import PostFilters, apply_filters_to_select
 
 
@@ -40,9 +41,14 @@ def get_post_assets(session: Session, post_id: str) -> list[PostAsset]:
     return list(assets)
 
 
-def build_post_with_assets(session: Session, post: Post) -> PostWithAssets:
+def build_post_with_assets(
+    session: Session, post: Post, comment_count: int = 0
+) -> PostWithAssets:
+    post_read = PostRead.model_validate(post).model_copy(
+        update={"comment_count": comment_count}
+    )
     return PostWithAssets(
-        **PostRead.model_validate(post).model_dump(),
+        **post_read.model_dump(),
         assets=[
             PostAssetRead.model_validate(asset)
             for asset in get_post_assets(session, post.id)
@@ -82,7 +88,13 @@ def list_account_posts(
     if statement is None:
         return []
 
-    posts = session.exec(
-        statement.order_by(col(Post.created_at).desc(), col(Post.id).desc())
-    ).all()
-    return [build_post_with_assets(session, post) for post in posts]
+    posts = list(
+        session.exec(
+            statement.order_by(col(Post.created_at).desc(), col(Post.id).desc())
+        ).all()
+    )
+    comment_counts = get_comment_counts(session, [post.id for post in posts])
+    return [
+        build_post_with_assets(session, post, comment_counts.get(post.id, 0))
+        for post in posts
+    ]
