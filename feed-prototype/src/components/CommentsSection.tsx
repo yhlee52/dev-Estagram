@@ -186,7 +186,10 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
   };
 
   return (
-    <section className="space-y-4 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+    <section
+      id="comments"
+      className="scroll-mt-4 space-y-4 rounded-md border border-neutral-200 bg-white p-4 shadow-sm"
+    >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-bold text-neutral-950">
           Comments
