@@ -26,6 +26,7 @@ v0.3.4로 완료(v0.3.5 운영 안정화 patch), v0.1.x·v0.2.x와 함께 `archi
 - `../README.md`: mock mode, API mode, external import mode 실행 guide
 - `ROADMAP.md`: v0.0.0 이후 업데이트 로드맵 (버전 트리, 테마별 scope)
 - `V0_6_0_AUTH_SCOPE.md`: v0.6.0 password login + server-side session 구현 전 확정 scope
+- `V0_6_1_ACCOUNT_IDENTITY_SCOPE.md`: v0.6.1 User:Account 1:1 identity 운영 정책 scope
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: external post package 작성 guide (format 중심)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog

@@ -288,7 +288,8 @@ external package에 댓글/북마크 싣기 (format 변경 필요)
 - v0.6.1: User:Account 1:1 운영 정책 정리. 봇/프로그램/설비 계정도 로그인 가능한
   별도 user로 취급하며, 하나의 user는 정확히 하나의 account를 가진다는 원칙을
   유지한다. 계정 전환은 "다른 user로 로그인"하는 문제로 다루고, user가 여러
-  account를 소유하거나 대리 작성하는 구조는 범위 밖.
+  account를 소유하거나 대리 작성하는 구조는 범위 밖. 상세 scope와 검증은
+  `V0_6_1_ACCOUNT_IDENTITY_SCOPE.md`를 따른다.
 - v0.6.2: 내 account profile self-service. 로그인한 user가 자기 1:1 account의
   display_name/bio/avatar를 UI에서 직접 수정. account/handle처럼 식별자에
   해당하는 값은 등록 시 고정(수정 불가). Profile asset은 post asset과 분리된

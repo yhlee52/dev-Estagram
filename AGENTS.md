@@ -27,6 +27,7 @@ Home/Me 진입점), v0.5.3은 협업 표면 UX polish와 문서/검증 절차 wr
 - `feed-prototype/docs/README.md` (문서 색인)
 - `feed-prototype/docs/ROADMAP.md` (버전 트리·테마)
 - `feed-prototype/docs/V0_6_0_AUTH_SCOPE.md` (다음 작업: password login + server-side session)
+- `feed-prototype/docs/V0_6_1_ACCOUNT_IDENTITY_SCOPE.md` (User:Account 1:1 identity 정책)
 - `feed-prototype/docs/GOLDEN_SAMPLE_REGRESSION.md`
 - `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`
 - `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`
