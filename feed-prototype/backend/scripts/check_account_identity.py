@@ -23,6 +23,7 @@ from sqlmodel import select
 from app.db.session import create_session
 from app.main import app
 from app.models.account import Account
+from app.models.auth import UserCredential, UserSession
 from app.models.import_batch import ImportBatch
 from app.models.post import Post
 from app.models.user import User
@@ -161,6 +162,20 @@ def cleanup() -> None:
             ).first()
             if account is not None:
                 session.delete(account)
+
+        # Import provisions a paired credential per user (v0.6.0). Delete those
+        # (and any sessions) before the users, then flush, so the
+        # user_credentials/user_sessions -> users FK does not block deletion.
+        for user_id in (USER_A, USER_B):
+            credential = session.get(UserCredential, user_id)
+            if credential is not None:
+                session.delete(credential)
+            for auth_session in session.exec(
+                select(UserSession).where(UserSession.user_id == user_id)
+            ).all():
+                session.delete(auth_session)
+
+        session.flush()
 
         for user_id in (USER_A, USER_B):
             user = session.get(User, user_id)
