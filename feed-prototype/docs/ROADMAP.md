@@ -309,7 +309,8 @@ external package에 댓글/북마크 싣기 (format 변경 필요)
   차단 + 세션 폐기 + discovery 제외를 적용하되 post/협업 데이터는 보존한다. 신규 follow는
   409로 차단(기존 follow 보존). 재활성화는 운영자 CLI(`scripts/reactivate_user.py`)만.
   ROADMAP 제약의 "비활성/삭제 시 post 처리 정책 별도 확정"을 이 MINOR에서 닫는다.
-  상세 scope와 검증은 `V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`를 따른다.
+  상세 scope와 검증은 `V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`를 따른다. **이로써 v0.6.x
+  테마 완료** — v1.0.0 전제(v0.1 읽기확장 + v0.3 ingestion + v0.6 인증)가 갖춰졌다.
 
 > 배경(2026-06-17 결정): v0.6.x에서는 User:Account 1:N으로 확장하지 않고 1:1
 > 원칙을 유지한다. 설비/봇 계정도 별도의 로그인 user로 취급하면, post/comment/
@@ -353,6 +354,13 @@ incoming 패키지 / profile 갱신 규칙
 v0.1(읽기 확장성) + v0.3(ingestion 신뢰성) + v0.6(인증)가 갖춰지면
 v1.0.0으로 올립니다. 별도 신규 기능 없이 안정화/문서화/배포 절차 정리가
 중심인 릴리즈입니다.
+
+전제는 v0.6.x 완료로 모두 충족되어 **이 마일스톤을 개시**합니다. 다만 v1.0.0은
+"실사용자에게 배포 가능한 기준선"이므로, `V0_6_3`에서 "비-localhost 이전 시"로 이연한
+보안 하드닝(write endpoint의 session 기반 인가, cookie `secure`, 로그인 화면 user 목록
+숨김)이 태그 전 필수입니다. 상세 must-do/안정화 항목과 태그 조건은
+`V1_0_0_RELEASE_SCOPE.md`를 따릅니다. 이 항목들이 통과하기 전에는 v1.0.0을 태그하지
+않습니다.
 
 ## v1.1.x — Rich Asset Experience (post-1.0)
 
