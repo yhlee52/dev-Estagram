@@ -15,6 +15,7 @@ export interface ApiUser {
 
 export interface ApiUserCreatePayload {
   handle: string;
+  password: string;
   display_name?: string | null;
   bio?: string | null;
 }
@@ -27,13 +28,38 @@ export interface ApiAccount {
   bio: string | null;
   avatar_url: string | null;
   kind: string;
+  profile_source: string;
+  // v0.6.4: null = active. When set, the paired user cannot log in and the
+  // account is hidden from discovery, but its posts are preserved.
+  deactivated_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ApiAccountProfileUpdatePayload {
+  user_id: string;
+  display_name?: string | null;
+  bio?: string | null;
+  avatar_url?: string | null;
+}
+
+export interface ApiAccountDeactivatePayload {
+  user_id: string;
 }
 
 export interface ApiUserRegistrationResponse {
   user: ApiUser;
   account: ApiAccount;
+}
+
+export interface ApiAuthSession {
+  user: ApiUser;
+  account: ApiAccount | null;
+}
+
+export interface ApiPasswordChangePayload {
+  current_password: string;
+  new_password: string;
 }
 
 export interface ApiPostAsset {

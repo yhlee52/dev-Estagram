@@ -71,6 +71,10 @@ function getAccountUserId(account: Account): string {
   return typeof userId === 'string' ? userId : '';
 }
 
+function isAccountDeactivated(account: Account): boolean {
+  return Boolean(account.metadata?.deactivated_at);
+}
+
 export default function AccountProfile() {
   const { accountId } = useParams();
   const accounts = useEffectiveAccounts();
@@ -182,9 +186,13 @@ export default function AccountProfile() {
     : isMockFollowing(account.id);
   const isOwnApiAccount =
     isApiDataSource && getAccountUserId(account) === activeApiUserId;
+  const isDeactivated = isApiDataSource && isAccountDeactivated(account);
   const isPendingApiAccount = apiFollows.pendingAccountId === account.id;
   const isApiFollowDisabled =
-    apiFollows.isLoading || apiFollows.isMutating || isOwnApiAccount;
+    apiFollows.isLoading ||
+    apiFollows.isMutating ||
+    isOwnApiAccount ||
+    isDeactivated;
   const latestPost = accountPosts[0]?.post;
   const latestPostDate = latestPost
     ? formatDateTime(latestPost.createdAt)
@@ -207,9 +215,16 @@ export default function AccountProfile() {
         <div className="flex items-start gap-4">
           <AccountAvatar account={account} />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-bold leading-7 text-neutral-950">
-              {account.displayName}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="truncate text-xl font-bold leading-7 text-neutral-950">
+                {account.displayName}
+              </h1>
+              {isDeactivated ? (
+                <span className="shrink-0 rounded bg-neutral-200 px-2 py-0.5 text-xs font-bold text-neutral-600">
+                  Deactivated
+                </span>
+              ) : null}
+            </div>
             <p className="truncate text-sm text-neutral-500">@{account.handle}</p>
             {account.bio ? (
               <p className="mt-3 text-sm leading-6 text-neutral-600">{account.bio}</p>

@@ -3,11 +3,12 @@ import { Link, useSearchParams } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
-import PostFilterPanel, {
+import PostFilterPanel from '../components/PostFilterPanel';
+import {
   emptyPostFilters,
   getPostFilterValidationError,
   hasActivePostFilters,
-} from '../components/PostFilterPanel';
+} from '../utils/postFilters';
 import { getTags } from '../api/tagsApi';
 import { getMetadataKeys } from '../api/metadataApi';
 import type { ApiMetadataKeyCount, ApiTagCount } from '../api/types';

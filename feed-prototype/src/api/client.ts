@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "../config/apiConfig";
+import { UNAUTHORIZED_EVENT } from "../auth/authEvents";
 
 interface ApiErrorBody {
   detail?: unknown;
@@ -94,6 +95,7 @@ const apiRequest = async <T>(
   try {
     response = await fetch(buildApiUrl(path), {
       ...init,
+      credentials: "include",
       headers: {
         Accept: "application/json",
         ...init.headers,
@@ -106,6 +108,17 @@ const apiRequest = async <T>(
   const body = await readJsonBody(response);
 
   if (!response.ok) {
+    // Session expired/revoked mid-use: signal the app to drop the active user
+    // and fall back to the login gate. `/api/auth/*` 401s are normal pre-login
+    // responses (e.g. the initial session probe), so we never bounce on those.
+    if (
+      response.status === 401 &&
+      !path.startsWith("/api/auth/") &&
+      typeof window !== "undefined"
+    ) {
+      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+    }
+
     throw new ApiClientError(
       getErrorMessage(body, response.status, response.statusText),
       response.status,

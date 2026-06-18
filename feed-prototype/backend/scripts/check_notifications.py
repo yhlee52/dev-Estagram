@@ -24,8 +24,8 @@ from app.models.follow import Follow
 from app.models.import_batch import ImportBatch
 from app.models.notification_state import NotificationState
 from app.models.post import Post
-from app.models.user import User
 from app.services.import_external_posts import generated_user_id
+from scripts.cleanup_utils import delete_test_users
 
 
 SUFFIX = uuid4().hex[:8]
@@ -228,10 +228,7 @@ def cleanup() -> None:
         if state is not None:
             session.delete(state)
 
-        for user_id in test_user_ids:
-            user = session.get(User, user_id)
-            if user is not None:
-                session.delete(user)
+        delete_test_users(session, test_user_ids)
 
         batch = session.exec(
             select(ImportBatch).where(ImportBatch.external_id == BATCH)

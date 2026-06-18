@@ -55,7 +55,8 @@ v0.0.0 기준선 위에 v0.1.x(탐색과 발견), v0.2.x(레이아웃 & UI), v0.
 ## 포함되지 않은 기능
 
 - production authentication 또는 authorization
-- password, JWT, session, OAuth, role
+- 현재 릴리즈(v0.5.3)의 password login, JWT, session, OAuth, role
+  (password login + server-side session은 v0.6.0 scope)
 - real file upload, S3 upload, UI/HTTP asset 업로드 (v0.3.3 asset managed storage 복사는 opt-in으로 상대 로컬 경로 파일에 한해 제공)
 - OS 레벨 scheduler/데몬 (v0.3.2의 단순 폴링 watch와 일괄 처리 CLI는 제공)
 - watchdog/inotify 등 OS 파일시스템 이벤트 기반 watch (단순 폴링만)
@@ -171,6 +172,7 @@ npm run dev
 ```
 
 API user selection은 prototype state입니다. login 또는 authentication이 아닙니다.
+v0.6.0에서 password login + server-side session으로 교체할 예정입니다.
 
 ## External Import Mode 실행
 

@@ -21,6 +21,7 @@ type UserMenuProps = {
   /** Clears the active user. Single action — Switch user and Logout were the
    *  same `onClear` before, so v0.2.1 keeps just one entry. */
   onClear: () => void;
+  clearLabel?: string;
 };
 
 /**
@@ -34,6 +35,7 @@ export default function UserMenu({
   secondaryLabel,
   meta,
   onClear,
+  clearLabel = 'Switch user',
 }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -143,7 +145,7 @@ export default function UserMenu({
               }}
               className="w-full rounded-md px-3 py-2 text-left text-sm font-bold text-neutral-700 transition hover:bg-neutral-100"
             >
-              Switch user
+              {clearLabel}
             </button>
           </div>
         </div>

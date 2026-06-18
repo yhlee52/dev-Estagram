@@ -1,13 +1,14 @@
-# feed-prototype 실행 가이드 (v0.5.3 기준)
+# feed-prototype 실행 가이드 (v0.6.4 기준)
 
 이 문서는 `feed-prototype`을 local 환경에서 재현 실행하기 위한 기준 runbook입니다.
-현재 릴리즈 `v0.5.3`(협업 — Annotation & Collaboration theme wrap-up) 기준으로
-mock → API → 외부 데이터(CLI·디렉터리 일괄 처리·Watch·managed storage) → 협업
-기능 확인까지의 실행 방법을 정리합니다.
+현재 릴리즈 `v0.6.4`(인증 & 멀티유저 theme — 계정 라이프사이클) 기준으로
+mock → API(password 로그인 + session) → 외부 데이터(CLI·디렉터리 일괄 처리·Watch·
+managed storage) → 협업 → profile self-service → 계정 비활성화/재활성화 기능 확인까지의
+실행 방법을 정리합니다.
 
 > 파일명은 v0.0.0 release 시점의 이름(`RELEASE_0_0_RUNBOOK.md`)을 유지하지만,
 > 내용은 항상 현재 릴리즈 기준으로 갱신됩니다. external post package format은 v0.0.0
-> 시점에 동결되어 v0.1.x~v0.5.x에서도 바뀌지 않았습니다.
+> 시점에 동결되어 v0.1.x~v0.6.x에서도 바뀌지 않았습니다.
 
 ## 1. 개요
 
@@ -20,8 +21,13 @@ local/internal prototype입니다. 이 runbook은 다음 흐름을 확인하는 
 - imported post의 asset, tag, metadata, filter/search, viewer 확인
 - (opt-in) asset managed storage 복사
 - API mode 협업 기능 확인(댓글, 북마크/비공개 메모, in-app 알림/mention)
+- API mode 인증(password 로그인 + server-side session)과 내 account profile self-service
 
-production-ready app은 아니며, 정식 login/JWT/session/permission system은 포함하지 않습니다.
+production-ready app은 아닙니다. v0.6.x에서 password 로그인 + server-side session
+(httpOnly cookie)은 추가되었지만, OAuth/SSO/JWT access token/RBAC 같은 정식 권한
+시스템은 포함하지 않으며 backend는 localhost 바인딩을 전제로 합니다. write endpoint는
+아직 session이 아니라 user_id로 인가하고 frontend가 로그인 게이트 역할을 합니다(비-
+localhost 이전 시 hardening 예정 — `archive/V0_6_3_AUTH_HARDENING_SCOPE.md`).
 
 실행 mode는 크게 세 가지입니다.
 
@@ -127,6 +133,11 @@ python -m uvicorn app.main:app --reload
 
 API 기본 URL: `http://127.0.0.1:8000`.
 
+> seed user의 초기 password는 handle과 같습니다(`ari`/`mika`/`nova`). import로 생성된
+> paired user의 초기 password는 generated import user handle입니다. seed의 password
+> 부여는 write-once라 재-seed로 덮이지 않습니다. 분실 시 운영자 재설정은
+> `python -m scripts.reset_password --user <id-or-handle> --password <new>`를 씁니다(v0.6.3).
+
 간단 확인:
 
 ```bash
@@ -136,6 +147,11 @@ curl http://127.0.0.1:8000/api/accounts
 curl http://127.0.0.1:8000/api/posts
 curl http://127.0.0.1:8000/api/imports   # import batch 이력 (v0.3.1)
 curl "http://127.0.0.1:8000/api/users/demo-user-ari/notifications"  # 알림 (v0.5.2)
+
+# 인증 (v0.6.0): 로그인 → session cookie 저장 → 현재 session 조회
+curl -c cookies.txt -X POST http://127.0.0.1:8000/api/auth/login \
+  -H "Content-Type: application/json" --data '{"login":"ari","password":"ari"}'
+curl -b cookies.txt http://127.0.0.1:8000/api/auth/session
 ```
 
 ## 6. Frontend API Mode 실행
@@ -160,11 +176,21 @@ npm run dev
 
 확인할 것:
 
-- API user selection 화면에서 backend user를 id 또는 handle로 선택합니다.
+- 로그인 화면에서 backend user의 id 또는 handle + password로 로그인합니다(v0.6.0).
+  seed user는 password가 handle과 같습니다(예: `ari`/`ari`). 로그인하면 server-side
+  session(httpOnly cookie)이 발급되고, 새로고침해도 session으로 로그인 상태가 유지됩니다.
+- 로그인 화면에서 신규 API user를 등록(Register)할 수도 있습니다(user+1:1 account 생성).
 - Home Feed가 backend seed data를 표시합니다.
 - Accounts, Account Profile, Post Detail, Explore, Me, Imports(`/imports`) 화면이 표시됩니다.
 - Follow/unfollow, post create/edit/delete가 backend DB state에 반영됩니다.
 - Post Detail 댓글, 카드/상세 북마크, `/notifications`가 API mode에서 표시됩니다.
+- Me 탭에서 내 account profile(display name/bio/avatar URL) 편집과 password 변경이
+  동작합니다(v0.6.2 / v0.6.0). handle·kind 등 식별자 값은 수정되지 않습니다.
+- 아바타 드롭다운의 Logout으로 session을 폐기하고 로그인 화면으로 돌아갑니다. session이
+  서버에서 만료/삭제되면 다음 API 호출 시 자동으로 로그인 화면으로 복귀합니다(v0.6.3).
+- Me 탭 Danger zone에서 계정을 비활성화하면 로그아웃되고, 이후 로그인이 차단되며
+  Accounts 목록에서 사라집니다. 작성한 post는 보존됩니다(v0.6.4). 재활성화는 운영자
+  CLI로만 가능합니다(10. 자주 발생하는 문제의 비활성/재활성 항목 참고).
 
 > `VITE_DATA_SOURCE`를 `mock`에서 `api`로 바꾼 뒤에는 반드시 dev server를 재시작합니다.
 
@@ -356,6 +382,15 @@ MANAGED_ASSETS_URL_PREFIX=/assets/managed
 
 API mode frontend에서 다음을 확인합니다.
 
+- Login/Logout: seed user(id/handle + password)로 로그인, session 유지(새로고침), Logout
+  복귀를 확인합니다. 잘못된 password는 거부됩니다(v0.6.0).
+- Account Profile self-service: Me 탭에서 display name/bio/avatar URL을 저장하면 Me 헤더와
+  내 post 카드의 account 표시가 즉시 갱신되는지, handle/kind는 그대로인지 확인합니다(v0.6.2).
+- 계정 비활성화/재활성화: Me 탭 Danger zone에서 비활성화 → 로그아웃·로그인 차단·Accounts
+  목록 제외를 확인하고, post가 보존되는지(Account Profile/Post Detail) 확인합니다. 운영자
+  `python -m scripts.reactivate_user --user <id|handle>`로 복구되는지 확인합니다(v0.6.4).
+- Password change: Me 탭에서 현재 password 검증 후 새 password로 변경, 변경 후 이전
+  password 실패 / 새 password 로그인 성공을 확인합니다(v0.6.0).
 - Home Feed: active user의 own account와 followed account post가 표시되는지 확인합니다.
 - Account Profile: imported account와 imported post가 표시되는지 확인합니다.
 - Post Detail: imported post의 title, text, tag, metadata, asset이 표시되는지 확인합니다.
@@ -428,8 +463,34 @@ Table/column 관련 오류가 나면 backend 폴더에서 `alembic upgrade head`
 package를 설치한 뒤 실행합니다.
 
 ### Seed data 미삽입
-API user selection 또는 feed가 비어 있으면 `python -m app.services.seed`를 실행했는지
-확인합니다.
+로그인 화면의 backend user 목록 또는 feed가 비어 있으면
+`python -m app.services.seed`를 실행했는지 확인합니다.
+
+### 로그인 실패 / password 분실 (v0.6.0~v0.6.3)
+seed user의 초기 password는 handle과 같습니다(`ari`/`mika`/`nova`). password를 바꾼 뒤
+분실했다면 재-seed로는 복구되지 않습니다(seed는 write-once). 운영자가 재설정합니다:
+
+```bash
+cd feed-prototype/backend
+python -m scripts.reset_password --user ari --password temppass
+```
+
+쿠키가 저장되지 않아 로그인이 유지되지 않으면, frontend(`5173`)와 backend(`8000`)
+origin이 `app/main.py`의 CORS `allow_origins`와 일치하는지(자격증명 쿠키는 정확한
+origin이 필요) 확인합니다.
+
+### 비활성화한 계정으로 다시 로그인할 수 없음 (v0.6.4)
+계정 비활성화(Me 탭 Danger zone)는 soft deactivation입니다. 로그인이 차단되고
+(`403`) 기존 session은 폐기되며 Accounts 목록에서 숨겨지지만, post는 보존됩니다.
+재활성화는 self-service가 아니라 운영자 작업입니다:
+
+```bash
+cd feed-prototype/backend
+python -m scripts.reactivate_user --user ari
+```
+
+비활성 계정의 profile/post는 `GET /api/accounts/{id}`·`.../posts`로 계속 조회되며,
+목록에 포함하려면 `GET /api/accounts?include_deactivated=true`를 씁니다.
 
 ### `asset.url`이 브라우저에서 접근 불가
 단일 파일 CLI는 asset file을 복사하지 않습니다. `asset.url`은 browser-accessible URL
@@ -464,6 +525,11 @@ terminal log의 대체 port 또는 backend 실행 옵션을 확인합니다.
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`
 - `../data/external_posts/README.md`
 - `ROADMAP.md`
+- `archive/V0_6_0_AUTH_SCOPE.md` (password 로그인 + session)
+- `archive/V0_6_1_ACCOUNT_IDENTITY_SCOPE.md` (User:Account 1:1)
+- `archive/V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md` (profile self-service)
+- `archive/V0_6_3_AUTH_HARDENING_SCOPE.md` (운영자 reset / 401 처리 / 정리, 이연 항목)
+- `archive/V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md` (탈퇴/비활성 + post 보존, 운영자 재활성화)
 - `archive/V0_3_2_AUTO_INGESTION_SCOPE.md` (디렉터리 일괄 처리 / Watch)
 - `archive/V0_3_3_ASSET_STORAGE_SCOPE.md` (managed storage 복사)
 - `archive/MVP10_EXTERNAL_POST_FORMAT.md`

@@ -84,6 +84,32 @@ python -m scripts.check_process_incoming
 
 실제 import(쓰기)를 수행하므로 dev/test `DATABASE_URL`에서 실행합니다.
 
+### 인증 & identity / profile (v0.6.x)
+
+v0.6.x(인증 & 멀티유저)는 **external post package JSON format을 바꾸지 않습니다.**
+따라서 위 golden sample dry-run의 통과 결과는 v0.6.x에서도 동일합니다. 다만 import가
+account마다 paired import User를 만들 때 v0.6.0부터 password credential도 함께
+provisioning하므로(format 무관, package에는 credential을 싣지 않음), import가 닿는
+identity 규칙을 별도 회귀로 확인합니다.
+
+```bash
+cd feed-prototype/backend
+python -m scripts.check_account_identity    # User:Account 1:1 + 소유권 (v0.6.1)
+python -m scripts.check_account_profile     # profile self-service + 재import 보존 (v0.6.2)
+python -m scripts.check_account_lifecycle   # 탈퇴/비활성 + post 보존 + 재import 미복원 (v0.6.4)
+```
+
+- `check_account_identity`: import가 account마다 paired User를 만들고 각 user가 정확히
+  하나의 account를 가지며, post 소유권/타 user 거부가 성립하는지 확인합니다.
+- `check_account_profile`: user가 편집한 profile(`profile_source=user`)이 같은 package
+  재import 후에도 `display_name`/`bio`/`avatar_url`을 보존하는지 확인합니다(format 무변경의
+  실증).
+- `check_account_lifecycle`: 비활성화가 로그인/세션/discovery에 적용되되 post는 보존되고,
+  비활성 상태는 package에 실리지 않아 재import가 계정을 되살리지 않음을 확인합니다(v0.6.4).
+
+세 스크립트는 실제 import(쓰기)를 수행한 뒤 생성한 행을 정리하므로 dev/test
+`DATABASE_URL`에서 실행합니다.
+
 ## 릴리즈 체크 포함
 
 import service 또는 external package format에 영향을 주는 변경 후, 그리고 릴리즈

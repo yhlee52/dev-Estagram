@@ -25,6 +25,7 @@ from app.schemas.external_import import (
     ExternalImportPost,
 )
 from app.services.asset_storage import managed_url_for_asset
+from app.services.auth import ensure_user_password
 
 
 @dataclass
@@ -172,10 +173,20 @@ def ensure_import_user(
                     bio=account_input.bio,
                 )
             )
+            ensure_user_password(
+                session,
+                user_id,
+                generated_user_handle(account_input.external_id),
+            )
         return user_id
 
     summary.users_updated += 1
     if not dry_run:
+        ensure_user_password(
+            session,
+            user_id,
+            generated_user_handle(account_input.external_id),
+        )
         existing_user.display_name = account_input.display_name
         existing_user.avatar_url = account_input.avatar_url
         existing_user.bio = account_input.bio
@@ -206,6 +217,7 @@ def upsert_account(
                 bio=account_input.bio,
                 avatar_url=account_input.avatar_url,
                 kind="bot",
+                profile_source="import",
             )
 
         account = Account(
@@ -217,6 +229,7 @@ def upsert_account(
             bio=account_input.bio,
             avatar_url=account_input.avatar_url,
             kind="bot",
+            profile_source="import",
         )
         session.add(account)
         return account
@@ -224,9 +237,11 @@ def upsert_account(
     summary.accounts_updated += 1
     if not dry_run:
         existing_account.handle = account_input.handle
-        existing_account.display_name = account_input.display_name
-        existing_account.bio = account_input.bio
-        existing_account.avatar_url = account_input.avatar_url
+        if existing_account.profile_source != "user":
+            existing_account.display_name = account_input.display_name
+            existing_account.bio = account_input.bio
+            existing_account.avatar_url = account_input.avatar_url
+            existing_account.profile_source = "import"
         existing_account.updated_at = utc_now()
         session.add(existing_account)
 

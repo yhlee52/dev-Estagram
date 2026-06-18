@@ -28,6 +28,10 @@ backend/uploads/*
 public/assets/managed/*
 !public/assets/managed/.gitkeep
 
+# Generated assets dropped by external/import + watch flows (runtime artifacts; keep dir, ignore contents)
+public/assets/generated/*
+!public/assets/generated/.gitkeep
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

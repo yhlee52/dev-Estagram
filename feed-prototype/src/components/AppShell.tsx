@@ -73,7 +73,19 @@ function DesktopShell({ userMenu }: DesktopShellProps) {
 }
 
 function ApiModeAppShell() {
-  const { activeApiUser, clearActiveApiUser } = useActiveApiUser();
+  const { activeApiUser, clearActiveApiUser, isLoadingSession } = useActiveApiUser();
+
+  if (isLoadingSession) {
+    return (
+      <div className="min-h-screen bg-neutral-200 text-neutral-950">
+        <main className="mx-auto flex min-h-screen max-w-[430px] items-center justify-center bg-neutral-50 px-5 py-8 shadow-sm">
+          <p className="rounded-md border border-neutral-200 bg-white px-4 py-3 text-sm font-bold text-neutral-500 shadow-sm">
+            Checking session...
+          </p>
+        </main>
+      </div>
+    );
+  }
 
   if (!activeApiUser) {
     return <ApiUserEntry />;
@@ -99,6 +111,7 @@ function ApiModeAppShell() {
             { label: 'Version', value: APP_RELEASE_LABEL },
           ]}
           onClear={clearActiveApiUser}
+          clearLabel="Logout"
         />
       }
     />

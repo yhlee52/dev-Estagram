@@ -8,6 +8,7 @@ from app.models.asset import PostAsset
 from app.models.follow import Follow
 from app.models.post import Post
 from app.models.user import User
+from app.services.auth import ensure_user_password
 
 
 ModelT = TypeVar("ModelT", bound=SQLModel)
@@ -20,6 +21,7 @@ USERS = [
         "display_name": "Ari Lane",
         "avatar_url": "/uploads/demo/avatars/ari.png",
         "bio": "Collects small updates, notes, and snapshots.",
+        "password": "ari",
     },
     {
         "id": "demo-user-mika",
@@ -27,6 +29,7 @@ USERS = [
         "display_name": "Mika Park",
         "avatar_url": "/uploads/demo/avatars/mika.png",
         "bio": "Keeps a project and reading feed.",
+        "password": "mika",
     },
     {
         "id": "demo-user-nova",
@@ -34,6 +37,7 @@ USERS = [
         "display_name": "Nova Bot",
         "avatar_url": "/uploads/demo/avatars/nova.png",
         "bio": "Posts lightweight generated summaries.",
+        "password": "nova",
     },
 ]
 
@@ -46,6 +50,7 @@ ACCOUNTS = [
         "bio": "Personal notes and image posts.",
         "avatar_url": "/uploads/demo/avatars/ari-notes.png",
         "kind": "person",
+        "profile_source": "user",
     },
     {
         "id": "demo-account-mika",
@@ -55,6 +60,7 @@ ACCOUNTS = [
         "bio": "Project progress and small tables.",
         "avatar_url": "/uploads/demo/avatars/mika-project.png",
         "kind": "project",
+        "profile_source": "user",
     },
     {
         "id": "demo-account-nova",
@@ -64,6 +70,7 @@ ACCOUNTS = [
         "bio": "Automated digest examples for local feed testing.",
         "avatar_url": "/uploads/demo/avatars/nova-digest.png",
         "kind": "bot",
+        "profile_source": "user",
     },
 ]
 
@@ -242,7 +249,9 @@ def seed_database() -> dict[str, int]:
 
     with create_session() as session:
         for values in USERS:
-            counts["users"] += int(add_if_missing(session, User, values))
+            user_values = {key: value for key, value in values.items() if key != "password"}
+            counts["users"] += int(add_if_missing(session, User, user_values))
+            ensure_user_password(session, values["id"], values["password"])
 
         for values in ACCOUNTS:
             counts["accounts"] += int(add_if_missing(session, Account, values))

@@ -26,6 +26,9 @@ Home/Me 진입점), v0.5.3은 협업 표면 UX polish와 문서/검증 절차 wr
 - `feed-prototype/README.md`
 - `feed-prototype/docs/README.md` (문서 색인)
 - `feed-prototype/docs/ROADMAP.md` (버전 트리·테마)
+- `feed-prototype/docs/V0_6_0_AUTH_SCOPE.md` (다음 작업: password login + server-side session)
+- `feed-prototype/docs/V0_6_1_ACCOUNT_IDENTITY_SCOPE.md` (User:Account 1:1 identity 정책)
+- `feed-prototype/docs/V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md` (내 account profile self-service)
 - `feed-prototype/docs/GOLDEN_SAMPLE_REGRESSION.md`
 - `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`
 - `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`
@@ -84,7 +87,9 @@ History"를, 버전 트리는 `ROADMAP.md`를 참고합니다.
 - runtime mock-mode overlay는 localStorage에 저장합니다.
 - API mode는 FastAPI와 backend PostgreSQL data를 사용합니다.
 - frontend는 PostgreSQL에 직접 연결하지 않습니다.
-- 현 단계에서는 각 `User`에 정확히 하나의 `Account`가 대응합니다(1:N은 v0.6.x).
+- 현 단계에서는 각 `User`에 정확히 하나의 `Account`가 대응합니다. v0.6.x에서도
+  1:1 원칙을 유지하며, 봇/프로그램/설비 계정은 별도 로그인 User + 1:1 Account로
+  취급합니다.
 - active API user는 backend DB user 중에서 선택하고 local에 저장합니다.
 - active API user selection은 real login, authentication, authorization, account security가 아닙니다.
 
@@ -309,7 +314,8 @@ external post package JSON format은 v0.0.0 시점에 동결되었습니다.
 - component와 type은 general feed와 향후 회사 내부 report feed 모두에 재사용 가능하게 유지합니다.
 - equipment-report example은 가능한 data scenario 중 하나로만 취급하고 core domain으로 삼지 않습니다.
 - API-mode feature를 구현하면서 mock mode를 제거하지 않습니다.
-- future MVP가 명시적으로 범위를 바꾸기 전에는 password, JWT, session, OAuth, formal authorization system을 추가하지 않습니다.
+- v0.6.0 scope에서 password login + server-side session은 허용됩니다. JWT, OAuth,
+  SSO, RBAC/formal authorization system은 계속 범위 밖입니다.
 - 외부 import 관련 작업에서 frontend file write logic 또는 actual upload flow는 해당 테마(v0.3.x)가 명시적으로 범위에 넣기 전까지 구현하지 않습니다.
 
 ## Verification

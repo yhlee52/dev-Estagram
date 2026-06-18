@@ -82,6 +82,27 @@ v0.3.x(Ingestion 신뢰성):
   단위 "Load more"로 점진 렌더, post 삭제 확인을 공용 `ConfirmDialog`로 교체.
   이로써 v0.3.x 테마 완료
 
+v0.4.x(메타데이터 일급화 & 트리아지):
+
+- metadata key/value facet API와 필터 UI
+- 카드 metadata pinned key 칩
+- metadata 값 기준 정렬
+- 카드 metadata 중복 제거와 정렬 안내
+
+v0.5.x(협업):
+
+- post별 평면 댓글과 댓글 작성자 표시
+- post 북마크, 비공개 메모, Me 탭 북마크/Following 목록
+- in-app 알림과 mention 수신, `/notifications` 목록
+- 협업 표면 UX polish와 문서/검증 절차 wrap-up
+
+다음 v0.6.x(인증 & 멀티유저):
+
+- v0.6.0은 password login + server-side session으로 prototype active API user
+  selection을 대체할 예정입니다.
+- v0.6.x에서도 User:Account 1:1 원칙을 유지합니다. 봇/프로그램/설비 계정은
+  별도 로그인 User + 1:1 Account로 취급합니다.
+
 ## 실행 Mode
 
 ### Mock mode
@@ -99,9 +120,11 @@ FastAPI + PostgreSQL 기반 mode입니다. 실제 DB를 read/write하며 user, a
 ## Non-goals / Limitations (현재까지)
 
 - production-ready app이 아닙니다.
-- 정식 login, JWT, session, OAuth를 제공하지 않습니다.
+- 현재 릴리즈(v0.5.3)는 정식 login, JWT, session, OAuth를 제공하지 않습니다.
+  password login + server-side session은 v0.6.0 scope입니다.
 - formal permission/authorization system은 미완성입니다.
-- 댓글, 좋아요, 알림 기능은 없습니다.
+- 좋아요 기능은 없습니다. 댓글, 북마크, in-app 알림은 v0.5.x에서 API mode 전용으로
+  제공됩니다.
 - S3 upload, real file upload를 제공하지 않습니다. asset 파일 복사는 v0.3.3부터
   opt-in(`MANAGE_ASSET_STORAGE`)으로 상대 로컬 경로 asset만 managed storage로
   복사합니다. UI/HTTP 업로드는 여전히 제공하지 않습니다.

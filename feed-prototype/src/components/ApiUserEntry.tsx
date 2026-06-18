@@ -1,25 +1,18 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router';
+import { login } from '../api/authApi';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import type { ApiUser, ApiUserRegistrationResponse } from '../api/types';
-import {
-  findUserByIdOrHandle,
-  getUsers,
-  registerApiUser,
-} from '../api/usersApi';
+import { getUsers, registerApiUser } from '../api/usersApi';
 import { setActiveApiUser } from '../auth/apiActiveUser';
 import { getApiBaseUrl } from '../config/apiConfig';
 
 type ApiUserEntryMode = 'entry' | 'registration';
 
-interface MissingUserPrompt {
-  inputValue: string;
-  handleCandidate: string;
-}
-
 interface RegistrationFormState {
   handle: string;
+  password: string;
   displayName: string;
   bio: string;
 }
@@ -79,15 +72,27 @@ function getRegistrationErrorMessage(error: unknown): string {
   return 'Could not register this API user. Check the API server and try again.';
 }
 
+function getLoginErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError) {
+    return error.message;
+  }
+
+  return 'Could not log in. Check the API server and try again.';
+}
+
 export default function ApiUserEntry() {
   const navigate = useNavigate();
   const [entryValue, setEntryValue] = useState('');
+  const [password, setPassword] = useState('');
   const [entryMode, setEntryMode] = useState<ApiUserEntryMode>('entry');
-  const [missingUserPrompt, setMissingUserPrompt] =
-    useState<MissingUserPrompt | null>(null);
   const [registrationForm, setRegistrationForm] =
     useState<RegistrationFormState>({
       handle: '',
+      password: '',
       displayName: '',
       bio: '',
     });
@@ -142,40 +147,35 @@ export default function ApiUserEntry() {
     const trimmedValue = entryValue.trim();
 
     setError('');
-    setMissingUserPrompt(null);
 
     if (!trimmedValue) {
       setError('Enter a backend user id or handle.');
       return;
     }
 
+    if (!password) {
+      setError('Enter your password.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const user = await findUserByIdOrHandle(trimmedValue);
-
-      if (!user) {
-        setMissingUserPrompt({
-          inputValue: trimmedValue,
-          handleCandidate: normalizeApiHandleCandidate(trimmedValue),
-        });
-        return;
-      }
-
-      setActiveApiUser(user);
+      const session = await login(trimmedValue, password);
+      setActiveApiUser(session.user);
       navigate('/');
     } catch (lookupError) {
-      setError(getUserEntryErrorMessage(lookupError));
+      setError(getLoginErrorMessage(lookupError));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleStartRegistration = () => {
-    const handleCandidate =
-      missingUserPrompt?.handleCandidate ?? normalizeApiHandleCandidate(entryValue);
+    const handleCandidate = normalizeApiHandleCandidate(entryValue);
     setRegistrationForm({
       handle: handleCandidate,
+      password: '',
       displayName: getDisplayNameFromHandle(handleCandidate),
       bio: '',
     });
@@ -187,7 +187,6 @@ export default function ApiUserEntry() {
 
   const handleBackToEntry = () => {
     setEntryMode('entry');
-    setMissingUserPrompt(null);
     setRegistrationResult(null);
     setRegistrationError('');
     setIsRegistering(false);
@@ -215,6 +214,7 @@ export default function ApiUserEntry() {
     }
 
     const handle = normalizeApiHandleCandidate(registrationForm.handle);
+    const password = registrationForm.password;
     const displayName = registrationForm.displayName.trim() || handle;
     const bio = registrationForm.bio.trim();
     const handleValidationError = getApiHandleValidationError(handle);
@@ -227,22 +227,30 @@ export default function ApiUserEntry() {
       return;
     }
 
+    if (password.length < 4) {
+      setRegistrationError('Password must be at least 4 characters.');
+      return;
+    }
+
     setIsRegistering(true);
 
     try {
       const result = await registerApiUser({
         handle,
+        password,
         display_name: displayName,
         bio: bio || null,
       });
 
       setRegistrationForm({
         handle: result.user.handle,
+        password: '',
         displayName: result.user.display_name,
         bio: result.user.bio ?? '',
       });
       setRegistrationResult(result);
-      setActiveApiUser(result.user);
+      const session = await login(result.user.handle, password);
+      setActiveApiUser(session.user);
       navigate('/');
     } catch (registrationErrorValue) {
       setRegistrationError(getRegistrationErrorMessage(registrationErrorValue));
@@ -273,7 +281,7 @@ export default function ApiUserEntry() {
                 Register API user
               </h1>
               <p className="text-sm leading-6 text-neutral-600">
-                Create a backend user and matching account for API mode. This is local API user registration, not login.
+                Create a backend user, matching account, and password for API mode.
               </p>
             </div>
 
@@ -301,6 +309,20 @@ export default function ApiUserEntry() {
               >
                 {registrationHandleError || API_HANDLE_REQUIREMENTS}
               </p>
+
+              <label className="block space-y-2">
+                <span className="text-sm font-bold text-neutral-700">Password</span>
+                <input
+                  className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
+                  value={registrationForm.password}
+                  type="password"
+                  autoComplete="new-password"
+                  disabled={isRegistering || Boolean(registrationResult)}
+                  onChange={(event) =>
+                    handleRegistrationChange('password', event.target.value)
+                  }
+                />
+              </label>
 
               <label className="block space-y-2">
                 <span className="text-sm font-bold text-neutral-700">
@@ -373,13 +395,13 @@ export default function ApiUserEntry() {
         <section className="w-full rounded-md border border-neutral-200 bg-white p-5 shadow-sm">
           <div className="space-y-2">
             <p className="text-xs font-bold uppercase text-neutral-400">
-              API User Entry
+              API Login
             </p>
             <h1 className="text-2xl font-bold leading-8 text-neutral-950">
-              Select a backend user
+              Log in
             </h1>
             <p className="text-sm leading-6 text-neutral-600">
-              Choose a seeded backend user by id or handle. This is local user selection, not login.
+              Enter a backend user id or handle and password. Seed users use their handle as the initial password.
             </p>
           </div>
 
@@ -390,11 +412,26 @@ export default function ApiUserEntry() {
                 className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
                 value={entryValue}
                 placeholder="demo-user-ari or ari"
-                autoComplete="off"
+                autoComplete="username"
                 disabled={isSubmitting}
                 onChange={(event) => {
                   setEntryValue(event.target.value);
-                  setMissingUserPrompt(null);
+                  setError('');
+                }}
+              />
+            </label>
+
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-neutral-700">Password</span>
+              <input
+                className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
+                value={password}
+                type="password"
+                placeholder="ari"
+                autoComplete="current-password"
+                disabled={isSubmitting}
+                onChange={(event) => {
+                  setPassword(event.target.value);
                   setError('');
                 }}
               />
@@ -406,46 +443,22 @@ export default function ApiUserEntry() {
               </p>
             ) : null}
 
-            {missingUserPrompt ? (
-              <div className="space-y-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
-                <div className="space-y-1">
-                  <p className="text-sm font-bold text-neutral-900">
-                    User not found.
-                  </p>
-                  <p className="text-sm font-semibold leading-6 text-neutral-700">
-                    Register "{missingUserPrompt.handleCandidate}" as a new API user?
-                  </p>
-                  <p className="text-xs font-medium leading-5 text-neutral-500">
-                    Entered value: {missingUserPrompt.inputValue}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    className="h-10 rounded-md bg-neutral-950 px-3 text-sm font-bold text-white transition hover:bg-neutral-800"
-                    onClick={handleStartRegistration}
-                  >
-                    Register user
-                  </button>
-                  <button
-                    type="button"
-                    className="h-10 rounded-md border border-neutral-200 bg-white px-3 text-sm font-bold text-neutral-700 transition hover:bg-neutral-100"
-                    onClick={handleBackToEntry}
-                  >
-                    Try again
-                  </button>
-                </div>
-              </div>
-            ) : null}
-
             <button
               type="submit"
               className="h-11 w-full rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-400"
               disabled={isSubmitting || isLoadingUsers}
             >
-              {isSubmitting ? 'Checking...' : isLoadingUsers ? 'Loading users...' : 'Continue'}
+                {isSubmitting ? 'Checking...' : isLoadingUsers ? 'Loading users...' : 'Continue'}
             </button>
           </form>
+
+          <button
+            type="button"
+            className="mt-3 h-10 w-full rounded-md border border-neutral-200 bg-neutral-50 px-4 text-sm font-bold text-neutral-800 transition hover:bg-neutral-100"
+            onClick={handleStartRegistration}
+          >
+            Register new API user
+          </button>
 
           <div className="mt-5 space-y-2">
             <p className="text-xs font-bold uppercase text-neutral-400">
@@ -473,7 +486,6 @@ export default function ApiUserEntry() {
                     className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-left transition hover:bg-neutral-100"
                     onClick={() => {
                       setEntryValue(user.handle);
-                      setMissingUserPrompt(null);
                       setError('');
                     }}
                   >

@@ -1,30 +1,32 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.5.3` (협업 — Annotation & Collaboration 테마 **완료**). v0.5.0은
-post별 평면 댓글(작성/조회/수정/삭제, 작성자 신원, 본문 `@mention`·`#hashtag` 렌더,
-카드 댓글 수 칩), v0.5.1은 북마크(post 토글 + 비공개 메모 + Me 탭 북마크/Following
-목록 + 메인 Browse `bookmarked_only` 필터), v0.5.2는 in-app 알림/mention 수신
-(파생 알림 + user별 읽음 워터마크 + `/notifications` + Home/Me 진입점), v0.5.3은
-협업 표면 UX polish와 문서/검증 절차 wrap-up입니다. 협업 기능은 **API mode 전용**,
-external package format 무변경. 상세는 `archive/V0_5_0_COMMENTS_SCOPE.md`·
-`archive/V0_5_1_BOOKMARKS_SCOPE.md`·`archive/V0_5_2_NOTIFICATIONS_SCOPE.md`·
-`archive/V0_5_3_UX_BACKLOG_SCOPE.md`, 테마 진입 판단·후보 계획은
-`archive/V0_5_X_COLLABORATION_PLAN.md`를 참고하세요.
+현재 릴리즈: `v0.6.4` (인증 & 멀티유저 — Auth & Multi-user 테마 **완료**). 이로써
+v1.0.0 전제(v0.1 읽기확장 + v0.3 ingestion + v0.6 인증)가 갖춰져, "배포 가능한 제품
+기준선"인 v1.0.0 마일스톤을 **개시**했습니다(태그 전 하드닝/안정화는
+`V1_0_0_RELEASE_SCOPE.md`).
 
-직전 테마 v0.4.x(메타데이터 일급화 & 트리아지)는 v0.4.0 facet 기반 필터(데이터
-파생 key/value 선택 `GET /api/metadata/keys`·`/values`, facet 선택 정확일치
-`metadata_match=exact`) → v0.4.1 카드 metadata 칩(pinned keys, localStorage) + 값
-정렬(텍스트 사전순, key 보유 post 한정, cursor 안정) → v0.4.2 UX 정리(카드
-metadata 중복 제거 + 정렬 기대치 안내 + 문서 일괄 갱신)로 **완료**. v0.4.x 진입
-판단·후보(`archive/V0_4_X_METADATA_PLAN.md`)와 각 MINOR scope 문서
-(`archive/V0_4_0_FACET_FILTER_SCOPE.md` ~ `archive/V0_4_2_UX_BACKLOG_SCOPE.md`)는
-`archive/`로 이동했습니다(아래 Archive 섹션). 그 직전 v0.3.x(Ingestion 신뢰성)는
-v0.3.4로 완료(v0.3.5 운영 안정화 patch), v0.1.x·v0.2.x와 함께 `archive/`에 보관.
+v0.6.x 요약: v0.6.0 password 로그인 + server-side session(httpOnly cookie, active
+user를 세션 user 조회로 대체), v0.6.1 User:Account 1:1 identity 운영 정책 고정, v0.6.2
+내 account profile self-service(`display_name`/`bio`/`avatar_url` 수정, 식별자 고정,
+`profile_source=user` 보존), v0.6.3 auth hardening & cleanup(운영자 password reset CLI,
+세션 만료 시 401→로그인 복귀, 로그인 화면 dead code 정리), v0.6.4 계정 라이프사이클
+(soft deactivation + post 보존 — 세션 폐기/로그인 차단/discovery 제외, 신규 follow 차단,
+운영자 재활성화 CLI). 인증 기능은 **API mode 전용**, external package format 무변경.
+상세 scope는 `archive/V0_6_0_AUTH_SCOPE.md` ~ `archive/V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`,
+계정 명령어 모음은 `ACCOUNT_MANAGEMENT.md`를 참고하세요.
+
+직전 테마 v0.5.x(협업 — Annotation & Collaboration)는 v0.5.0 댓글, v0.5.1 북마크/비공개
+메모, v0.5.2 in-app 알림/mention, v0.5.3 UX wrap-up으로 완료되어 `archive/`에 보관되어
+있습니다. 그 이전 v0.1.x(탐색)·v0.2.x(레이아웃)·v0.3.x(Ingestion)·v0.4.x(메타데이터
+트리아지)도 모두 완료되어 `archive/`에 있습니다(아래 Archive 섹션).
 
 ## 현행 문서 (먼저 볼 것)
 
 - `../README.md`: mock mode, API mode, external import mode 실행 guide
 - `ROADMAP.md`: v0.0.0 이후 업데이트 로드맵 (버전 트리, 테마별 scope)
+- `ACCOUNT_MANAGEMENT.md`: 계정 관리 명령어 — operator CLI(seed/reset_password/
+  reactivate_user) + self-service HTTP API(가입/로그인/profile/비활성화) 모음
+- `V1_0_0_RELEASE_SCOPE.md`: v1.0.0(배포 가능한 제품 기준선) must-do/안정화/태그 조건
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: external post package 작성 guide (format 중심)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog
@@ -32,11 +34,11 @@ v0.3.4로 완료(v0.3.5 운영 안정화 patch), v0.1.x·v0.2.x와 함께 `archi
 
 ## 릴리즈 운영 문서 (current release 기준, v1.0.0 안정화 단계까지 유지)
 
-파일명은 v0.0.0 시점 이름을 유지하지만, 내용은 항상 현재 릴리즈(`v0.5.3`) 기준으로
+파일명은 v0.0.0 시점 이름을 유지하지만, 내용은 항상 현재 릴리즈(`v0.6.4`) 기준으로
 갱신됩니다. v0.0.0 시점 historical 사본은 `archive/`에 보관합니다.
 
 - `RELEASE_0_0_RUNBOOK.md`: 현재 릴리즈 기준 local 실행 재현 runbook
-  (mock / API / 외부 데이터 — 단일 파일 CLI·HTTP·디렉터리 일괄 처리·Watch·managed storage)
+  (mock / API(로그인+세션) / 외부 데이터 — 단일 파일 CLI·HTTP·디렉터리 일괄 처리·Watch·managed storage)
 - `RELEASE_0_0_CHECKLIST.md`: 현재 릴리즈 기준 릴리즈 직전 체크리스트
 
 ## Archive (완료 테마 / historical 참고)
@@ -64,6 +66,10 @@ v0.3.4로 완료(v0.3.5 운영 안정화 patch), v0.1.x·v0.2.x와 함께 `archi
 - `archive/V0_5_X_COLLABORATION_PLAN.md` + `archive/V0_5_0_COMMENTS_SCOPE.md` ~
   `archive/V0_5_3_UX_BACKLOG_SCOPE.md`: v0.5.x(협업 — Annotation & Collaboration) —
   댓글, 북마크/비공개 메모, in-app 알림/mention 수신, UX backlog/theme wrap-up scope
+- `archive/V0_6_0_AUTH_SCOPE.md` ~ `archive/V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`:
+  v0.6.x(인증 & 멀티유저) — password 로그인+세션, User:Account 1:1 identity 정책,
+  profile self-service, auth hardening/운영 reset, 계정 라이프사이클(비활성화/재활성화)
+  scope. 운영 관점 명령어 요약은 현행 `ACCOUNT_MANAGEMENT.md` 참고.
 
 MVP-era 참고 문서:
 

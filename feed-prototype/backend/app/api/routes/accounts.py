@@ -2,10 +2,18 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, col, select
 
 from app.api.deps import get_session
-from app.models.account import Account
+from app.models.account import Account, utc_now
 from app.models.asset import PostAsset
 from app.models.post import Post
-from app.schemas.feed import AccountRead, PostAssetRead, PostRead, PostWithAssets
+from app.schemas.feed import (
+    AccountDeactivateRequest,
+    AccountProfileUpdate,
+    AccountRead,
+    PostAssetRead,
+    PostRead,
+    PostWithAssets,
+)
+from app.services.auth import revoke_user_sessions
 from app.services.comments import get_comment_counts
 from app.services.post_filters import PostFilters, apply_filters_to_select
 
@@ -14,8 +22,16 @@ router = APIRouter(prefix="/api/accounts", tags=["accounts"])
 
 
 @router.get("", response_model=list[AccountRead])
-def list_accounts(session: Session = Depends(get_session)) -> list[Account]:
-    return list(session.exec(select(Account).order_by(Account.handle)).all())
+def list_accounts(
+    include_deactivated: bool = Query(default=False),
+    session: Session = Depends(get_session),
+) -> list[Account]:
+    # Discovery hides deactivated accounts (v0.6.4); their posts stay visible
+    # elsewhere. include_deactivated is an explicit opt-in escape hatch.
+    statement = select(Account).order_by(Account.handle)
+    if not include_deactivated:
+        statement = statement.where(col(Account.deactivated_at).is_(None))
+    return list(session.exec(statement).all())
 
 
 @router.get("/{account_id}", response_model=AccountRead)
@@ -24,6 +40,66 @@ def get_account(account_id: str, session: Session = Depends(get_session)) -> Acc
     if account is None:
         raise HTTPException(status_code=404, detail="Account not found")
 
+    return account
+
+
+@router.patch("/{account_id}", response_model=AccountRead)
+def update_account_profile(
+    account_id: str,
+    profile_update: AccountProfileUpdate,
+    session: Session = Depends(get_session),
+) -> Account:
+    account = session.get(Account, account_id)
+    if account is None:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    if account.user_id != profile_update.user_id:
+        raise HTTPException(status_code=403, detail="Account is not owned by user")
+
+    if profile_update.display_name is not None:
+        account.display_name = profile_update.display_name
+    if "bio" in profile_update.model_fields_set:
+        account.bio = profile_update.bio
+    if "avatar_url" in profile_update.model_fields_set:
+        account.avatar_url = profile_update.avatar_url
+
+    account.profile_source = "user"
+    account.updated_at = utc_now()
+    session.add(account)
+    session.commit()
+    session.refresh(account)
+    return account
+
+
+@router.post("/{account_id}/deactivate", response_model=AccountRead)
+def deactivate_account(
+    account_id: str,
+    deactivate_request: AccountDeactivateRequest,
+    session: Session = Depends(get_session),
+) -> Account:
+    """Soft-deactivate the owner's 1:1 account (v0.6.4).
+
+    Posts and collaboration data are preserved; the account is hidden from
+    discovery and its user can no longer log in. All of the user's sessions are
+    revoked so any current login stops immediately. Idempotent: re-deactivating
+    keeps the original timestamp. Reactivation is operator-only
+    (scripts/reactivate_user.py).
+    """
+    account = session.get(Account, account_id)
+    if account is None:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    if account.user_id != deactivate_request.user_id:
+        raise HTTPException(status_code=403, detail="Account is not owned by user")
+
+    if account.deactivated_at is None:
+        account.deactivated_at = utc_now()
+        account.updated_at = utc_now()
+        session.add(account)
+
+    revoke_user_sessions(session, account.user_id)
+    session.commit()
+    session.refresh(account)
     return account
 
 

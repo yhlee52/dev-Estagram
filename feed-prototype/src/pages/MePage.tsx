@@ -1,9 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
+import { changePassword } from '../api/authApi';
 import { ApiClientError, ApiNetworkError } from '../api/client';
-import { getAccountPosts, getAccounts } from '../api/accountsApi';
+import {
+  deactivateAccount,
+  getAccountPosts,
+  getAccounts,
+  updateAccountProfile,
+} from '../api/accountsApi';
 import { getUser } from '../api/usersApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
+import ConfirmDialog from '../components/ConfirmDialog';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
 import MeBookmarksSection from '../components/MeBookmarksSection';
@@ -107,10 +114,121 @@ function getProfileErrorMessage(error: unknown): string {
   return 'Could not load your API profile. Check the backend server and try again.';
 }
 
+function getProfileSaveErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError) {
+    if (error.status === 403) {
+      return 'Only this account user can edit this profile.';
+    }
+
+    return `The backend API returned ${error.status}. ${error.message}`;
+  }
+
+  return 'Could not save this profile. Check the backend server and try again.';
+}
+
+function getPasswordChangeErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError) {
+    return `The backend API returned ${error.status}. ${error.message}`;
+  }
+
+  return 'Could not change this password. Check the backend server and try again.';
+}
+
 function getAccountUserId(account: Account): string {
   const userId = account.metadata?.user_id;
 
   return typeof userId === 'string' ? userId : '';
+}
+
+function getDeactivateErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError) {
+    if (error.status === 403) {
+      return 'Only this account user can deactivate it.';
+    }
+
+    return `The backend API returned ${error.status}. ${error.message}`;
+  }
+
+  return 'Could not deactivate this account. Check the backend server and try again.';
+}
+
+function DeactivateAccountPanel({
+  account,
+  userId,
+  onDeactivated,
+}: {
+  account: Account;
+  userId: string;
+  onDeactivated: () => void;
+}) {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleConfirm = async () => {
+    setIsDeactivating(true);
+    setError('');
+
+    try {
+      await deactivateAccount(account.id, { user_id: userId });
+      // Server has revoked our session; sign out so the login gate takes over.
+      onDeactivated();
+    } catch (deactivateError) {
+      setError(getDeactivateErrorMessage(deactivateError));
+      setIsDeactivating(false);
+      setIsConfirmOpen(false);
+    }
+  };
+
+  return (
+    <section className="space-y-3 rounded-md border border-red-200 bg-white p-4 shadow-sm">
+      <div className="space-y-1">
+        <h2 className="text-sm font-bold text-red-700">Danger zone</h2>
+        <p className="text-xs font-semibold leading-5 text-neutral-500">
+          Deactivating hides your account from others and signs you out. Your posts
+          are preserved. You will not be able to log back in &mdash; an operator must
+          reactivate the account.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        className="h-10 rounded-md border border-red-300 bg-white px-4 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={isDeactivating}
+        onClick={() => setIsConfirmOpen(true)}
+      >
+        Deactivate account
+      </button>
+
+      {error ? (
+        <p className="text-xs font-semibold text-red-700">{error}</p>
+      ) : null}
+
+      {isConfirmOpen ? (
+        <ConfirmDialog
+          title="Deactivate this account?"
+          description="Your account will be hidden from others and you will be signed out. Your posts are preserved. Reactivation requires an operator."
+          confirmLabel="Deactivate account"
+          danger
+          isConfirming={isDeactivating}
+          onConfirm={handleConfirm}
+          onCancel={() => setIsConfirmOpen(false)}
+        />
+      ) : null}
+    </section>
+  );
 }
 
 function NewPostButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
@@ -135,13 +253,235 @@ function NewPostButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
   );
 }
 
+function AccountProfileEditor({
+  account,
+  userId,
+  onUpdated,
+}: {
+  account: Account;
+  userId: string;
+  onUpdated: (account: Account) => void;
+}) {
+  const [displayName, setDisplayName] = useState(account.displayName);
+  const [bio, setBio] = useState(account.bio ?? '');
+  const [avatarUrl, setAvatarUrl] = useState(account.avatarUrl ?? '');
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    setDisplayName(account.displayName);
+    setBio(account.bio ?? '');
+    setAvatarUrl(account.avatarUrl ?? '');
+    setMessage('');
+    setError('');
+  }, [account.id, account.displayName, account.bio, account.avatarUrl]);
+
+  const trimmedDisplayName = displayName.trim();
+  const hasChanges =
+    trimmedDisplayName !== account.displayName ||
+    bio.trim() !== (account.bio ?? '') ||
+    avatarUrl.trim() !== (account.avatarUrl ?? '');
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSaving || !trimmedDisplayName || !hasChanges) {
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const updated = await updateAccountProfile(account.id, {
+        user_id: userId,
+        display_name: trimmedDisplayName,
+        bio: bio.trim() || null,
+        avatar_url: avatarUrl.trim() || null,
+      });
+      onUpdated(mapApiAccountToAccount(updated));
+      setMessage('Profile saved.');
+    } catch (saveError) {
+      setError(getProfileSaveErrorMessage(saveError));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <section className="space-y-3 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-sm font-bold text-neutral-950">Account Profile</h2>
+          <p className="truncate text-xs font-semibold text-neutral-500">
+            @{account.handle}
+          </p>
+        </div>
+        <Avatar
+          src={avatarUrl.trim() || account.avatarUrl}
+          name={trimmedDisplayName || account.displayName}
+        />
+      </div>
+
+      <form className="space-y-3" onSubmit={handleSubmit}>
+        <label className="block space-y-1">
+          <span className="text-xs font-bold uppercase text-neutral-400">
+            Display name
+          </span>
+          <input
+            className="h-10 w-full rounded-md border border-neutral-200 px-3 text-sm font-semibold text-neutral-900 outline-none transition focus:border-neutral-400"
+            value={displayName}
+            maxLength={120}
+            onChange={(event) => setDisplayName(event.target.value)}
+          />
+        </label>
+
+        <label className="block space-y-1">
+          <span className="text-xs font-bold uppercase text-neutral-400">Bio</span>
+          <textarea
+            className="min-h-24 w-full resize-y rounded-md border border-neutral-200 px-3 py-2 text-sm leading-6 text-neutral-900 outline-none transition focus:border-neutral-400"
+            value={bio}
+            maxLength={500}
+            onChange={(event) => setBio(event.target.value)}
+          />
+        </label>
+
+        <label className="block space-y-1">
+          <span className="text-xs font-bold uppercase text-neutral-400">
+            Avatar URL
+          </span>
+          <input
+            className="h-10 w-full rounded-md border border-neutral-200 px-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-400"
+            value={avatarUrl}
+            maxLength={1000}
+            onChange={(event) => setAvatarUrl(event.target.value)}
+          />
+        </label>
+
+        <div className="flex items-center justify-between gap-3">
+          <p className="min-h-5 text-xs font-semibold text-neutral-500">
+            {message || error}
+          </p>
+          <button
+            type="submit"
+            className="h-10 shrink-0 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
+            disabled={isSaving || !trimmedDisplayName || !hasChanges}
+          >
+            {isSaving ? 'Saving...' : 'Save Profile'}
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
+function PasswordChangePanel() {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSaving) {
+      return;
+    }
+
+    setMessage('');
+    setError('');
+
+    if (newPassword.length < 4) {
+      setError('New password must be at least 4 characters.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await changePassword({
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      setCurrentPassword('');
+      setNewPassword('');
+      setMessage('Password changed.');
+    } catch (changeError) {
+      setError(getPasswordChangeErrorMessage(changeError));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <section className="space-y-3 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+      <div className="space-y-1">
+        <h2 className="text-sm font-bold text-neutral-950">Password</h2>
+        <p className="text-xs font-semibold leading-5 text-neutral-500">
+          Change the password for this API user.
+        </p>
+      </div>
+
+      <form className="space-y-3" onSubmit={handleSubmit}>
+        <label className="block space-y-1">
+          <span className="text-xs font-bold uppercase text-neutral-400">
+            Current password
+          </span>
+          <input
+            className="h-10 w-full rounded-md border border-neutral-200 px-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-400"
+            value={currentPassword}
+            type="password"
+            autoComplete="current-password"
+            onChange={(event) => {
+              setCurrentPassword(event.target.value);
+              setError('');
+              setMessage('');
+            }}
+          />
+        </label>
+
+        <label className="block space-y-1">
+          <span className="text-xs font-bold uppercase text-neutral-400">
+            New password
+          </span>
+          <input
+            className="h-10 w-full rounded-md border border-neutral-200 px-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-400"
+            value={newPassword}
+            type="password"
+            autoComplete="new-password"
+            onChange={(event) => {
+              setNewPassword(event.target.value);
+              setError('');
+              setMessage('');
+            }}
+          />
+        </label>
+
+        <div className="flex items-center justify-between gap-3">
+          <p className="min-h-5 text-xs font-semibold text-neutral-500">
+            {message || error}
+          </p>
+          <button
+            type="submit"
+            className="h-10 shrink-0 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
+            disabled={isSaving || !currentPassword || !newPassword}
+          >
+            {isSaving ? 'Saving...' : 'Change Password'}
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
 /**
  * API mode (v0.2.3): the Me tab loads the active API user's own account and
  * posts so it is no longer empty in API mode, and adds inline post management
  * (New Post, per-post Edit / Delete).
  */
 function ApiMePage() {
-  const { activeApiUserId, activeApiUser } = useActiveApiUser();
+  const { activeApiUserId, activeApiUser, clearActiveApiUser } =
+    useActiveApiUser();
   const apiFollows = useApiFollows(activeApiUserId);
   const [user, setUser] = useState<User | undefined>();
   const [account, setAccount] = useState<Account | undefined>();
@@ -275,6 +615,22 @@ function ApiMePage() {
     setMyPosts((current) => current.filter((item) => item.post.id !== postId));
   };
 
+  const handleAccountUpdated = (updatedAccount: Account) => {
+    setAccount(updatedAccount);
+    setAllAccounts((current) =>
+      current.map((candidate) =>
+        candidate.id === updatedAccount.id ? updatedAccount : candidate,
+      ),
+    );
+    setMyPosts((current) =>
+      current.map((item) =>
+        item.account.id === updatedAccount.id
+          ? { ...item, account: updatedAccount }
+          : item,
+      ),
+    );
+  };
+
   return (
     <div className="space-y-4">
       <section className="space-y-4 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
@@ -315,6 +671,24 @@ function ApiMePage() {
 
         {account ? <NewPostButton /> : null}
       </section>
+
+      {account ? (
+        <AccountProfileEditor
+          account={account}
+          userId={activeApiUserId}
+          onUpdated={handleAccountUpdated}
+        />
+      ) : null}
+
+      {account ? <PasswordChangePanel /> : null}
+
+      {account ? (
+        <DeactivateAccountPanel
+          account={account}
+          userId={activeApiUserId}
+          onDeactivated={clearActiveApiUser}
+        />
+      ) : null}
 
       {account ? (
         <section className="space-y-3">

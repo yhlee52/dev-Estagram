@@ -283,41 +283,68 @@ external package에 댓글/북마크 싣기 (format 변경 필요)
 목표: 여러 사람이 실제로 쓰기 직전의 관문.
 
 - v0.6.0: password 로그인 + server-side session. 현재 prototype user
-  selection을 실제 인증으로 교체. OAuth/SSO/JWT는 범위 밖.
-- v0.6.1: User:Account 1:1 → 1:N. 봇/프로그램 계정을 user가 소유하는 구조.
-  bot 여부 같은 분류는 core 필드가 아닌 generic한 소유 관계로 표현.
-- v0.6.2: 소유 계정 profile self-service. 로그인한 user가 자기 소유 계정의
+  selection을 실제 인증으로 교체. OAuth/SSO/JWT는 범위 밖. Password는 서버에
+  hash로 저장하고, 로그인 화면에서 현재 password 기반 변경을 지원한다. 상세 scope와
+  검증은 `archive/V0_6_0_AUTH_SCOPE.md`를 따른다.
+- v0.6.1: User:Account 1:1 운영 정책 정리. 봇/프로그램/설비 계정도 로그인 가능한
+  별도 user로 취급하며, 하나의 user는 정확히 하나의 account를 가진다는 원칙을
+  유지한다. 계정 전환은 "다른 user로 로그인"하는 문제로 다루고, user가 여러
+  account를 소유하거나 대리 작성하는 구조는 범위 밖. 상세 scope와 검증은
+  `archive/V0_6_1_ACCOUNT_IDENTITY_SCOPE.md`를 따른다.
+- v0.6.2: 내 account profile self-service. 로그인한 user가 자기 1:1 account의
   display_name/bio/avatar를 UI에서 직접 수정. account/handle처럼 식별자에
-  해당하는 값은 등록 시 고정(수정 불가).
+  해당하는 값은 등록 시 고정(수정 불가). Profile asset은 post asset과 분리된
+  profile 전용 storage 정책으로 다룬다. 상세 scope와 검증은
+  `archive/V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md`를 따른다.
+- v0.6.3: auth hardening & cleanup. 신규 도메인 기능 없이 인증 표면의 운영성/품질을
+  보강한다. (1) 운영자 password reset CLI(`scripts/reset_password.py`)로 V0_6_0
+  Password Policy의 운영자 reset 경로를 실제 구현, (2) session 만료/무효 시 frontend가
+  401을 받아 로그인 화면으로 복귀, (3) 로그인 화면의 dead code 정리. session cookie
+  `secure` 분리·write endpoint의 session-only 인가·로그인 화면 user 목록 숨김은
+  비-localhost 이전 시점으로 명시 이연. 상세 scope와 검증은
+  `archive/V0_6_3_AUTH_HARDENING_SCOPE.md`를 따른다.
+- v0.6.4: 계정 라이프사이클 (탈퇴/비활성 + post 보존). **완료.** 계정을 그만 쓰는
+  경로를 soft deactivation으로 다룬다. `accounts.deactivated_at`(null=active)에 상태를
+  두고, 소유자 self-service 비활성화(`POST /api/accounts/{id}/deactivate`) 시 로그인
+  차단 + 세션 폐기 + discovery 제외를 적용하되 post/협업 데이터는 보존한다. 신규 follow는
+  409로 차단(기존 follow 보존). 재활성화는 운영자 CLI(`scripts/reactivate_user.py`)만.
+  ROADMAP 제약의 "비활성/삭제 시 post 처리 정책 별도 확정"을 이 MINOR에서 닫는다.
+  상세 scope와 검증은 `archive/V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`를 따른다. **이로써 v0.6.x
+  테마 완료** — v1.0.0 전제(v0.1 읽기확장 + v0.3 ingestion + v0.6 인증)가 갖춰졌다.
 
-> 배경(2026-06-15 논의): 현재 계정 profile(display_name/bio/avatar)은 import
-> 패키지의 `accounts[]` 블록이 매 import마다 DB를 덮어쓴다(`upsert_account`).
-> 실서비스에서는 외부 데이터가 계속 들어오고 계정/설비가 추가·삭제되므로,
-> "누가 profile의 주인인가"를 명시해야 한다. 단순 정규화(post→Account 참조)는
-> 이미 되어 있고, 빠진 것은 소유권과 갱신 충돌 정책이다.
-
-### v0.6.x 계정 소유권 / 데이터 정책
+> 배경(2026-06-17 결정): v0.6.x에서는 User:Account 1:N으로 확장하지 않고 1:1
+> 원칙을 유지한다. 설비/봇 계정도 별도의 로그인 user로 취급하면, post/comment/
+> follow/bookmark/notification의 주체가 항상 현재 로그인 user 하나로 정해져
+> v0.5.x 협업 데이터와 권한 체크를 단순하게 유지할 수 있다.
 
 ```text
-계정을 두 종류로 구분한다
-  - 소유된 개인 계정: 로그인 user가 주인. profile의 source of truth는
-    사용자 편집이며, import는 profile 필드를 덮지 않는다(skip).
-  - 봇/프로그램 계정: 소유자 없음. 기존대로 import가 profile을 관리(upsert)한다.
+User:Account identity
+  - User는 로그인, session, password, comment/bookmark/notification/read state의 주체.
+  - Account는 feed에 보이는 profile/post/follow/mention identity.
+  - 현 단계에서는 User 1개 : Account 1개를 유지한다.
+  - 봇/프로그램/설비 account도 필요하면 별도 User와 1:1 Account로 생성한다.
+  - 한 user가 여러 account를 소유하거나, 로그인 user가 다른 account로 대리 작성하는
+    기능은 v0.6.x 범위 밖이다.
 
-incoming 패키지 작성 규칙
-  - 봇 계정: 기존대로 `accounts[]`에 profile 포함.
-  - 소유된 개인 계정: `accounts[]`에 넣지 않고 post가 `account_external_id`로
-    참조만 한다(format상 DB existing account 참조는 이미 허용 — 패키지 가이드 5장).
-    계정 자체는 가입(운영) 또는 seed(테스트)로 한 번 생성한다.
+incoming 패키지 / profile 갱신 규칙
+  - 기존 external post package format은 변경하지 않는다.
+  - 기존처럼 `accounts[]`가 있으면 import가 해당 account profile을 upsert한다.
+  - post는 계속 `account_external_id`로 `accounts[].external_id` 또는 DB existing
+    account를 참조할 수 있다.
+  - 로그인 사용자가 UI에서 profile을 수정하는 기능(v0.6.2)은 자기 1:1 account에만
+    적용한다. import-managed account와 user-edited profile의 충돌 정책은 v0.6.2
+    scope에서 확정하되, 기존 package를 깨지 않는다.
 
 계정 추가/삭제(라이프사이클)
-  - 신규 계정: 가입 흐름으로 생성하거나, 봇 계정은 첫 import 시 생성.
-  - 비활성/삭제: post는 account FK로만 연결되므로, 계정 삭제 시 post 처리
-    정책(보존/이관/숨김)을 v0.6.x scope에서 확정한다.
+  - 신규 계정: 가입/운영 흐름으로 User+Account 1:1을 생성하거나, import가 기존처럼
+    paired import User+Account를 생성한다.
+  - 비활성/삭제: post는 account FK로 연결되므로, 계정 삭제 시 post 처리
+    정책(보존/비활성/숨김)은 v0.6.x scope에서 별도 확정한다.
 
 테스트 데이터
-  - 로그인 가능한 테스트 개인 계정은 seed에 둔다(자격 + 소유권). seed는
-    write-once(있으면 안 덮음)라 import와 충돌하지 않는다.
+  - 로그인 가능한 테스트 user/account는 seed에 둔다. seed는 write-once(있으면 안 덮음)
+    방식으로 import와 충돌하지 않게 유지한다.
+  - 설비/봇 시나리오도 별도 로그인 user + 1:1 account fixture로 표현할 수 있다.
   - import 패키지(외부 생성 콘텐츠)와 seed(개발/테스트 픽스처)는 별개 경로로
     유지한다.
 ```
@@ -327,6 +354,13 @@ incoming 패키지 작성 규칙
 v0.1(읽기 확장성) + v0.3(ingestion 신뢰성) + v0.6(인증)가 갖춰지면
 v1.0.0으로 올립니다. 별도 신규 기능 없이 안정화/문서화/배포 절차 정리가
 중심인 릴리즈입니다.
+
+전제는 v0.6.x 완료로 모두 충족되어 **이 마일스톤을 개시**합니다. 다만 v1.0.0은
+"실사용자에게 배포 가능한 기준선"이므로, `archive/V0_6_3`에서 "비-localhost 이전 시"로 이연한
+보안 하드닝(write endpoint의 session 기반 인가, cookie `secure`, 로그인 화면 user 목록
+숨김)이 태그 전 필수입니다. 상세 must-do/안정화 항목과 태그 조건은
+`V1_0_0_RELEASE_SCOPE.md`를 따릅니다. 이 항목들이 통과하기 전에는 v1.0.0을 태그하지
+않습니다.
 
 ## v1.1.x — Rich Asset Experience (post-1.0)
 

@@ -39,9 +39,9 @@ from app.models.account import Account
 from app.models.asset import PostAsset
 from app.models.import_batch import ImportBatch
 from app.models.post import Post
-from app.models.user import User
 from app.services.import_external_posts import generated_user_id
 from app.services.process_incoming import process_once
+from scripts.cleanup_utils import delete_test_users
 
 
 SUFFIX = uuid4().hex[:8]
@@ -237,9 +237,7 @@ def cleanup() -> None:
         if account is not None:
             session.delete(account)
 
-        user = session.get(User, generated_user_id(ACCT_EXT))
-        if user is not None:
-            session.delete(user)
+        delete_test_users(session, [generated_user_id(ACCT_EXT)])
 
         for external_id in BATCHES.values():
             batch = session.exec(

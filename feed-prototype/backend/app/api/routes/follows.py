@@ -106,6 +106,14 @@ def follow_account(
     if existing is not None:
         return _user_follows_response(session, user_id)
 
+    # v0.6.4: existing follows of a now-deactivated account are kept, but new
+    # follows are not allowed (the account is hidden from discovery anyway).
+    target = session.get(Account, account_id)
+    if target is not None and target.deactivated_at is not None:
+        raise HTTPException(
+            status_code=409, detail="Cannot follow a deactivated account"
+        )
+
     follow = Follow(
         id=f"follow-{uuid4()}",
         follower_user_id=user_id,

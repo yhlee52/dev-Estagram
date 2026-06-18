@@ -28,6 +28,13 @@
 - 실제 운영에서 생성된 package를 golden sample로 추가할 수 있습니다.
   golden sample은 수정하지 않고 추가만 합니다.
 
+v0.6.x 인증 테마에서도 이 JSON format은 유지합니다. User credential, password,
+session 정보는 external package에 싣지 않습니다. 봇/프로그램/설비 계정도 필요하면
+별도 User + 1:1 Account로 생성하며, post package는 계속 `accounts[]`와
+`posts[].account_external_id`로 Account/Post data만 다룹니다.
+v0.6.2부터 UI에서 사용자가 직접 저장한 account profile(`profile_source=user`)은
+같은 package를 재import해도 `display_name`, `bio`, `avatar_url`을 덮어쓰지 않습니다.
+
 ## 1. Package 목적
 
 External post package는 외부 프로그램이 생성한 `account`, `post`, `assets`, `metadata` JSON을 backend DB에 import하기 위한 입력 파일입니다.

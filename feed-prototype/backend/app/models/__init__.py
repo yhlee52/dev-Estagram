@@ -1,5 +1,6 @@
 from app.models.account import Account
 from app.models.asset import PostAsset
+from app.models.auth import UserCredential, UserSession
 from app.models.bookmark import Bookmark
 from app.models.comment import Comment
 from app.models.follow import Follow
@@ -19,4 +20,6 @@ __all__ = [
     "Post",
     "PostAsset",
     "User",
+    "UserCredential",
+    "UserSession",
 ]
