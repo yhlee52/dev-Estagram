@@ -39,17 +39,16 @@ from sqlmodel import select
 from app.core.config import get_settings
 from app.db.session import create_session
 from app.models.account import Account
-from app.models.auth import UserCredential, UserSession
 from app.models.asset import PostAsset
 from app.models.import_batch import ImportBatch
 from app.models.post import Post
-from app.models.user import User
 from app.services.import_external_posts import (
     generated_user_id,
     import_payload,
     load_payload,
     run_import,
 )
+from scripts.cleanup_utils import delete_test_users
 
 
 SUFFIX = uuid4().hex[:8]
@@ -300,19 +299,7 @@ def cleanup() -> None:
         if account is not None:
             session.delete(account)
 
-        user_id = generated_user_id(ACCT_EXT)
-        credential = session.get(UserCredential, user_id)
-        if credential is not None:
-            session.delete(credential)
-        for auth_session in session.exec(
-            select(UserSession).where(UserSession.user_id == user_id)
-        ).all():
-            session.delete(auth_session)
-        session.flush()
-
-        user = session.get(User, user_id)
-        if user is not None:
-            session.delete(user)
+        delete_test_users(session, [generated_user_id(ACCT_EXT)])
 
         for external_id in BATCHES.values():
             batch = session.exec(
