@@ -19,6 +19,7 @@ from sqlmodel import or_, select
 from app.db.session import create_session
 from app.main import app
 from app.models.account import Account
+from app.models.auth import UserCredential, UserSession
 from app.models.comment import Comment
 from app.models.follow import Follow
 from app.models.import_batch import ImportBatch
@@ -227,6 +228,16 @@ def cleanup() -> None:
         state = session.get(NotificationState, USER)
         if state is not None:
             session.delete(state)
+
+        for user_id in test_user_ids:
+            credential = session.get(UserCredential, user_id)
+            if credential is not None:
+                session.delete(credential)
+            for auth_session in session.exec(
+                select(UserSession).where(UserSession.user_id == user_id)
+            ).all():
+                session.delete(auth_session)
+        session.flush()
 
         for user_id in test_user_ids:
             user = session.get(User, user_id)

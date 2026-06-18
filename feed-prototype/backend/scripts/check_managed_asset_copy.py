@@ -39,6 +39,7 @@ from sqlmodel import select
 from app.core.config import get_settings
 from app.db.session import create_session
 from app.models.account import Account
+from app.models.auth import UserCredential, UserSession
 from app.models.asset import PostAsset
 from app.models.import_batch import ImportBatch
 from app.models.post import Post
@@ -299,7 +300,17 @@ def cleanup() -> None:
         if account is not None:
             session.delete(account)
 
-        user = session.get(User, generated_user_id(ACCT_EXT))
+        user_id = generated_user_id(ACCT_EXT)
+        credential = session.get(UserCredential, user_id)
+        if credential is not None:
+            session.delete(credential)
+        for auth_session in session.exec(
+            select(UserSession).where(UserSession.user_id == user_id)
+        ).all():
+            session.delete(auth_session)
+        session.flush()
+
+        user = session.get(User, user_id)
         if user is not None:
             session.delete(user)
 
