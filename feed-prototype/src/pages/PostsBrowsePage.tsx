@@ -9,11 +9,12 @@ import { useActiveApiUser } from '../auth/apiActiveUser';
 import EmptyState from '../components/EmptyState';
 import ExploreTags from '../components/ExploreTags';
 import FeedCard from '../components/FeedCard';
-import PostFilterPanel, {
+import PostFilterPanel from '../components/PostFilterPanel';
+import {
   emptyPostFilters,
   getPostFilterValidationError,
   hasActivePostFilters,
-} from '../components/PostFilterPanel';
+} from '../utils/postFilters';
 import { getApiBaseUrl } from '../config/apiConfig';
 import { getDataSourceMode } from '../config/dataSource';
 import { mapApiAccountToAccount, mapApiPostToPost } from '../data/apiFeedRepository';

@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router';
-import { hasActivePostFilters } from './PostFilterPanel';
+import { hasActivePostFilters } from '../utils/postFilters';
 import { filtersFromSearchParams } from '../utils/filterUrl';
 
 type FilterChip = {
