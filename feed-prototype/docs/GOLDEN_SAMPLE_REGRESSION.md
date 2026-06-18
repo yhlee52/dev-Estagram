@@ -94,8 +94,9 @@ identity 규칙을 별도 회귀로 확인합니다.
 
 ```bash
 cd feed-prototype/backend
-python -m scripts.check_account_identity   # User:Account 1:1 + 소유권 (v0.6.1)
-python -m scripts.check_account_profile    # profile self-service + 재import 보존 (v0.6.2)
+python -m scripts.check_account_identity    # User:Account 1:1 + 소유권 (v0.6.1)
+python -m scripts.check_account_profile     # profile self-service + 재import 보존 (v0.6.2)
+python -m scripts.check_account_lifecycle   # 탈퇴/비활성 + post 보존 + 재import 미복원 (v0.6.4)
 ```
 
 - `check_account_identity`: import가 account마다 paired User를 만들고 각 user가 정확히
@@ -103,8 +104,10 @@ python -m scripts.check_account_profile    # profile self-service + 재import �
 - `check_account_profile`: user가 편집한 profile(`profile_source=user`)이 같은 package
   재import 후에도 `display_name`/`bio`/`avatar_url`을 보존하는지 확인합니다(format 무변경의
   실증).
+- `check_account_lifecycle`: 비활성화가 로그인/세션/discovery에 적용되되 post는 보존되고,
+  비활성 상태는 package에 실리지 않아 재import가 계정을 되살리지 않음을 확인합니다(v0.6.4).
 
-두 스크립트는 실제 import(쓰기)를 수행한 뒤 생성한 행을 정리하므로 dev/test
+세 스크립트는 실제 import(쓰기)를 수행한 뒤 생성한 행을 정리하므로 dev/test
 `DATABASE_URL`에서 실행합니다.
 
 ## 릴리즈 체크 포함

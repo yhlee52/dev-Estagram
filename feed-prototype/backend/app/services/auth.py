@@ -84,6 +84,19 @@ def find_user_by_login(session: Session, login: str) -> User | None:
     return session.exec(select(User).where(User.handle == normalized)).first()
 
 
+def revoke_user_sessions(session: Session, user_id: str) -> int:
+    """Delete all server-side sessions for a user (v0.6.4 deactivation).
+
+    Returns the number of sessions removed. The caller controls the commit.
+    """
+    sessions = session.exec(
+        select(UserSession).where(UserSession.user_id == user_id)
+    ).all()
+    for auth_session in sessions:
+        session.delete(auth_session)
+    return len(sessions)
+
+
 def create_session_for_user(session: Session, user_id: str) -> UserSession:
     auth_session = UserSession(
         id=secrets.token_urlsafe(32),

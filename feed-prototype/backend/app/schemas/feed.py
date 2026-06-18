@@ -67,8 +67,22 @@ class AccountRead(BaseModel):
     avatar_url: str | None = None
     kind: str
     profile_source: str
+    deactivated_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class AccountDeactivateRequest(BaseModel):
+    user_id: str | int
+
+    @field_validator("user_id")
+    @classmethod
+    def validate_user_id(cls, value: str | int) -> str:
+        normalized_value = str(value).strip()
+        if not normalized_value:
+            raise ValueError("User id is required.")
+
+        return normalized_value
 
 
 class AccountProfileUpdate(BaseModel):

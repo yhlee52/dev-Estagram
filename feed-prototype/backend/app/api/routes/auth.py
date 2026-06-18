@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.api.deps import get_session
+from app.models.account import Account
 from app.models.auth import UserCredential
 from app.schemas.feed import (
     AuthLoginRequest,
@@ -52,6 +53,15 @@ def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid user id/handle or password.",
+        )
+
+    # v0.6.4: a deactivated account's user cannot log in. Checked after password
+    # verification so it does not reveal which logins exist.
+    account = session.exec(select(Account).where(Account.user_id == user.id)).first()
+    if account is not None and account.deactivated_at is not None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account has been deactivated.",
         )
 
     auth_session = create_session_for_user(session, user.id)

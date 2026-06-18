@@ -303,10 +303,13 @@ external package에 댓글/북마크 싣기 (format 변경 필요)
   `secure` 분리·write endpoint의 session-only 인가·로그인 화면 user 목록 숨김은
   비-localhost 이전 시점으로 명시 이연. 상세 scope와 검증은
   `V0_6_3_AUTH_HARDENING_SCOPE.md`를 따른다.
-- v0.6.4: 계정 라이프사이클 (탈퇴/비활성 + post 보존). 계정을 그만 쓰는 경로를
-  soft deactivation으로 다루고, 기존 post/협업 데이터는 보존한다. ROADMAP 제약의
-  "비활성/삭제 시 post 처리 정책 별도 확정"을 이 MINOR에서 닫는다. 상세 scope와
-  검증은 `V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`를 따른다.
+- v0.6.4: 계정 라이프사이클 (탈퇴/비활성 + post 보존). **완료.** 계정을 그만 쓰는
+  경로를 soft deactivation으로 다룬다. `accounts.deactivated_at`(null=active)에 상태를
+  두고, 소유자 self-service 비활성화(`POST /api/accounts/{id}/deactivate`) 시 로그인
+  차단 + 세션 폐기 + discovery 제외를 적용하되 post/협업 데이터는 보존한다. 신규 follow는
+  409로 차단(기존 follow 보존). 재활성화는 운영자 CLI(`scripts/reactivate_user.py`)만.
+  ROADMAP 제약의 "비활성/삭제 시 post 처리 정책 별도 확정"을 이 MINOR에서 닫는다.
+  상세 scope와 검증은 `V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`를 따른다.
 
 > 배경(2026-06-17 결정): v0.6.x에서는 User:Account 1:N으로 확장하지 않고 1:1
 > 원칙을 유지한다. 설비/봇 계정도 별도의 로그인 user로 취급하면, post/comment/

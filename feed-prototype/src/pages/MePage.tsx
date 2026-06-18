@@ -3,12 +3,14 @@ import { Link } from 'react-router';
 import { changePassword } from '../api/authApi';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import {
+  deactivateAccount,
   getAccountPosts,
   getAccounts,
   updateAccountProfile,
 } from '../api/accountsApi';
 import { getUser } from '../api/usersApi';
 import { useActiveApiUser } from '../auth/apiActiveUser';
+import ConfirmDialog from '../components/ConfirmDialog';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
 import MeBookmarksSection from '../components/MeBookmarksSection';
@@ -144,6 +146,89 @@ function getAccountUserId(account: Account): string {
   const userId = account.metadata?.user_id;
 
   return typeof userId === 'string' ? userId : '';
+}
+
+function getDeactivateErrorMessage(error: unknown): string {
+  if (error instanceof ApiNetworkError) {
+    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+  }
+
+  if (error instanceof ApiClientError) {
+    if (error.status === 403) {
+      return 'Only this account user can deactivate it.';
+    }
+
+    return `The backend API returned ${error.status}. ${error.message}`;
+  }
+
+  return 'Could not deactivate this account. Check the backend server and try again.';
+}
+
+function DeactivateAccountPanel({
+  account,
+  userId,
+  onDeactivated,
+}: {
+  account: Account;
+  userId: string;
+  onDeactivated: () => void;
+}) {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleConfirm = async () => {
+    setIsDeactivating(true);
+    setError('');
+
+    try {
+      await deactivateAccount(account.id, { user_id: userId });
+      // Server has revoked our session; sign out so the login gate takes over.
+      onDeactivated();
+    } catch (deactivateError) {
+      setError(getDeactivateErrorMessage(deactivateError));
+      setIsDeactivating(false);
+      setIsConfirmOpen(false);
+    }
+  };
+
+  return (
+    <section className="space-y-3 rounded-md border border-red-200 bg-white p-4 shadow-sm">
+      <div className="space-y-1">
+        <h2 className="text-sm font-bold text-red-700">Danger zone</h2>
+        <p className="text-xs font-semibold leading-5 text-neutral-500">
+          Deactivating hides your account from others and signs you out. Your posts
+          are preserved. You will not be able to log back in &mdash; an operator must
+          reactivate the account.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        className="h-10 rounded-md border border-red-300 bg-white px-4 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={isDeactivating}
+        onClick={() => setIsConfirmOpen(true)}
+      >
+        Deactivate account
+      </button>
+
+      {error ? (
+        <p className="text-xs font-semibold text-red-700">{error}</p>
+      ) : null}
+
+      {isConfirmOpen ? (
+        <ConfirmDialog
+          title="Deactivate this account?"
+          description="Your account will be hidden from others and you will be signed out. Your posts are preserved. Reactivation requires an operator."
+          confirmLabel="Deactivate account"
+          danger
+          isConfirming={isDeactivating}
+          onConfirm={handleConfirm}
+          onCancel={() => setIsConfirmOpen(false)}
+        />
+      ) : null}
+    </section>
+  );
 }
 
 function NewPostButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
@@ -395,7 +480,8 @@ function PasswordChangePanel() {
  * (New Post, per-post Edit / Delete).
  */
 function ApiMePage() {
-  const { activeApiUserId, activeApiUser } = useActiveApiUser();
+  const { activeApiUserId, activeApiUser, clearActiveApiUser } =
+    useActiveApiUser();
   const apiFollows = useApiFollows(activeApiUserId);
   const [user, setUser] = useState<User | undefined>();
   const [account, setAccount] = useState<Account | undefined>();
@@ -595,6 +681,14 @@ function ApiMePage() {
       ) : null}
 
       {account ? <PasswordChangePanel /> : null}
+
+      {account ? (
+        <DeactivateAccountPanel
+          account={account}
+          userId={activeApiUserId}
+          onDeactivated={clearActiveApiUser}
+        />
+      ) : null}
 
       {account ? (
         <section className="space-y-3">

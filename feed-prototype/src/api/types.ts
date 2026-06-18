@@ -29,6 +29,9 @@ export interface ApiAccount {
   avatar_url: string | null;
   kind: string;
   profile_source: string;
+  // v0.6.4: null = active. When set, the paired user cannot log in and the
+  // account is hidden from discovery, but its posts are preserved.
+  deactivated_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -38,6 +41,10 @@ export interface ApiAccountProfileUpdatePayload {
   display_name?: string | null;
   bio?: string | null;
   avatar_url?: string | null;
+}
+
+export interface ApiAccountDeactivatePayload {
+  user_id: string;
 }
 
 export interface ApiUserRegistrationResponse {

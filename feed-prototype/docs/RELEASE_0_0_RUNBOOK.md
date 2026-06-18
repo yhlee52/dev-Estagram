@@ -1,9 +1,10 @@
-# feed-prototype 실행 가이드 (v0.6.3 기준)
+# feed-prototype 실행 가이드 (v0.6.4 기준)
 
 이 문서는 `feed-prototype`을 local 환경에서 재현 실행하기 위한 기준 runbook입니다.
-현재 릴리즈 `v0.6.3`(인증 & 멀티유저 theme — auth hardening & cleanup) 기준으로
+현재 릴리즈 `v0.6.4`(인증 & 멀티유저 theme — 계정 라이프사이클) 기준으로
 mock → API(password 로그인 + session) → 외부 데이터(CLI·디렉터리 일괄 처리·Watch·
-managed storage) → 협업 → profile self-service 기능 확인까지의 실행 방법을 정리합니다.
+managed storage) → 협업 → profile self-service → 계정 비활성화/재활성화 기능 확인까지의
+실행 방법을 정리합니다.
 
 > 파일명은 v0.0.0 release 시점의 이름(`RELEASE_0_0_RUNBOOK.md`)을 유지하지만,
 > 내용은 항상 현재 릴리즈 기준으로 갱신됩니다. external post package format은 v0.0.0
@@ -187,6 +188,9 @@ npm run dev
   동작합니다(v0.6.2 / v0.6.0). handle·kind 등 식별자 값은 수정되지 않습니다.
 - 아바타 드롭다운의 Logout으로 session을 폐기하고 로그인 화면으로 돌아갑니다. session이
   서버에서 만료/삭제되면 다음 API 호출 시 자동으로 로그인 화면으로 복귀합니다(v0.6.3).
+- Me 탭 Danger zone에서 계정을 비활성화하면 로그아웃되고, 이후 로그인이 차단되며
+  Accounts 목록에서 사라집니다. 작성한 post는 보존됩니다(v0.6.4). 재활성화는 운영자
+  CLI로만 가능합니다(10. 자주 발생하는 문제의 비활성/재활성 항목 참고).
 
 > `VITE_DATA_SOURCE`를 `mock`에서 `api`로 바꾼 뒤에는 반드시 dev server를 재시작합니다.
 
@@ -382,6 +386,9 @@ API mode frontend에서 다음을 확인합니다.
   복귀를 확인합니다. 잘못된 password는 거부됩니다(v0.6.0).
 - Account Profile self-service: Me 탭에서 display name/bio/avatar URL을 저장하면 Me 헤더와
   내 post 카드의 account 표시가 즉시 갱신되는지, handle/kind는 그대로인지 확인합니다(v0.6.2).
+- 계정 비활성화/재활성화: Me 탭 Danger zone에서 비활성화 → 로그아웃·로그인 차단·Accounts
+  목록 제외를 확인하고, post가 보존되는지(Account Profile/Post Detail) 확인합니다. 운영자
+  `python -m scripts.reactivate_user --user <id|handle>`로 복구되는지 확인합니다(v0.6.4).
 - Password change: Me 탭에서 현재 password 검증 후 새 password로 변경, 변경 후 이전
   password 실패 / 새 password 로그인 성공을 확인합니다(v0.6.0).
 - Home Feed: active user의 own account와 followed account post가 표시되는지 확인합니다.
@@ -472,6 +479,19 @@ python -m scripts.reset_password --user ari --password temppass
 origin이 `app/main.py`의 CORS `allow_origins`와 일치하는지(자격증명 쿠키는 정확한
 origin이 필요) 확인합니다.
 
+### 비활성화한 계정으로 다시 로그인할 수 없음 (v0.6.4)
+계정 비활성화(Me 탭 Danger zone)는 soft deactivation입니다. 로그인이 차단되고
+(`403`) 기존 session은 폐기되며 Accounts 목록에서 숨겨지지만, post는 보존됩니다.
+재활성화는 self-service가 아니라 운영자 작업입니다:
+
+```bash
+cd feed-prototype/backend
+python -m scripts.reactivate_user --user ari
+```
+
+비활성 계정의 profile/post는 `GET /api/accounts/{id}`·`.../posts`로 계속 조회되며,
+목록에 포함하려면 `GET /api/accounts?include_deactivated=true`를 씁니다.
+
 ### `asset.url`이 브라우저에서 접근 불가
 단일 파일 CLI는 asset file을 복사하지 않습니다. `asset.url`은 browser-accessible URL
 또는 static path여야 합니다. (managed storage(7.5)를 켜면 상대 로컬 경로 asset만
@@ -509,6 +529,7 @@ terminal log의 대체 port 또는 backend 실행 옵션을 확인합니다.
 - `V0_6_1_ACCOUNT_IDENTITY_SCOPE.md` (User:Account 1:1)
 - `V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md` (profile self-service)
 - `V0_6_3_AUTH_HARDENING_SCOPE.md` (운영자 reset / 401 처리 / 정리, 이연 항목)
+- `V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md` (탈퇴/비활성 + post 보존, 운영자 재활성화)
 - `archive/V0_3_2_AUTO_INGESTION_SCOPE.md` (디렉터리 일괄 처리 / Watch)
 - `archive/V0_3_3_ASSET_STORAGE_SCOPE.md` (managed storage 복사)
 - `archive/MVP10_EXTERNAL_POST_FORMAT.md`
