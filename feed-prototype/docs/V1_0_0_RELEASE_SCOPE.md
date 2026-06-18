@@ -18,7 +18,7 @@ ROADMAP 기준 v1.0.0은 다음 세 축이 갖춰지면 올립니다 — 현재 
 
 ## Must-do (태그 전 필수)
 
-대부분 `V0_6_3_AUTH_HARDENING_SCOPE.md`의 "Deferred — 비-localhost 이전 시 처리"
+대부분 `archive/V0_6_3_AUTH_HARDENING_SCOPE.md`의 "Deferred — 비-localhost 이전 시 처리"
 항목입니다. v1.0.0이 그 "비-localhost 이전" 시점입니다.
 
 ### 1. Session 기반 write 인가 (보안 blocker)

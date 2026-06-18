@@ -286,7 +286,8 @@ Imported post가 Home Feed에 바로 보이지 않으면 imported account follow
 - [ ] `EXTERNAL_POST_PACKAGE_GUIDE.md`가 존재합니다.
 - [ ] `../data/external_posts/README.md`가 존재합니다.
 - [ ] `ROADMAP.md`의 버전 트리가 현재 릴리즈를 반영합니다.
-- [ ] `V0_6_0`~`V0_6_4` scope 문서가 존재하고 현재 구현을 반영합니다.
+- [ ] `archive/V0_6_0`~`archive/V0_6_4` scope 문서(테마 완료로 archive 이동)와
+  `ACCOUNT_MANAGEMENT.md`(계정 명령어), `V1_0_0_RELEASE_SCOPE.md`가 현재 구현을 반영합니다.
 - [ ] Sample package 설명과 각 sample `assets/README.md`가 존재합니다.
 - [ ] limitations가 명시되어 있습니다: production-ready 아님. password 로그인 +
   server-side session은 있으나 OAuth/SSO/JWT/RBAC는 없고, write endpoint는 아직

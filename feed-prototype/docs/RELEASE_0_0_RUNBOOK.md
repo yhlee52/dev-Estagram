@@ -27,7 +27,7 @@ production-ready app은 아닙니다. v0.6.x에서 password 로그인 + server-s
 (httpOnly cookie)은 추가되었지만, OAuth/SSO/JWT access token/RBAC 같은 정식 권한
 시스템은 포함하지 않으며 backend는 localhost 바인딩을 전제로 합니다. write endpoint는
 아직 session이 아니라 user_id로 인가하고 frontend가 로그인 게이트 역할을 합니다(비-
-localhost 이전 시 hardening 예정 — `V0_6_3_AUTH_HARDENING_SCOPE.md`).
+localhost 이전 시 hardening 예정 — `archive/V0_6_3_AUTH_HARDENING_SCOPE.md`).
 
 실행 mode는 크게 세 가지입니다.
 
@@ -525,11 +525,11 @@ terminal log의 대체 port 또는 backend 실행 옵션을 확인합니다.
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`
 - `../data/external_posts/README.md`
 - `ROADMAP.md`
-- `V0_6_0_AUTH_SCOPE.md` (password 로그인 + session)
-- `V0_6_1_ACCOUNT_IDENTITY_SCOPE.md` (User:Account 1:1)
-- `V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md` (profile self-service)
-- `V0_6_3_AUTH_HARDENING_SCOPE.md` (운영자 reset / 401 처리 / 정리, 이연 항목)
-- `V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md` (탈퇴/비활성 + post 보존, 운영자 재활성화)
+- `archive/V0_6_0_AUTH_SCOPE.md` (password 로그인 + session)
+- `archive/V0_6_1_ACCOUNT_IDENTITY_SCOPE.md` (User:Account 1:1)
+- `archive/V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md` (profile self-service)
+- `archive/V0_6_3_AUTH_HARDENING_SCOPE.md` (운영자 reset / 401 처리 / 정리, 이연 항목)
+- `archive/V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md` (탈퇴/비활성 + post 보존, 운영자 재활성화)
 - `archive/V0_3_2_AUTO_INGESTION_SCOPE.md` (디렉터리 일괄 처리 / Watch)
 - `archive/V0_3_3_ASSET_STORAGE_SCOPE.md` (managed storage 복사)
 - `archive/MVP10_EXTERNAL_POST_FORMAT.md`
