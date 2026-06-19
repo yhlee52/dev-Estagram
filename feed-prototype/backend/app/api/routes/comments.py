@@ -3,10 +3,11 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, col, select
 
-from app.api.deps import get_session
+from app.api.deps import get_current_user, get_session
 from app.models.account import Account
 from app.models.comment import Comment, utc_now
 from app.models.post import Post
+from app.models.user import User
 from app.schemas.feed import (
     CommentCreate,
     CommentListResponse,
@@ -78,14 +79,15 @@ def create_comment(
     post_id: str,
     comment_create: CommentCreate,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> CommentWithAuthor:
     _get_post_or_404(session, post_id)
-    account = _get_author_account(session, comment_create.user_id)
+    account = _get_author_account(session, current_user.id)
 
     comment = Comment(
         id=f"comment-{uuid4()}",
         post_id=post_id,
-        author_user_id=comment_create.user_id,
+        author_user_id=current_user.id,
         text=comment_create.text,
     )
     session.add(comment)
@@ -100,12 +102,13 @@ def update_comment(
     comment_id: str,
     comment_update: CommentUpdate,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> CommentWithAuthor:
     comment = session.get(Comment, comment_id)
     if comment is None:
         raise HTTPException(status_code=404, detail="Comment not found")
 
-    if comment.author_user_id != comment_update.user_id:
+    if comment.author_user_id != current_user.id:
         raise HTTPException(
             status_code=403, detail="Only the author can edit this comment"
         )
@@ -125,14 +128,14 @@ def update_comment(
 )
 def delete_comment(
     comment_id: str,
-    user_id: str = Query(...),
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> None:
     comment = session.get(Comment, comment_id)
     if comment is None:
         raise HTTPException(status_code=404, detail="Comment not found")
 
-    if comment.author_user_id != user_id:
+    if comment.author_user_id != current_user.id:
         raise HTTPException(
             status_code=403, detail="Only the author can delete this comment"
         )

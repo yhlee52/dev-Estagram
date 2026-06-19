@@ -37,13 +37,5 @@ export const updateComment = (
     payload,
   );
 
-export const deleteComment = (
-  commentId: string,
-  userId: string,
-): Promise<void> => {
-  const searchParams = new URLSearchParams({ user_id: userId });
-
-  return apiDelete<void>(
-    `/api/comments/${encodeURIComponent(commentId)}?${searchParams.toString()}`,
-  );
-};
+export const deleteComment = (commentId: string): Promise<void> =>
+  apiDelete<void>(`/api/comments/${encodeURIComponent(commentId)}`);

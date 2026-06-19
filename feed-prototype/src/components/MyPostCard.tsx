@@ -9,8 +9,6 @@ import FeedCard from './FeedCard';
 
 type MyPostCardProps = {
   item: FeedItem;
-  /** Active API user id, required by the backend to authorize the delete. */
-  userId: string;
   /** Called after a successful delete so the parent can drop it from the list. */
   onDeleted: (postId: string) => void;
 };
@@ -36,7 +34,7 @@ function getDeletePostErrorMessage(error: unknown): string {
  * management strip (Edit / Delete). Deleting removes the post from the list in
  * place instead of navigating away, which fits managing several posts at once.
  */
-export default function MyPostCard({ item, userId, onDeleted }: MyPostCardProps) {
+export default function MyPostCard({ item, onDeleted }: MyPostCardProps) {
   const { post } = item;
   const [isDeleting, setIsDeleting] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -51,7 +49,7 @@ export default function MyPostCard({ item, userId, onDeleted }: MyPostCardProps)
     setError('');
 
     try {
-      await deletePost(post.id, userId);
+      await deletePost(post.id);
       onDeleted(post.id);
     } catch (deleteError) {
       setError(getDeletePostErrorMessage(deleteError));

@@ -72,33 +72,10 @@ class AccountRead(BaseModel):
     updated_at: datetime
 
 
-class AccountDeactivateRequest(BaseModel):
-    user_id: str | int
-
-    @field_validator("user_id")
-    @classmethod
-    def validate_user_id(cls, value: str | int) -> str:
-        normalized_value = str(value).strip()
-        if not normalized_value:
-            raise ValueError("User id is required.")
-
-        return normalized_value
-
-
 class AccountProfileUpdate(BaseModel):
-    user_id: str | int
     display_name: str | None = Field(default=None, max_length=120)
     bio: str | None = Field(default=None, max_length=500)
     avatar_url: str | None = Field(default=None, max_length=1000)
-
-    @field_validator("user_id")
-    @classmethod
-    def validate_user_id(cls, value: str | int) -> str:
-        normalized_value = str(value).strip()
-        if not normalized_value:
-            raise ValueError("User id is required.")
-
-        return normalized_value
 
     @field_validator("display_name")
     @classmethod
@@ -238,21 +215,11 @@ class PostAssetCreate(BaseModel):
 
 
 class PostCreate(BaseModel):
-    user_id: str | int
     title: str = Field(max_length=200)
     text: str = Field(default="", max_length=5000)
     tags: list[str] = Field(default_factory=list)
     metadata_json: dict[str, Any] | None = None
     assets: list[PostAssetCreate] = Field(default_factory=list)
-
-    @field_validator("user_id")
-    @classmethod
-    def validate_user_id(cls, value: str | int) -> str:
-        normalized_value = str(value).strip()
-        if not normalized_value:
-            raise ValueError("User id is required.")
-
-        return normalized_value
 
     @field_validator("title", "text")
     @classmethod
@@ -274,21 +241,11 @@ class PostCreate(BaseModel):
 
 
 class PostUpdate(BaseModel):
-    user_id: str | int
     title: str | None = Field(default=None, max_length=200)
     text: str | None = Field(default=None, max_length=5000)
     tags: list[str] | None = None
     metadata_json: dict[str, Any] | None = None
     assets: list[PostAssetCreate] | None = None
-
-    @field_validator("user_id")
-    @classmethod
-    def validate_user_id(cls, value: str | int) -> str:
-        normalized_value = str(value).strip()
-        if not normalized_value:
-            raise ValueError("User id is required.")
-
-        return normalized_value
 
     @field_validator("title", "text")
     @classmethod
@@ -394,17 +351,7 @@ class CommentListResponse(BaseModel):
 
 
 class CommentCreate(BaseModel):
-    user_id: str | int
     text: str = Field(max_length=2000)
-
-    @field_validator("user_id")
-    @classmethod
-    def validate_user_id(cls, value: str | int) -> str:
-        normalized_value = str(value).strip()
-        if not normalized_value:
-            raise ValueError("User id is required.")
-
-        return normalized_value
 
     @field_validator("text")
     @classmethod

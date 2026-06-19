@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
-from app.api.deps import get_session
+from app.api.deps import get_current_user, get_session
 from app.models.account import Account
 from app.models.follow import Follow
 from app.models.user import User
@@ -42,6 +42,13 @@ def _ensure_user_and_account(
 
     if session.get(Account, account_id) is None:
         raise HTTPException(status_code=404, detail="Account not found")
+
+
+def _require_self(current_user: User, user_id: str) -> None:
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=403, detail="Cannot access another user's follows"
+        )
 
 
 def _user_follows_response(session: Session, user_id: str) -> UserFollowsResponse:
@@ -87,10 +94,9 @@ def list_follows(session: Session = Depends(get_session)) -> list[Follow]:
 def list_user_follows(
     user_id: str,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> UserFollowsResponse:
-    if session.get(User, user_id) is None:
-        raise HTTPException(status_code=404, detail="User not found")
-
+    _require_self(current_user, user_id)
     return _user_follows_response(session, user_id)
 
 
@@ -99,7 +105,9 @@ def follow_account(
     user_id: str,
     account_id: str,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> UserFollowsResponse:
+    _require_self(current_user, user_id)
     _ensure_user_and_account(session, user_id, account_id)
 
     existing = _get_existing_follow(session, user_id, account_id)
@@ -134,7 +142,9 @@ def unfollow_account(
     user_id: str,
     account_id: str,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> UserFollowsResponse:
+    _require_self(current_user, user_id)
     _ensure_user_and_account(session, user_id, account_id)
 
     existing = _get_existing_follow(session, user_id, account_id)

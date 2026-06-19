@@ -12,8 +12,10 @@ feed-prototype의 user/account를 다루는 **모든 명령**을 모았습니다
     `DATABASE_URL`이 대상 DB를 가리키는 상태로 실행). 인증/세션을 거치지 않습니다.
   - **HTTP API**: 앱(프론트엔드)이 쓰는 self-service 경로. `curl`로도 호출 가능합니다.
 - 초기 password 규칙: **seed user = handle과 동일**(`ari`/`mika`/`nova`), **import로
-  생성된 user = generated handle**(`import.<slug>`). password 부여는 write-once라
-  재-seed/재import로는 기존 password를 덮지 않습니다.
+  생성된 user = 예측 불가능한 임의 문자열**(v1.0.0부터 `generate_random_password()`).
+  import user로 로그인하려면 운영자가 `reset_password`로 먼저 password를 부여해야
+  합니다. password 부여는 write-once라 재-seed/재import로는 기존 password를
+  덮지 않습니다.
 
 > API base host와 앱을 여는 host를 맞추세요(둘 다 `localhost`). 다르면 세션 쿠키
 > (SameSite=Lax)가 cross-site로 취급돼 드랍되고 로그인이 유지되지 않습니다.
@@ -62,9 +64,10 @@ python -m scripts.reactivate_user --user <id-or-handle>
 
 ## Self-service / HTTP API
 
-앱이 사용하는 경로입니다. 로그인·세션·password 변경은 **세션 쿠키**가 필요하고,
-profile 수정·비활성화는 현재 prototype 단계에서 본문의 `user_id`로 소유권을 확인합니다
-(세션 기반 인가 전환은 v1.0.0 하드닝 항목 — `V1_0_0_RELEASE_SCOPE.md`).
+앱이 사용하는 경로입니다. 모든 self-service 호출은 **세션 쿠키**가 필요하고, 행위자는
+요청 본문이 아니라 로그인된 session에서 도출됩니다(v1.0.0). profile 수정·비활성화는
+session user가 해당 account의 소유자(`account.user_id`)일 때만 허용되고, 아니면
+403입니다.
 
 base URL은 `http://localhost:8000` 가정.
 
@@ -109,21 +112,20 @@ curl -b cookies.txt -X PATCH http://localhost:8000/api/auth/password \
 ### 내 account profile 수정 (소유자만, v0.6.2)
 
 ```bash
-curl -X PATCH http://localhost:8000/api/accounts/demo-account-ari \
+curl -b cookies.txt -X PATCH http://localhost:8000/api/accounts/demo-account-ari \
   -H "Content-Type: application/json" \
-  --data '{"user_id":"demo-user-ari","display_name":"Ari Notes","bio":"hello","avatar_url":"/assets/profiles/ari.png"}'
+  --data '{"display_name":"Ari Notes","bio":"hello","avatar_url":"/assets/profiles/ari.png"}'
 ```
 
 `display_name`/`bio`/`avatar_url`만 수정 가능. `handle`/`kind`/`user_id` 같은 식별자는
-고정. `account.user_id != user_id`면 403. 빈 bio/avatar는 null로 정규화. 앱에서는 Me 탭
-"Account Profile" 패널이 이 API를 씁니다.
+고정. 로그인 session user가 그 account의 소유자가 아니면 403(v1.0.0부터 session
+기준 — 이전에는 본문 `user_id`였습니다). 빈 bio/avatar는 null로 정규화. 앱에서는
+Me 탭 "Account Profile" 패널이 이 API를 씁니다.
 
 ### 계정 비활성화 (소유자만, v0.6.4)
 
 ```bash
-curl -X POST http://localhost:8000/api/accounts/demo-account-ari/deactivate \
-  -H "Content-Type: application/json" \
-  --data '{"user_id":"demo-user-ari"}'
+curl -b cookies.txt -X POST http://localhost:8000/api/accounts/demo-account-ari/deactivate
 ```
 
 성공 시 `deactivated_at` 설정 + 해당 user의 모든 세션 폐기. 이후 로그인 차단, discovery
@@ -132,10 +134,14 @@ curl -X POST http://localhost:8000/api/accounts/demo-account-ari/deactivate \
 
 ### user / account 조회
 
+`GET /api/users`, `GET /api/users/{id}`는 v1.0.0부터 로그인 session이 필요합니다
+(자기 자신 한정은 아니며, 로그인한 누구나 다른 user를 조회할 수 있습니다). account
+조회는 그대로 공개입니다.
+
 ```bash
-curl http://localhost:8000/api/users            # user 목록
-curl http://localhost:8000/api/users/demo-user-ari
-curl http://localhost:8000/api/accounts          # account 목록 (비활성 제외)
+curl -b cookies.txt http://localhost:8000/api/users            # user 목록 (로그인 필요)
+curl -b cookies.txt http://localhost:8000/api/users/demo-user-ari
+curl http://localhost:8000/api/accounts          # account 목록 (비활성 제외, 공개)
 curl "http://localhost:8000/api/accounts?include_deactivated=true"  # 비활성 포함
 curl http://localhost:8000/api/accounts/demo-account-ari
 ```
@@ -152,8 +158,9 @@ curl http://localhost:8000/api/accounts/demo-account-ari
 | email 기반 password **복구** | 없음 | 운영자 `reset_password` CLI |
 | 다른 user/account 대리 관리 | 없음 (1:1·소유자 한정) | 범위 밖 (v0.6.x non-goal) |
 
-write endpoint를 세션 기반 인가로 전환하는 작업과 비-localhost 배포 하드닝은
-`V1_0_0_RELEASE_SCOPE.md`에 정리되어 있습니다.
+write endpoint의 세션 기반 인가 전환은 v1.0.0에서 구현 완료되었습니다. 비-localhost
+배포 시 cookie/CORS 설정은 `V1_0_0_RELEASE_SCOPE.md`와 `RELEASE_0_0_RUNBOOK.md`에
+정리되어 있습니다.
 
 ## 관련 문서
 

@@ -167,7 +167,6 @@ export default function EditPostPage() {
 
     try {
       const updatedPost = await updatePost(postId, {
-        user_id: activeApiUserId,
         title: values.title,
         text: values.text,
         tags: values.tags,

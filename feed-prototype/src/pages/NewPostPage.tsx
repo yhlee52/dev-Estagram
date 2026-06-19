@@ -54,7 +54,6 @@ export default function NewPostPage() {
 
     try {
       const createdItem = await createPost({
-        user_id: activeApiUserId,
         title: values.title,
         text: values.text,
         tags: values.tags,

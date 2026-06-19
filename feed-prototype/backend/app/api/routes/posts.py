@@ -3,7 +3,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, col, select
 
-from app.api.deps import get_session
+from app.api.deps import get_current_user, get_session
 from app.models.account import Account
 from app.models.asset import PostAsset
 from app.models.bookmark import Bookmark
@@ -161,8 +161,9 @@ def replace_post_assets(
 def create_post(
     post_create: PostCreate,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> FeedItem:
-    account = get_user_account(session, post_create.user_id)
+    account = get_user_account(session, current_user.id)
 
     post = Post(
         id=f"post-{uuid4()}",
@@ -200,12 +201,13 @@ def update_post(
     post_id: str,
     post_update: PostUpdate,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> PostWithAssets:
     post = session.get(Post, post_id)
     if post is None:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    account = get_user_account(session, post_update.user_id)
+    account = get_user_account(session, current_user.id)
     if post.account_id != account.id:
         raise HTTPException(status_code=403, detail="Post is not owned by user")
 
@@ -231,14 +233,14 @@ def update_post(
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(
     post_id: str,
-    user_id: str = Query(...),
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> None:
     post = session.get(Post, post_id)
     if post is None:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    account = get_user_account(session, user_id)
+    account = get_user_account(session, current_user.id)
     if post.account_id != account.id:
         raise HTTPException(status_code=403, detail="Post is not owned by user")
 

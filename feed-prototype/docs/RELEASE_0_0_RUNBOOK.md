@@ -1,7 +1,7 @@
-# feed-prototype 실행 가이드 (v0.6.4 기준)
+# feed-prototype 실행 가이드 (v1.0.0 기준)
 
 이 문서는 `feed-prototype`을 local 환경에서 재현 실행하기 위한 기준 runbook입니다.
-현재 릴리즈 `v0.6.4`(인증 & 멀티유저 theme — 계정 라이프사이클) 기준으로
+현재 릴리즈 `v1.0.0`(배포 가능한 제품 기준선 — session 기반 write 인가 하드닝) 기준으로
 mock → API(password 로그인 + session) → 외부 데이터(CLI·디렉터리 일괄 처리·Watch·
 managed storage) → 협업 → profile self-service → 계정 비활성화/재활성화 기능 확인까지의
 실행 방법을 정리합니다.
@@ -25,9 +25,12 @@ local/internal prototype입니다. 이 runbook은 다음 흐름을 확인하는 
 
 production-ready app은 아닙니다. v0.6.x에서 password 로그인 + server-side session
 (httpOnly cookie)은 추가되었지만, OAuth/SSO/JWT access token/RBAC 같은 정식 권한
-시스템은 포함하지 않으며 backend는 localhost 바인딩을 전제로 합니다. write endpoint는
-아직 session이 아니라 user_id로 인가하고 frontend가 로그인 게이트 역할을 합니다(비-
-localhost 이전 시 hardening 예정 — `archive/V0_6_3_AUTH_HARDENING_SCOPE.md`).
+시스템은 포함하지 않습니다. v1.0.0부터 write endpoint(post/comment/bookmark/follow/
+notification/account profile·deactivate)는 request body/query의 `user_id`가 아니라
+**session cookie에서 도출한 현재 로그인 user**로 인가합니다. 로그인 없이 호출하면
+401, 다른 user의 리소스에 쓰면 403입니다. backend가 localhost 바인딩을 벗어나는
+배포에서는 `SESSION_COOKIE_SECURE=true` + HTTPS 종단 + `CORS_ALLOW_ORIGINS`를 배포
+host에 맞게 설정해야 합니다(아래 5절).
 
 실행 mode는 크게 세 가지입니다.
 
@@ -123,6 +126,18 @@ APP_ENV=local
 DATABASE_URL=postgresql+psycopg://USER:PASSWORD@localhost:5432/feed_dev
 ```
 
+(v1.0.0) 로컬 dev에서는 아래 두 값을 생략해도 기본값(localhost 전제, secure
+cookie 끔, Vite dev server origin 허용)으로 동작합니다. backend를 localhost
+바인딩 밖(원격 서버, 컨테이너 뒤 reverse proxy 등)으로 옮길 때만 명시적으로
+설정합니다.
+
+```text
+# HTTPS로 서빙할 때만 true (http에서 true면 브라우저가 쿠키를 보내지 않음)
+SESSION_COOKIE_SECURE=false
+# 배포된 frontend의 정확한 scheme+host+port, 쉼표로 여러 origin 구분 가능
+CORS_ALLOW_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
 Migration 적용, seed 삽입, backend 실행:
 
 ```bash
@@ -134,8 +149,10 @@ python -m uvicorn app.main:app --reload
 API 기본 URL: `http://127.0.0.1:8000`.
 
 > seed user의 초기 password는 handle과 같습니다(`ari`/`mika`/`nova`). import로 생성된
-> paired user의 초기 password는 generated import user handle입니다. seed의 password
-> 부여는 write-once라 재-seed로 덮이지 않습니다. 분실 시 운영자 재설정은
+> paired user의 초기 password는 (v1.0.0부터) 예측 불가능한 임의 문자열이라 알 수
+> 없습니다 — import user로 로그인하려면 운영자가 먼저 password를 부여해야 합니다.
+> seed의 password 부여는 write-once라 재-seed로 덮이지 않습니다. 분실 시 또는
+> import user에게 처음 password를 부여할 때는
 > `python -m scripts.reset_password --user <id-or-handle> --password <new>`를 씁니다(v0.6.3).
 
 간단 확인:
@@ -460,11 +477,21 @@ Table/column 관련 오류가 나면 backend 폴더에서 `alembic upgrade head`
 `python -m scripts.check_comments`, `python -m scripts.check_bookmarks`,
 `python -m scripts.check_notifications`는 FastAPI/Starlette `TestClient`를 사용합니다.
 현재 Python/Starlette 조합에서 `httpx2` package를 요구하는 경우, 테스트 환경에 해당
-package를 설치한 뒤 실행합니다.
+package를 설치한 뒤 실행합니다(`requirements.txt`에 이미 포함).
+
+### 회귀 스크립트가 401/403을 반환함 (v1.0.0)
+write/self-scoped endpoint를 쓰는 회귀 스크립트(`check_comments`,
+`check_bookmarks`, `check_notifications`, `check_account_identity`,
+`check_account_profile`, `check_account_lifecycle`)는 더 이상 `user_id`를
+보내지 않고 `scripts/auth_test_utils.py`의 `set_known_password` + `login`으로
+실제 `/api/auth/login` 세션을 받아 호출합니다. 직접 새 스크립트를 작성한다면 같은
+헬퍼로 행위자를 바꿀 때마다 다시 로그인해야 합니다(`TestClient`는 쿠키 하나만
+유지).
 
 ### Seed data 미삽입
-로그인 화면의 backend user 목록 또는 feed가 비어 있으면
-`python -m app.services.seed`를 실행했는지 확인합니다.
+seed user(`ari`/`mika`/`nova`)로 로그인이 안 되거나 Home Feed가 비어 있으면
+`python -m app.services.seed`를 실행했는지 확인합니다. (v1.0.0부터 로그인 화면은
+전체 user 목록을 더 이상 보여주지 않으므로, handle/id를 직접 입력해 로그인합니다.)
 
 ### 로그인 실패 / password 분실 (v0.6.0~v0.6.3)
 seed user의 초기 password는 handle과 같습니다(`ari`/`mika`/`nova`). password를 바꾼 뒤
@@ -522,6 +549,8 @@ terminal log의 대체 port 또는 backend 실행 옵션을 확인합니다.
 
 - `../README.md`
 - `RELEASE_0_0_CHECKLIST.md`
+- `V1_0_0_RELEASE_SCOPE.md` (session 인가 / cookie / CORS 하드닝 must-do)
+- `ACCOUNT_MANAGEMENT.md` (계정 관련 모든 명령어)
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`
 - `../data/external_posts/README.md`
 - `ROADMAP.md`

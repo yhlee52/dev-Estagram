@@ -1,9 +1,10 @@
 # feed-prototype 문서
 
-현재 릴리즈: `v0.6.4` (인증 & 멀티유저 — Auth & Multi-user 테마 **완료**). 이로써
-v1.0.0 전제(v0.1 읽기확장 + v0.3 ingestion + v0.6 인증)가 갖춰져, "배포 가능한 제품
-기준선"인 v1.0.0 마일스톤을 **개시**했습니다(태그 전 하드닝/안정화는
-`V1_0_0_RELEASE_SCOPE.md`).
+현재 릴리즈: `v1.0.0`(배포 가능한 제품 기준선). v1.0.0 전제(v0.1 읽기확장 + v0.3
+ingestion + v0.6 인증)가 갖춰진 뒤 보안 하드닝 Must-do(session 기반 write 인가,
+cookie `secure`/CORS 환경설정, 로그인 화면 user 목록 제거, import-user password
+정책)와 Stabilization(회귀 스크립트 12개 실행 확인, `APP_VERSION` bump)을 모두
+**완료**했습니다. 상세는 `V1_0_0_RELEASE_SCOPE.md`를 참고하세요.
 
 v0.6.x 요약: v0.6.0 password 로그인 + server-side session(httpOnly cookie, active
 user를 세션 user 조회로 대체), v0.6.1 User:Account 1:1 identity 운영 정책 고정, v0.6.2
@@ -34,12 +35,14 @@ user를 세션 user 조회로 대체), v0.6.1 User:Account 1:1 identity 운영 �
 
 ## 릴리즈 운영 문서 (current release 기준, v1.0.0 안정화 단계까지 유지)
 
-파일명은 v0.0.0 시점 이름을 유지하지만, 내용은 항상 현재 릴리즈(`v0.6.4`) 기준으로
-갱신됩니다. v0.0.0 시점 historical 사본은 `archive/`에 보관합니다.
+파일명은 v0.0.0 시점 이름을 유지하지만, 내용은 항상 진행 중인 작업 기준(현재
+v1.0.0 안정화 단계, session 기반 write 인가 반영됨)으로 갱신됩니다. v0.0.0 시점
+historical 사본은 `archive/`에 보관합니다.
 
-- `RELEASE_0_0_RUNBOOK.md`: 현재 릴리즈 기준 local 실행 재현 runbook
-  (mock / API(로그인+세션) / 외부 데이터 — 단일 파일 CLI·HTTP·디렉터리 일괄 처리·Watch·managed storage)
-- `RELEASE_0_0_CHECKLIST.md`: 현재 릴리즈 기준 릴리즈 직전 체크리스트
+- `RELEASE_0_0_RUNBOOK.md`: v1.0.0 기준 local 실행 재현 runbook
+  (mock / API(로그인+세션, session 기반 write 인가) / 외부 데이터 — 단일 파일 CLI·
+  HTTP·디렉터리 일괄 처리·Watch·managed storage)
+- `RELEASE_0_0_CHECKLIST.md`: v1.0.0 기준 릴리즈 직전 체크리스트
 
 ## Archive (완료 테마 / historical 참고)
 

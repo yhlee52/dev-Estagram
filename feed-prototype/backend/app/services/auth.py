@@ -7,6 +7,7 @@ import secrets
 from fastapi import HTTPException, Request, Response, status
 from sqlmodel import Session, select
 
+from app.core.config import get_settings
 from app.models.account import Account
 from app.models.auth import UserCredential, UserSession
 from app.models.user import User
@@ -72,6 +73,18 @@ def ensure_user_password(session: Session, user_id: str, password: str) -> None:
     session.add(UserCredential(user_id=user_id, password_hash=hash_password(password)))
 
 
+def generate_random_password() -> str:
+    """An unguessable initial password for accounts not meant to log in.
+
+    Used for import-created paired users (v1.0.0): they exist only to own
+    posts via FK and have no legitimate interactive login flow, so a
+    deterministic password (e.g. the generated handle) would be a guessable
+    credential. An operator can still issue a real password via
+    scripts/reset_password.py if a human needs to take the account over.
+    """
+    return secrets.token_urlsafe(24)
+
+
 def find_user_by_login(session: Session, login: str) -> User | None:
     normalized = login.strip().lower()
     if not normalized:
@@ -113,7 +126,7 @@ def set_session_cookie(response: Response, auth_session: UserSession) -> None:
         auth_session.id,
         max_age=int(SESSION_TTL.total_seconds()),
         httponly=True,
-        secure=False,
+        secure=get_settings().session_cookie_secure,
         samesite="lax",
     )
 

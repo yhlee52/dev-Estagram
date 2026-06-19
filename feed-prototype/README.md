@@ -2,25 +2,23 @@
 
 `feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
 
-현재 릴리즈: `v0.5.3` (협업 — Annotation & Collaboration 테마 완료). v0.5.0은
-post별 평면 댓글, v0.5.1은 북마크(+ 비공개 메모 · Me 탭 북마크/Following 목록),
-v0.5.2는 in-app 알림/mention 수신(파생 알림 + user별 읽음 워터마크 +
-`/notifications`)을 추가했고, v0.5.3은 협업 표면 UX polish와 문서/검증 절차를
-정리한 wrap-up 슬롯입니다.
+현재 릴리즈: `v1.0.0` (배포 가능한 제품 기준선). v0.1.x(탐색과 발견) ~ v0.6.x(인증 &
+멀티유저) 테마가 모두 완료되어 v1.0.0 전제가 갖춰졌고, v1.0.0 자체는 **새 기능 없이**
+write endpoint를 session 기반으로 인가하는 보안 하드닝·안정화 릴리즈입니다(상세는
+`docs/V1_0_0_RELEASE_SCOPE.md`). 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
 
 이 릴리즈는 local/internal prototype 기준점입니다. generic SNS-like post와 외부
-import된 분석/리포트형 post를 데모할 수 있지만 production-ready 제품은 아닙니다.
-v0.0.0 기준선 위에 v0.1.x(탐색과 발견), v0.2.x(레이아웃 & UI), v0.3.x(Ingestion
-신뢰성), v0.4.x(메타데이터 일급화 & 트리아지), v0.5.x(협업) 테마가 순서대로
-쌓였습니다. 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.
+import된 분석/리포트형 post를 데모할 수 있고, password 로그인 + server-side session
+기반 write 인가가 적용되어 있지만, OAuth/SSO/JWT/RBAC 같은 정식 권한 시스템을 갖춘
+production-ready 제품은 아닙니다.
 
 ## 포함된 기능
 
 - static frontend data와 localStorage overlay를 사용하는 mock-mode local feed
 - FastAPI와 PostgreSQL을 사용하는 API-mode feed
-- prototype user selection을 위한 API-mode local user/account registration
+- password 로그인 + server-side session(httpOnly cookie) 기반 API-mode user 가입/인증 (v0.6.0)
 - API mode follow/unfollow
-- API mode personal post create/edit/delete
+- API mode personal post create/edit/delete — 행위자는 항상 로그인 session에서 도출(v1.0.0)
 - Post tags, metadata, asset descriptors
 - `external_id` upsert 기반 external JSON post package import
 - keyword, tag, metadata key/value, asset type, account, own posts 기준 API-mode filter/search
@@ -50,18 +48,29 @@ v0.0.0 기준선 위에 v0.1.x(탐색과 발견), v0.2.x(레이아웃 & UI), v0.
   post/comment를 `/notifications`에서 확인하고 모두 읽음 처리. 알림 item은 파생하고
   읽음 상태만 user별 워터마크로 저장합니다. **API mode 전용** (v0.5.2)
 - Collaboration UX wrap-up: `/notifications` Unread empty state와 Me 탭 Bookmarks
-  empty copy를 정리하고 현재 릴리즈 문서/검증 절차를 갱신했습니다. (v0.5.3)
+  empty copy 정리, 협업 표면 문서/검증 절차 정비 (v0.5.3)
+- 인증 & 멀티유저: password 로그인 + server-side session(httpOnly cookie, v0.6.0),
+  User:Account 1:1 identity 운영 정책(v0.6.1), 내 account profile self-service
+  (display name/bio/avatar, v0.6.2), 운영자 password reset CLI + 세션 만료 시 로그인
+  복귀(v0.6.3), 계정 soft deactivation(post 보존 + 운영자 재활성화, v0.6.4). 상세 명령어
+  모음은 `docs/ACCOUNT_MANAGEMENT.md` (v0.6.x)
+- 보안 하드닝(v1.0.0, 새 기능 아님): write endpoint(posts/comments/bookmarks/
+  notifications/follows/accounts)가 더 이상 request body/query의 `user_id`를 신뢰하지
+  않고 로그인 session에서 행위자를 도출, cookie `secure`/CORS allow-origin 환경설정
+  분리, 로그인 화면의 전체 user 목록 노출 제거, import로 생성되는 user의 초기
+  password를 예측 불가능한 임의 값으로 변경
 
 ## 포함되지 않은 기능
 
-- production authentication 또는 authorization
-- 현재 릴리즈(v0.5.3)의 password login, JWT, session, OAuth, role
-  (password login + server-side session은 v0.6.0 scope)
+- OAuth / SSO / JWT / RBAC 같은 정식 권한 시스템(password 로그인 + server-side
+  session 기반 write 인가는 v0.6.x~v1.0.0에서 제공)
+- User:Account 1:N (1:1 고정, v0.6.1 운영 정책)
 - real file upload, S3 upload, UI/HTTP asset 업로드 (v0.3.3 asset managed storage 복사는 opt-in으로 상대 로컬 경로 파일에 한해 제공)
 - OS 레벨 scheduler/데몬 (v0.3.2의 단순 폴링 watch와 일괄 처리 CLI는 제공)
 - watchdog/inotify 등 OS 파일시스템 이벤트 기반 watch (단순 폴링만)
 - advanced search, semantic search, vector search, dashboard, analytics
 - equipment/report-specific core model name
+- 신규 기능 일반(v1.0.0은 하드닝/안정화 전용 — 새 기능은 v1.1.x부터)
 
 ## 환경 설정
 
@@ -86,7 +95,10 @@ cd backend
 copy .env.example .env
 ```
 
-local PostgreSQL database에 맞게 `DATABASE_URL`을 설정합니다.
+local PostgreSQL database에 맞게 `DATABASE_URL`을 설정합니다. localhost를 벗어나는
+배포에서는 `SESSION_COOKIE_SECURE`(HTTPS 전용 cookie)와 `CORS_ALLOW_ORIGINS`(허용할
+frontend origin)도 함께 설정합니다 — 둘 다 `.env.example`에 주석으로 설명되어 있고
+기본값은 localhost dev 기준입니다.
 
 `.env.example`을 복사해 `.env`를 만들고, 실제 `.env`는 commit하지 않습니다. Vite 환경변수인 `VITE_DATA_SOURCE`, `VITE_API_BASE_URL`을 변경한 뒤에는 frontend dev server를 재시작합니다. External import를 실행하기 전에는 `backend/.env`의 `DATABASE_URL`이 어느 DB를 가리키는지 먼저 확인합니다.
 
@@ -125,7 +137,8 @@ local-feed-local-accounts
 
 ## API Mode 실행
 
-API mode는 PostgreSQL과 FastAPI backend가 필요합니다.
+API mode는 PostgreSQL과 FastAPI backend가 필요하고, 로그인(password + server-side
+session)이 필수입니다.
 
 Backend setup:
 
@@ -137,10 +150,10 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-`backend/.env` 수정:
+`backend/.env` 수정(local DB 자격증명으로 교체):
 
 ```text
-DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/feed_prototype
+DATABASE_URL=postgresql+psycopg://<user>:<password>@localhost:5432/feed_dev
 ```
 
 Migration, seed, backend 실행:
@@ -150,6 +163,9 @@ alembic upgrade head
 python -m app.services.seed
 uvicorn app.main:app --reload
 ```
+
+`seed`는 로그인용 user(`ari`/`mika`/`nova`, 초기 password=handle)와 1:1 account,
+데모 post를 만듭니다. 이미 있으면 덮어쓰지 않습니다.
 
 Frontend setup:
 
@@ -171,12 +187,28 @@ VITE_API_BASE_URL=http://127.0.0.1:8000
 npm run dev
 ```
 
-API user selection은 prototype state입니다. login 또는 authentication이 아닙니다.
-v0.6.0에서 password login + server-side session으로 교체할 예정입니다.
+API base host와 앱을 여는 host를 맞추세요(둘 다 `localhost` 또는 둘 다 `127.0.0.1`).
+다르면 세션 cookie(SameSite=Lax)가 cross-site로 취급돼 드랍되고 로그인이 유지되지
+않습니다.
+
+로그인 화면에서 seed user(예: id/handle `ari`, password `ari`)로 로그인하거나
+"Register new API user"로 새 user+1:1 account를 만듭니다. curl로 확인하려면:
+
+```bash
+curl -c cookies.txt -X POST http://127.0.0.1:8000/api/auth/login \
+  -H "Content-Type: application/json" --data '{"login":"ari","password":"ari"}'
+curl -b cookies.txt http://127.0.0.1:8000/api/auth/session
+```
+
+가입/로그인/profile 수정/password 변경/계정 비활성화·재활성화 등 모든 계정 관련
+명령어는 `docs/ACCOUNT_MANAGEMENT.md`에 정리되어 있습니다.
 
 ## External Import Mode 실행
 
-External import는 backend CLI 작업 흐름입니다. JSON post package를 읽고 generic `Account`, `Post`, `Asset`, `Metadata` data를 PostgreSQL에 upsert합니다.
+External import는 backend CLI 작업 흐름입니다. JSON post package를 읽고 generic `Account`, `Post`, `Asset`, `Metadata` data를 PostgreSQL에 upsert합니다. 이 경로는
+session 로그인 대상이 아닙니다(운영자/ingestion 도구로 간주, v1.0.0에서도 유지) —
+import로 새로 생성되는 paired user는 예측 불가능한 임의 password를 받고 로그인
+용도가 아닙니다.
 
 Dry-run:
 
@@ -214,8 +246,9 @@ curl -X "POST" "http://127.0.0.1:8000/api/imports" \
 payload를 다시 보내면 `external_id` 기준 upsert로 중복 없이 갱신됩니다.
 
 선택적 보호: `backend/.env`에 `IMPORT_API_TOKEN`을 설정하면 요청에
-`-H "X-Import-Token: <token>"`이 일치해야 합니다(미설정 시 검사 없음). 정식 인증은
-아니며 backend는 localhost 바인딩을 전제로 합니다(인증은 v0.6.x).
+`-H "X-Import-Token: <token>"`이 일치해야 합니다(미설정 시 검사 없음). session 로그인
+기반 인가가 아닌 별도의 shared-token 보호이며, backend는 localhost 바인딩을
+전제로 합니다.
 
 상세 guide:
 
@@ -326,9 +359,11 @@ recipe, chamber, status, severity 같은 report-like value는 sample metadata va
 ## 릴리즈 문서
 
 ```text
+docs/V1_0_0_RELEASE_SCOPE.md
+docs/ACCOUNT_MANAGEMENT.md
 docs/RELEASE_0_0_RUNBOOK.md
-docs/EXTERNAL_POST_PACKAGE_GUIDE.md
 docs/RELEASE_0_0_CHECKLIST.md
+docs/EXTERNAL_POST_PACKAGE_GUIDE.md
 docs/README.md
 ```
 
@@ -338,4 +373,5 @@ handoff 전에 실행합니다.
 
 ```bash
 npm run build
+npm run lint
 ```

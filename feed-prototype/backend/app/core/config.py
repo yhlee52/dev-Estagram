@@ -32,11 +32,23 @@ class Settings(BaseSettings):
     managed_assets_dir: Path = BACKEND_DIR.parent / "public" / "assets" / "managed"
     managed_assets_url_prefix: str = "/assets/managed"
 
+    # Session cookie / CORS hardening (v1.0.0). Both default to the localhost
+    # dev posture (cookie not secure, frontend dev server origins allowed) and
+    # must be set explicitly for any non-localhost deployment: secure=True
+    # requires the backend to be served over HTTPS, and allow_origins must list
+    # the deployed frontend's exact scheme+host+port.
+    session_cookie_secure: bool = False
+    cors_allow_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    @property
+    def cors_allow_origins_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_allow_origins.split(",") if origin.strip()]
 
 
 @lru_cache

@@ -74,10 +74,5 @@ export const updatePost = (
 ): Promise<ApiPostWithAssets> =>
   apiPatch<ApiPostWithAssets>(`/api/posts/${encodeURIComponent(postId)}`, payload);
 
-export const deletePost = (postId: string, userId: string): Promise<void> => {
-  const searchParams = new URLSearchParams({ user_id: userId });
-
-  return apiDelete<void>(
-    `/api/posts/${encodeURIComponent(postId)}?${searchParams.toString()}`,
-  );
-};
+export const deletePost = (postId: string): Promise<void> =>
+  apiDelete<void>(`/api/posts/${encodeURIComponent(postId)}`);

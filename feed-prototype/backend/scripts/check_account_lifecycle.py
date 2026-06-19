@@ -29,9 +29,9 @@ from app.models.post import Post
 from app.services.import_external_posts import (
     generated_account_id,
     generated_user_id,
-    generated_user_handle,
 )
 from scripts import reactivate_user
+from scripts.auth_test_utils import login, set_known_password
 from scripts.cleanup_utils import delete_test_users
 
 
@@ -44,7 +44,7 @@ POST_EXT = f"check-lifecycle-post-{SUFFIX}"
 
 USER = generated_user_id(ACCT_EXT)
 ACCOUNT = generated_account_id(ACCT_EXT)
-PW = generated_user_handle(ACCT_EXT)  # import sets initial password = generated handle
+PW = "check-lifecycle-password"  # set directly via DB after import (random by default)
 KEEP_USER = generated_user_id(KEEP_EXT)
 NEW_USER = generated_user_id(NEW_EXT)
 
@@ -84,12 +84,17 @@ def run_checks(client: TestClient) -> list[str]:
     created = client.post("/api/imports", json=payload())
     check(created.status_code == 200, f"seed import returns 200 (got {created.status_code})")
 
+    for user_id in ALL_USERS:
+        set_known_password(user_id, PW)
+
     # Pre-deactivation: login works and issues a session.
-    login_before = client.post("/api/auth/login", json={"login": USER, "password": PW})
+    login_before = login(client, USER, PW)
     check(login_before.status_code == 200, f"login works before deactivation (got {login_before.status_code})")
     check(client.get("/api/auth/session").status_code == 200, "session readable before deactivation")
 
-    # Existing follow that must survive deactivation.
+    # Existing follow that must survive deactivation. Follow is self-scoped, so
+    # the keep-follower must be the active session.
+    check(login(client, KEEP_USER, PW).status_code == 200, "keep-follower logs in")
     client.post(f"/api/users/{KEEP_USER}/follows/{ACCOUNT}")
     keep_before = client.get(f"/api/users/{KEEP_USER}/follows").json()
     check(ACCOUNT in keep_before["following_account_ids"], "keep-follower follows account before deactivation")
@@ -107,11 +112,13 @@ def run_checks(client: TestClient) -> list[str]:
     )
 
     # Ownership: a different user cannot deactivate this account.
-    denied = client.post(f"/api/accounts/{ACCOUNT}/deactivate", json={"user_id": NEW_USER})
+    check(login(client, NEW_USER, PW).status_code == 200, "non-owner logs in")
+    denied = client.post(f"/api/accounts/{ACCOUNT}/deactivate")
     check(denied.status_code == 403, f"non-owner deactivate is 403 (got {denied.status_code})")
 
     # Owner deactivates.
-    deactivated = client.post(f"/api/accounts/{ACCOUNT}/deactivate", json={"user_id": USER})
+    check(login(client, USER, PW).status_code == 200, "owner logs back in")
+    deactivated = client.post(f"/api/accounts/{ACCOUNT}/deactivate")
     check(deactivated.status_code == 200, f"owner deactivate returns 200 (got {deactivated.status_code})")
     check(
         deactivated.status_code == 200 and deactivated.json().get("deactivated_at") is not None,
@@ -119,7 +126,7 @@ def run_checks(client: TestClient) -> list[str]:
     )
 
     # Login blocked + prior session revoked.
-    login_after = client.post("/api/auth/login", json={"login": USER, "password": PW})
+    login_after = login(client, USER, PW)
     check(login_after.status_code == 403, f"login blocked after deactivation (got {login_after.status_code})")
     check(client.get("/api/auth/session").status_code == 401, "prior session revoked after deactivation")
 
@@ -143,15 +150,18 @@ def run_checks(client: TestClient) -> list[str]:
     )
 
     # Existing follow preserved; new follow blocked.
+    check(login(client, KEEP_USER, PW).status_code == 200, "keep-follower logs back in")
     keep_after = client.get(f"/api/users/{KEEP_USER}/follows").json()
     check(ACCOUNT in keep_after["following_account_ids"], "existing follow preserved after deactivation")
+
+    check(login(client, NEW_USER, PW).status_code == 200, "new-follower logs in")
     new_follow = client.post(f"/api/users/{NEW_USER}/follows/{ACCOUNT}")
     check(new_follow.status_code == 409, f"new follow of deactivated account is 409 (got {new_follow.status_code})")
 
     # Operator reactivation restores login + discovery.
     code = reactivate_user.main(["--user", USER])
     check(code == 0, f"reactivate CLI exits 0 (got {code})")
-    login_reactivated = client.post("/api/auth/login", json={"login": USER, "password": PW})
+    login_reactivated = login(client, USER, PW)
     check(login_reactivated.status_code == 200, f"login works after reactivation (got {login_reactivated.status_code})")
     listed_reactivated = client.get("/api/accounts").json()
     check(

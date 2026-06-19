@@ -123,7 +123,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     setSubmitError('');
 
     try {
-      await createComment(postId, { user_id: activeApiUserId, text });
+      await createComment(postId, { text });
       setDraft('');
       reload();
     } catch (error) {
@@ -155,7 +155,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     setEditError('');
 
     try {
-      await updateComment(commentId, { user_id: activeApiUserId, text });
+      await updateComment(commentId, { text });
       cancelEdit();
       reload();
     } catch (error) {
@@ -174,7 +174,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     setActionError('');
 
     try {
-      await deleteComment(pendingDeleteId, activeApiUserId);
+      await deleteComment(pendingDeleteId);
       setPendingDeleteId(null);
       reload();
     } catch (error) {
