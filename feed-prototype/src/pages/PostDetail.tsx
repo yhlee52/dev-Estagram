@@ -172,7 +172,7 @@ export default function PostDetail() {
     setDeleteError('');
 
     try {
-      await deletePost(postId, activeApiUserId);
+      await deletePost(postId);
       navigate(`/accounts/${account.id}`, { replace: true });
     } catch (deletePostError) {
       setDeleteError(getDeletePostErrorMessage(deletePostError));

@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { login } from '../api/authApi';
 import { ApiClientError, ApiNetworkError } from '../api/client';
-import type { ApiUser, ApiUserRegistrationResponse } from '../api/types';
-import { getUsers, registerApiUser } from '../api/usersApi';
+import type { ApiUserRegistrationResponse } from '../api/types';
+import { registerApiUser } from '../api/usersApi';
 import { setActiveApiUser } from '../auth/apiActiveUser';
 import { getApiBaseUrl } from '../config/apiConfig';
 
@@ -20,14 +20,6 @@ interface RegistrationFormState {
 const API_HANDLE_PATTERN = /^[a-z0-9_-]{3,32}$/;
 const API_HANDLE_REQUIREMENTS =
   'Use 3-32 lowercase letters, numbers, underscores, or hyphens.';
-
-function getUserEntryErrorMessage(error: unknown): string {
-  if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
-  }
-
-  return 'Could not load backend users. Check the API server and try again.';
-}
 
 function normalizeApiHandleCandidate(input: string): string {
   return input.trim().toLowerCase();
@@ -98,44 +90,10 @@ export default function ApiUserEntry() {
     });
   const [registrationResult, setRegistrationResult] =
     useState<ApiUserRegistrationResponse | null>(null);
-  const [users, setUsers] = useState<ApiUser[]>([]);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState('');
   const [registrationError, setRegistrationError] = useState('');
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadUsers = async () => {
-      setIsLoadingUsers(true);
-      setError('');
-
-      try {
-        const apiUsers = await getUsers();
-
-        if (isMounted) {
-          setUsers(apiUsers);
-        }
-      } catch (loadError) {
-        if (isMounted) {
-          setUsers([]);
-          setError(getUserEntryErrorMessage(loadError));
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingUsers(false);
-        }
-      }
-    };
-
-    void loadUsers();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -446,9 +404,9 @@ export default function ApiUserEntry() {
             <button
               type="submit"
               className="h-11 w-full rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-400"
-              disabled={isSubmitting || isLoadingUsers}
+              disabled={isSubmitting}
             >
-                {isSubmitting ? 'Checking...' : isLoadingUsers ? 'Loading users...' : 'Continue'}
+                {isSubmitting ? 'Checking...' : 'Continue'}
             </button>
           </form>
 
@@ -459,47 +417,6 @@ export default function ApiUserEntry() {
           >
             Register new API user
           </button>
-
-          <div className="mt-5 space-y-2">
-            <p className="text-xs font-bold uppercase text-neutral-400">
-              Available backend users
-            </p>
-
-            {isLoadingUsers ? (
-              <p className="rounded-md bg-neutral-100 px-3 py-2 text-sm font-semibold text-neutral-600">
-                Loading backend users...
-              </p>
-            ) : null}
-
-            {!isLoadingUsers && !error && users.length === 0 ? (
-              <p className="rounded-md bg-neutral-100 px-3 py-2 text-sm font-semibold text-neutral-600">
-                No seeded backend users are available.
-              </p>
-            ) : null}
-
-            {users.length > 0 ? (
-              <div className="max-h-56 space-y-2 overflow-auto pr-1">
-                {users.map((user) => (
-                  <button
-                    key={user.id}
-                    type="button"
-                    className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-left transition hover:bg-neutral-100"
-                    onClick={() => {
-                      setEntryValue(user.handle);
-                      setError('');
-                    }}
-                  >
-                    <p className="truncate text-sm font-bold text-neutral-950">
-                      {user.display_name}
-                    </p>
-                    <p className="truncate text-xs font-medium text-neutral-500">
-                      @{user.handle} / {user.id}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
         </section>
       </main>
     </div>

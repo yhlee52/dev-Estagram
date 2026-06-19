@@ -148,7 +148,7 @@ export default function FeedCard({ item }: FeedCardProps) {
     setCommentError('');
 
     try {
-      const created = await createComment(post.id, { user_id: activeApiUserId, text });
+      const created = await createComment(post.id, { text });
       setCommentDraft('');
       setCommentCount((count) => count + 1);
       setPreviewComments((items) => [created, ...items]);

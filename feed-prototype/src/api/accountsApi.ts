@@ -3,7 +3,6 @@ import { buildPostFilterQuery } from "./postFilterQuery";
 import { getActiveApiUserId } from "../auth/apiActiveUser";
 import type {
   ApiAccount,
-  ApiAccountDeactivatePayload,
   ApiAccountProfileUpdatePayload,
   ApiPostWithAssets,
 } from "./types";
@@ -21,14 +20,8 @@ export const updateAccountProfile = (
 ): Promise<ApiAccount> =>
   apiPatch<ApiAccount>(`/api/accounts/${encodeURIComponent(accountId)}`, payload);
 
-export const deactivateAccount = (
-  accountId: string,
-  payload: ApiAccountDeactivatePayload,
-): Promise<ApiAccount> =>
-  apiPost<ApiAccount>(
-    `/api/accounts/${encodeURIComponent(accountId)}/deactivate`,
-    payload,
-  );
+export const deactivateAccount = (accountId: string): Promise<ApiAccount> =>
+  apiPost<ApiAccount>(`/api/accounts/${encodeURIComponent(accountId)}/deactivate`);
 
 export const getAccountPosts = (
   accountId: string,

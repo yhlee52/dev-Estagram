@@ -166,11 +166,9 @@ function getDeactivateErrorMessage(error: unknown): string {
 
 function DeactivateAccountPanel({
   account,
-  userId,
   onDeactivated,
 }: {
   account: Account;
-  userId: string;
   onDeactivated: () => void;
 }) {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -182,7 +180,7 @@ function DeactivateAccountPanel({
     setError('');
 
     try {
-      await deactivateAccount(account.id, { user_id: userId });
+      await deactivateAccount(account.id);
       // Server has revoked our session; sign out so the login gate takes over.
       onDeactivated();
     } catch (deactivateError) {
@@ -255,11 +253,9 @@ function NewPostButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
 
 function AccountProfileEditor({
   account,
-  userId,
   onUpdated,
 }: {
   account: Account;
-  userId: string;
   onUpdated: (account: Account) => void;
 }) {
   const [displayName, setDisplayName] = useState(account.displayName);
@@ -295,7 +291,6 @@ function AccountProfileEditor({
 
     try {
       const updated = await updateAccountProfile(account.id, {
-        user_id: userId,
         display_name: trimmedDisplayName,
         bio: bio.trim() || null,
         avatar_url: avatarUrl.trim() || null,
@@ -675,7 +670,6 @@ function ApiMePage() {
       {account ? (
         <AccountProfileEditor
           account={account}
-          userId={activeApiUserId}
           onUpdated={handleAccountUpdated}
         />
       ) : null}
@@ -685,7 +679,6 @@ function ApiMePage() {
       {account ? (
         <DeactivateAccountPanel
           account={account}
-          userId={activeApiUserId}
           onDeactivated={clearActiveApiUser}
         />
       ) : null}
@@ -703,7 +696,6 @@ function ApiMePage() {
                 <MyPostCard
                   key={item.post.id}
                   item={item}
-                  userId={activeApiUserId}
                   onDeleted={handlePostDeleted}
                 />
               ))}

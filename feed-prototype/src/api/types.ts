@@ -37,14 +37,9 @@ export interface ApiAccount {
 }
 
 export interface ApiAccountProfileUpdatePayload {
-  user_id: string;
   display_name?: string | null;
   bio?: string | null;
   avatar_url?: string | null;
-}
-
-export interface ApiAccountDeactivatePayload {
-  user_id: string;
 }
 
 export interface ApiUserRegistrationResponse {
@@ -100,7 +95,6 @@ export interface ApiPostAssetPayload {
 }
 
 export interface ApiPostCreatePayload {
-  user_id: string;
   title: string;
   text: string;
   tags?: string[];
@@ -109,7 +103,6 @@ export interface ApiPostCreatePayload {
 }
 
 export interface ApiPostUpdatePayload {
-  user_id: string;
   title?: string;
   text?: string;
   tags?: string[];
@@ -231,7 +224,6 @@ export interface ApiCommentListResponse {
 }
 
 export interface ApiCommentCreatePayload {
-  user_id: string;
   text: string;
 }
 
