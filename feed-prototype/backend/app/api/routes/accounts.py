@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, col, select
 
-from app.api.deps import get_session
+from app.api.deps import get_current_user, get_session
 from app.models.account import Account, utc_now
 from app.models.asset import PostAsset
 from app.models.post import Post
+from app.models.user import User
 from app.schemas.feed import (
-    AccountDeactivateRequest,
     AccountProfileUpdate,
     AccountRead,
     PostAssetRead,
@@ -48,12 +48,13 @@ def update_account_profile(
     account_id: str,
     profile_update: AccountProfileUpdate,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> Account:
     account = session.get(Account, account_id)
     if account is None:
         raise HTTPException(status_code=404, detail="Account not found")
 
-    if account.user_id != profile_update.user_id:
+    if account.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Account is not owned by user")
 
     if profile_update.display_name is not None:
@@ -74,8 +75,8 @@ def update_account_profile(
 @router.post("/{account_id}/deactivate", response_model=AccountRead)
 def deactivate_account(
     account_id: str,
-    deactivate_request: AccountDeactivateRequest,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> Account:
     """Soft-deactivate the owner's 1:1 account (v0.6.4).
 
@@ -89,7 +90,7 @@ def deactivate_account(
     if account is None:
         raise HTTPException(status_code=404, detail="Account not found")
 
-    if account.user_id != deactivate_request.user_id:
+    if account.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Account is not owned by user")
 
     if account.deactivated_at is None:

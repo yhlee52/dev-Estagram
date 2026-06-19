@@ -3,7 +3,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from sqlmodel import Session, select
 
-from app.api.deps import get_session
+from app.api.deps import get_current_user, get_session
 from app.models.bookmark import Bookmark, utc_now
 from app.models.post import Post
 from app.models.user import User
@@ -38,9 +38,11 @@ from app.services.post_filters import (
 router = APIRouter(tags=["bookmarks"])
 
 
-def _require_user(session: Session, user_id: str) -> None:
-    if session.get(User, user_id) is None:
-        raise HTTPException(status_code=404, detail="User not found")
+def _require_self(current_user: User, user_id: str) -> None:
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=403, detail="Cannot access another user's bookmarks"
+        )
 
 
 def _require_post(session: Session, post_id: str) -> None:
@@ -54,8 +56,9 @@ def _require_post(session: Session, post_id: str) -> None:
 def list_user_bookmark_ids(
     user_id: str,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> UserBookmarkIdsResponse:
-    _require_user(session, user_id)
+    _require_self(current_user, user_id)
     return UserBookmarkIdsResponse(
         user_id=user_id,
         post_ids=get_bookmarked_post_ids(session, user_id),
@@ -80,8 +83,9 @@ def list_user_bookmarks(
     cursor: str | None = Query(default=None),
     limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> PaginatedBookmarks:
-    _require_user(session, user_id)
+    _require_self(current_user, user_id)
 
     # The bookmark list is just "the posts this user bookmarked" filtered/sorted
     # with the regular post machinery (v0.4.x facets/sorts reused).
@@ -151,7 +155,9 @@ def get_user_bookmark(
     user_id: str,
     post_id: str,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> Bookmark:
+    _require_self(current_user, user_id)
     bookmark = get_bookmark(session, user_id, post_id)
     if bookmark is None:
         raise HTTPException(status_code=404, detail="Bookmark not found")
@@ -167,8 +173,9 @@ def add_bookmark(
     post_id: str,
     body: BookmarkNoteBody = Body(default_factory=BookmarkNoteBody),
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> Bookmark:
-    _require_user(session, user_id)
+    _require_self(current_user, user_id)
     _require_post(session, post_id)
 
     existing = get_bookmark(session, user_id, post_id)
@@ -201,7 +208,9 @@ def update_bookmark_note(
     post_id: str,
     body: BookmarkNoteBody = Body(default_factory=BookmarkNoteBody),
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> Bookmark:
+    _require_self(current_user, user_id)
     bookmark = get_bookmark(session, user_id, post_id)
     if bookmark is None:
         raise HTTPException(status_code=404, detail="Bookmark not found")
@@ -221,7 +230,9 @@ def remove_bookmark(
     user_id: str,
     post_id: str,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> None:
+    _require_self(current_user, user_id)
     bookmark = get_bookmark(session, user_id, post_id)
     if bookmark is not None:
         session.delete(bookmark)
