@@ -1,7 +1,7 @@
-# feed-prototype 릴리즈 체크리스트 (v0.6.4 기준)
+# feed-prototype 릴리즈 체크리스트 (v1.0.0 기준)
 
-이 문서는 `feed-prototype` 릴리즈 직전 확인 항목입니다. 현재 릴리즈 `v0.6.4`
-(인증 & 멀티유저 theme — 계정 라이프사이클) 기준으로
+이 문서는 `feed-prototype` 릴리즈 직전 확인 항목입니다. 현재 릴리즈 `v1.0.0`
+(배포 가능한 제품 기준선 — session 기반 write 인가 하드닝) 기준으로
 갱신됩니다.
 
 > 파일명은 v0.0.0 release 시점의 이름(`RELEASE_0_0_CHECKLIST.md`)을 유지하지만, 내용은
@@ -88,7 +88,8 @@ curl -c cookies.txt -X POST http://127.0.0.1:8000/api/auth/login \
 curl -b cookies.txt http://127.0.0.1:8000/api/auth/session
 ```
 
-협업 회귀 스크립트:
+협업 회귀 스크립트(v1.0.0부터 `user_id` 대신 실제 session 로그인으로 동작 —
+`scripts/auth_test_utils.py` 참고):
 
 - [ ] `scripts/check_comments.py`가 통과합니다(v0.5.0).
 - [ ] `scripts/check_bookmarks.py`가 통과합니다(v0.5.1).
@@ -102,7 +103,8 @@ python -m scripts.check_bookmarks
 python -m scripts.check_notifications
 ```
 
-인증 & identity / profile / lifecycle 회귀 스크립트 (v0.6.x):
+인증 & identity / profile / lifecycle 회귀 스크립트 (v0.6.x, 마찬가지로 v1.0.0부터
+session 로그인 사용):
 
 - [ ] `scripts/check_account_identity.py`가 통과합니다(v0.6.1, User:Account 1:1).
 - [ ] `scripts/check_account_profile.py`가 통과합니다(v0.6.2, profile self-service).
@@ -273,7 +275,7 @@ API mode frontend에서 확인합니다.
 - [ ] file/link Open original이 동작합니다.
 - [ ] broken asset fallback이 crash 없이 표시됩니다.
 - [ ] managed storage로 복사된 asset이 `/assets/managed/...`에서 정상 표시됩니다(해당 시).
-- [ ] UI 어딘가(아바타 드롭다운 등)에 현재 버전(`feed-prototype v0.6.4`)이 표시됩니다.
+- [ ] UI 어딘가(아바타 드롭다운 등)에 현재 버전(`feed-prototype v1.0.0`)이 표시됩니다.
 
 Imported post가 Home Feed에 바로 보이지 않으면 imported account follow 정책을
 확인합니다. Account Profile과 Post Detail에서도 imported post를 확인합니다.
@@ -290,8 +292,8 @@ Imported post가 Home Feed에 바로 보이지 않으면 imported account follow
   `ACCOUNT_MANAGEMENT.md`(계정 명령어), `V1_0_0_RELEASE_SCOPE.md`가 현재 구현을 반영합니다.
 - [ ] Sample package 설명과 각 sample `assets/README.md`가 존재합니다.
 - [ ] limitations가 명시되어 있습니다: production-ready 아님. password 로그인 +
-  server-side session은 있으나 OAuth/SSO/JWT/RBAC는 없고, write endpoint는 아직
-  user_id 기반 인가(비-localhost 이전 시 session-only 전환 예정)입니다.
+  server-side session 기반 write 인가는 있으나 OAuth/SSO/JWT/RBAC 같은 정식 권한
+  시스템은 없습니다(v1.0.0).
 - [ ] external import 전 `DATABASE_URL` 확인이 문서화되어 있습니다.
 
 ## 7. Release Tag
@@ -315,8 +317,8 @@ Tag 생성 및 push (예: 현재 릴리즈):
 
 ```bash
 cd ..
-git tag v0.6.4
-git push origin v0.6.4
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 Branch 정책에 따라 `main` 또는 release branch로 merge한 뒤 tag할 수도 있습니다. 실제
