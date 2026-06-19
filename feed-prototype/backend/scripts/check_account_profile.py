@@ -25,6 +25,7 @@ from app.models.account import Account
 from app.models.import_batch import ImportBatch
 from app.models.post import Post
 from app.services.import_external_posts import generated_account_id, generated_user_id
+from scripts.auth_test_utils import login, set_known_password
 from scripts.cleanup_utils import delete_test_users
 
 
@@ -80,6 +81,9 @@ def run_checks(client: TestClient) -> list[str]:
     created = client.post("/api/imports", json=payload())
     check(created.status_code == 200, f"seed import returns 200 (got {created.status_code})")
 
+    set_known_password(OWNER_USER)
+    set_known_password(OTHER_USER)
+
     original = client.get(f"/api/accounts/{OWNER_ACCOUNT}")
     check(original.status_code == 200, "owner account is readable")
     original_body = original.json() if original.status_code == 200 else {}
@@ -87,19 +91,19 @@ def run_checks(client: TestClient) -> list[str]:
     original_kind = original_body.get("kind")
     original_user_id = original_body.get("user_id")
 
+    check(login(client, OTHER_USER).status_code == 200, "other user logs in")
     denied = client.patch(
         f"/api/accounts/{OWNER_ACCOUNT}",
         json={
-            "user_id": OTHER_USER,
             "display_name": "Wrong Owner",
         },
     )
     check(denied.status_code == 403, f"non-owner update is 403 (got {denied.status_code})")
 
+    check(login(client, OWNER_USER).status_code == 200, "owner logs in")
     updated = client.patch(
         f"/api/accounts/{OWNER_ACCOUNT}",
         json={
-            "user_id": OWNER_USER,
             "display_name": "Updated Profile Owner",
             "bio": "  Updated owner bio.  ",
             "avatar_url": "/assets/profiles/check-owner/avatar.png",
@@ -121,7 +125,6 @@ def run_checks(client: TestClient) -> list[str]:
     cleared = client.patch(
         f"/api/accounts/{OWNER_ACCOUNT}",
         json={
-            "user_id": OWNER_USER,
             "display_name": "Updated Profile Owner",
             "bio": "   ",
             "avatar_url": "",
@@ -149,7 +152,6 @@ def run_checks(client: TestClient) -> list[str]:
     invalid = client.patch(
         f"/api/accounts/{OWNER_ACCOUNT}",
         json={
-            "user_id": OWNER_USER,
             "display_name": " ",
         },
     )

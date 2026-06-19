@@ -37,6 +37,7 @@ from app.models.account import Account
 from app.models.comment import Comment
 from app.models.post import Post
 from app.services.import_external_posts import generated_user_id
+from scripts.auth_test_utils import login, set_known_password
 from scripts.cleanup_utils import delete_test_users
 
 
@@ -99,10 +100,14 @@ def run_checks(client: TestClient) -> list[str]:
 
     post_id = resolve_post_id()
 
+    set_known_password(USER_A)
+    set_known_password(USER_B)
+    check(login(client, USER_A).status_code == 200, "author logs in")
+
     # 1) create a first comment as the author.
     first = client.post(
         f"/api/posts/{post_id}/comments",
-        json={"user_id": USER_A, "text": "first comment"},
+        json={"text": "first comment"},
     )
     check(first.status_code == 201, f"create comment returns 201 (got {first.status_code})")
     first_body = first.json()
@@ -114,14 +119,14 @@ def run_checks(client: TestClient) -> list[str]:
 
     # empty text is rejected.
     empty = client.post(
-        f"/api/posts/{post_id}/comments", json={"user_id": USER_A, "text": "   "}
+        f"/api/posts/{post_id}/comments", json={"text": "   "}
     )
     check(empty.status_code == 422, f"empty comment text returns 422 (got {empty.status_code})")
 
     # 2) second comment, then ordering checks.
     second = client.post(
         f"/api/posts/{post_id}/comments",
-        json={"user_id": USER_A, "text": "second comment"},
+        json={"text": "second comment"},
     )
     check(second.status_code == 201, "create second comment returns 201")
     second_id = second.json()["comment"]["id"]
@@ -143,16 +148,18 @@ def run_checks(client: TestClient) -> list[str]:
     )
 
     # 3) edit: not-the-author 403, author 200 + updated_at bump.
+    check(login(client, USER_B).status_code == 200, "other user logs in")
     forbidden_edit = client.patch(
-        f"/api/comments/{first_id}", json={"user_id": USER_B, "text": "hijack"}
+        f"/api/comments/{first_id}", json={"text": "hijack"}
     )
     check(
         forbidden_edit.status_code == 403,
         f"editing another user's comment returns 403 (got {forbidden_edit.status_code})",
     )
 
+    check(login(client, USER_A).status_code == 200, "author logs back in")
     edited = client.patch(
-        f"/api/comments/{first_id}", json={"user_id": USER_A, "text": "edited first"}
+        f"/api/comments/{first_id}", json={"text": "edited first"}
     )
     check(edited.status_code == 200, "author edit returns 200")
     edited_body = edited.json()["comment"]
@@ -163,13 +170,15 @@ def run_checks(client: TestClient) -> list[str]:
     )
 
     # 4) delete: not-the-author 403, author 204.
-    forbidden_delete = client.delete(f"/api/comments/{second_id}?user_id={USER_B}")
+    check(login(client, USER_B).status_code == 200, "other user logs in again")
+    forbidden_delete = client.delete(f"/api/comments/{second_id}")
     check(
         forbidden_delete.status_code == 403,
         f"deleting another user's comment returns 403 (got {forbidden_delete.status_code})",
     )
 
-    deleted = client.delete(f"/api/comments/{second_id}?user_id={USER_A}")
+    check(login(client, USER_A).status_code == 200, "author logs back in again")
+    deleted = client.delete(f"/api/comments/{second_id}")
     check(deleted.status_code == 204, f"author delete returns 204 (got {deleted.status_code})")
 
     remaining = client.get(f"/api/posts/{post_id}/comments")

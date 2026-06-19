@@ -25,6 +25,7 @@ from app.models.import_batch import ImportBatch
 from app.models.notification_state import NotificationState
 from app.models.post import Post
 from app.services.import_external_posts import generated_user_id
+from scripts.auth_test_utils import login, set_known_password
 from scripts.cleanup_utils import delete_test_users
 
 
@@ -119,23 +120,29 @@ def run_checks(client: TestClient) -> list[str]:
     created = client.post("/api/imports", json=payload())
     check(created.status_code == 200, f"seed import returns 200 (got {created.status_code})")
 
+    set_known_password(USER)
+    set_known_password(USER_OTHER)
+
     followed_account_id, my_post_id, other_post_id = resolve_ids()
+    check(login(client, USER).status_code == 200, "notification owner logs in")
     followed = client.post(f"/api/users/{USER}/follows/{followed_account_id}")
     check(followed.status_code == 200, "follow account returns 200")
 
+    check(login(client, USER_OTHER).status_code == 200, "commenter logs in")
     own_comment = client.post(
         f"/api/posts/{my_post_id}/comments",
-        json={"user_id": USER_OTHER, "text": f"comment mentions @{MY_HANDLE}"},
+        json={"text": f"comment mentions @{MY_HANDLE}"},
     )
     check(own_comment.status_code == 201, "comment on my post returns 201")
     own_comment_id = own_comment.json()["comment"]["id"]
 
     ignored = client.post(
         f"/api/posts/{other_post_id}/comments",
-        json={"user_id": USER_OTHER, "text": f"email user@{MY_HANDLE} ignored"},
+        json={"text": f"email user@{MY_HANDLE} ignored"},
     )
     check(ignored.status_code == 201, "negative mention fixture comment returns 201")
 
+    check(login(client, USER).status_code == 200, "notification owner logs back in")
     listed = client.get(f"/api/users/{USER}/notifications")
     check(listed.status_code == 200, "list notifications returns 200")
     body = listed.json()
@@ -168,17 +175,23 @@ def run_checks(client: TestClient) -> list[str]:
     after_read = client.get(f"/api/users/{USER}/notifications").json()
     check(after_read["unread_count"] == 0, "read-all clears unread count")
 
+    check(login(client, USER_OTHER).status_code == 200, "commenter logs back in")
     new_comment = client.post(
         f"/api/posts/{my_post_id}/comments",
-        json={"user_id": USER_OTHER, "text": "fresh unread comment"},
+        json={"text": "fresh unread comment"},
     )
     check(new_comment.status_code == 201, "fresh comment after read-all returns 201")
     new_comment_id = new_comment.json()["comment"]["id"]
+
+    check(login(client, USER).status_code == 200, "notification owner logs back in again")
     after_new = client.get(f"/api/users/{USER}/notifications").json()
     check(after_new["unread_count"] == 1, "new source after read-all is unread")
 
-    deleted = client.delete(f"/api/comments/{new_comment_id}?user_id={USER_OTHER}")
+    check(login(client, USER_OTHER).status_code == 200, "commenter logs back in again")
+    deleted = client.delete(f"/api/comments/{new_comment_id}")
     check(deleted.status_code == 204, "delete fresh comment returns 204")
+
+    check(login(client, USER).status_code == 200, "notification owner logs back in once more")
     after_delete = notification_items(client)
     check(
         not any(item["source_id"] == new_comment_id for item in after_delete),

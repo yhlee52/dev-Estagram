@@ -26,6 +26,7 @@ from app.models.account import Account
 from app.models.import_batch import ImportBatch
 from app.models.post import Post
 from app.services.import_external_posts import generated_user_id
+from scripts.auth_test_utils import login, set_known_password
 from scripts.cleanup_utils import delete_test_users
 
 
@@ -93,6 +94,10 @@ def run_checks(client: TestClient) -> list[str]:
     created = client.post("/api/imports", json=payload())
     check(created.status_code == 200, f"seed import returns 200 (got {created.status_code})")
 
+    set_known_password(USER_A)
+    set_known_password(USER_B)
+    check(login(client, USER_A).status_code == 200, "user A logs in")
+
     user_a = client.get(f"/api/users/{USER_A}")
     user_b = client.get(f"/api/users/{USER_B}")
     check(user_a.status_code == 200, "import creates paired user A")
@@ -108,7 +113,6 @@ def run_checks(client: TestClient) -> list[str]:
     manual_post = client.post(
         "/api/posts",
         json={
-            "user_id": USER_A,
             "title": "Manual identity check post",
             "text": "created through user A",
             "tags": [f"identity{SUFFIX}"],
@@ -122,22 +126,26 @@ def run_checks(client: TestClient) -> list[str]:
         created_post_ids.append(post_id)
         check(body["account"]["id"] == account_a.id, "created post uses user A's 1:1 account")
 
+        check(login(client, USER_B).status_code == 200, "user B logs in")
         denied_edit = client.patch(
             f"/api/posts/{post_id}",
-            json={"user_id": USER_B, "title": "Wrong owner edit"},
+            json={"title": "Wrong owner edit"},
         )
         check(denied_edit.status_code == 403, "user B cannot edit user A account post")
 
+        check(login(client, USER_A).status_code == 200, "user A logs back in")
         allowed_edit = client.patch(
             f"/api/posts/{post_id}",
-            json={"user_id": USER_A, "title": "Owner edit"},
+            json={"title": "Owner edit"},
         )
         check(allowed_edit.status_code == 200, "user A can edit own account post")
 
-        denied_delete = client.delete(f"/api/posts/{post_id}?user_id={USER_B}")
+        check(login(client, USER_B).status_code == 200, "user B logs in again")
+        denied_delete = client.delete(f"/api/posts/{post_id}")
         check(denied_delete.status_code == 403, "user B cannot delete user A account post")
 
-        allowed_delete = client.delete(f"/api/posts/{post_id}?user_id={USER_A}")
+        check(login(client, USER_A).status_code == 200, "user A logs back in again")
+        allowed_delete = client.delete(f"/api/posts/{post_id}")
         check(allowed_delete.status_code == 204, "user A can delete own account post")
 
     return failures

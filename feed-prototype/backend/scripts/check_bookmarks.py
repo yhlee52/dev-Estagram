@@ -36,6 +36,7 @@ from app.models.account import Account
 from app.models.bookmark import Bookmark
 from app.models.post import Post
 from app.services.import_external_posts import generated_user_id
+from scripts.auth_test_utils import login, set_known_password
 from scripts.cleanup_utils import delete_test_users
 
 
@@ -98,6 +99,9 @@ def run_checks(client: TestClient) -> list[str]:
 
     created = client.post("/api/imports", json=payload())
     check(created.status_code == 200, f"seed import returns 200 (got {created.status_code})")
+
+    set_known_password(USER)
+    check(login(client, USER).status_code == 200, "bookmark owner logs in")
 
     post_a, post_b = resolve_post_ids()
     base = f"/api/users/{USER}/bookmarks"
