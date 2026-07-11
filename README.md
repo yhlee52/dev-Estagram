@@ -2,9 +2,10 @@
 
 `feed-prototype`은 범용 `Account` / `Post` / `Feed` prototype입니다.
 
-현재 릴리즈: `v0.5.3` (협업 — Annotation & Collaboration 테마 완료). v0.5.0은
-post별 댓글, v0.5.1은 북마크와 비공개 메모, v0.5.2는 in-app 알림/mention 수신,
-v0.5.3은 협업 표면 UX polish와 문서/검증 절차 wrap-up입니다. 버전 라벨 기준은
+현재 릴리즈: `v1.0.0` (첫 major — 배포 가능한 제품 기준선). v0.1.x~v0.6.x 테마가
+모두 완료되어 v1.0.0 전제가 갖춰졌고, v1.0.0 자체는 새 기능 없이 session 기반
+write 인가 등 보안 하드닝과 안정화/문서/배포 절차 정리 릴리즈입니다(상세는
+`feed-prototype/docs/V1_0_0_RELEASE_SCOPE.md`). 버전 라벨 기준은
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`입니다.
 
 사용 시나리오:
@@ -14,10 +15,11 @@ v0.5.3은 협업 표면 UX polish와 문서/검증 절차 wrap-up입니다. 버�
 
 `v0.0.0`이 첫 번째 공유 가능한 internal/local prototype release였고, 그 위에
 v0.1.x(탐색과 발견), v0.2.x(레이아웃 & UI 개편), v0.3.x(Ingestion 신뢰성),
-v0.4.x(메타데이터 일급화 & 트리아지), v0.5.x(협업) 테마가 쌓였습니다. 일반
-SNS-like feed와 external report feed를 모두 데모할 수 있지만,
-production-ready 제품은 아닙니다. 전체 버전 트리는
-`feed-prototype/docs/ROADMAP.md`를 참고하세요.
+v0.4.x(메타데이터 일급화 & 트리아지), v0.5.x(협업), v0.6.x(인증 & 멀티유저)
+테마가 쌓였습니다. 일반 SNS-like feed와 external report feed를 모두 데모할 수
+있고 password 로그인 + session 기반 write 인가가 적용되어 있지만, OAuth/SSO/
+JWT/RBAC 같은 정식 권한 시스템을 갖춘 production-ready 제품은 아닙니다. 전체
+버전 트리는 `feed-prototype/docs/ROADMAP.md`를 참고하세요.
 
 ## Core Domain
 
@@ -96,12 +98,22 @@ v0.5.x(협업):
 - in-app 알림과 mention 수신, `/notifications` 목록
 - 협업 표면 UX polish와 문서/검증 절차 wrap-up
 
-다음 v0.6.x(인증 & 멀티유저):
+v0.6.x(인증 & 멀티유저):
 
-- v0.6.0은 password login + server-side session으로 prototype active API user
-  selection을 대체할 예정입니다.
-- v0.6.x에서도 User:Account 1:1 원칙을 유지합니다. 봇/프로그램/설비 계정은
-  별도 로그인 User + 1:1 Account로 취급합니다.
+- password 로그인 + server-side session(httpOnly cookie)으로 prototype active
+  API user selection을 실제 인증으로 교체 (v0.6.0)
+- User:Account 1:1 identity 운영 정책 — 봇/프로그램/설비 계정도 별도 로그인
+  User + 1:1 Account로 취급 (v0.6.1)
+- 내 account profile self-service(display_name/bio/avatar 수정) (v0.6.2)
+- 운영자 password reset CLI, 세션 만료 시 로그인 화면 복귀 (v0.6.3)
+- 계정 soft deactivation(post 보존, 운영자 재활성화 CLI) (v0.6.4)
+
+v1.0.0(첫 major — 배포 가능한 제품 기준선):
+
+- 새 기능 없이 보안 하드닝·안정화 중심: write endpoint가 request의 `user_id`
+  대신 로그인 session에서 행위자를 도출, cookie `secure`/CORS 환경설정 분리,
+  로그인 화면 user 목록 노출 제거, import 생성 user의 초기 password 임의화
+- 다음 테마는 v1.1.x(Rich Asset Experience)입니다. `feed-prototype/docs/ROADMAP.md` 참고.
 
 ## 실행 Mode
 
@@ -120,9 +132,9 @@ FastAPI + PostgreSQL 기반 mode입니다. 실제 DB를 read/write하며 user, a
 ## Non-goals / Limitations (현재까지)
 
 - production-ready app이 아닙니다.
-- 현재 릴리즈(v0.5.3)는 정식 login, JWT, session, OAuth를 제공하지 않습니다.
-  password login + server-side session은 v0.6.0 scope입니다.
-- formal permission/authorization system은 미완성입니다.
+- password 로그인 + server-side session(v0.6.0)과 session 기반 write 인가
+  (v1.0.0)는 제공하지만, OAuth/SSO/JWT/RBAC 같은 정식 권한 시스템은 제공하지
+  않습니다.
 - 좋아요 기능은 없습니다. 댓글, 북마크, in-app 알림은 v0.5.x에서 API mode 전용으로
   제공됩니다.
 - S3 upload, real file upload를 제공하지 않습니다. asset 파일 복사는 v0.3.3부터
