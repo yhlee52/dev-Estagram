@@ -8,41 +8,36 @@
 
 ## Current Release Docs
 
-현재 릴리즈는 `v0.5.3`(협업 — Annotation & Collaboration 테마 완료, UX Backlog &
-Theme Wrap-up)이며
+현재 릴리즈는 `v1.0.0`(첫 major — 배포 가능한 제품 기준선)이며
 `feed-prototype/src/config/appVersion.ts`의 `APP_RELEASE_LABEL`이 기준입니다.
-직전 테마 v0.4.x(메타데이터 일급화 & 트리아지)는 v0.4.2로 **완료**되었고,
-v0.5.x(협업) 테마도 v0.5.3으로 **완료**되었습니다. v0.5.0은 post별 평면 댓글, v0.5.1은 북마크
-(+ 비공개 메모 · `bookmarked_only` 필터 · Me 탭 북마크/Following 목록), v0.5.2는
-in-app 알림/mention 수신(파생 알림 + user별 읽음 워터마크 + `/notifications` +
-Home/Me 진입점), v0.5.3은 협업 표면 UX polish와 문서/검증 절차 wrap-up입니다.
-진입 판단/후보 계획은
-`feed-prototype/docs/archive/V0_5_X_COLLABORATION_PLAN.md`, 각 MINOR 상세 scope는
-`feed-prototype/docs/archive/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`·
-`V0_5_2_NOTIFICATIONS_SCOPE.md`·`V0_5_3_UX_BACKLOG_SCOPE.md`에 있습니다.
+v0.1.x~v0.6.x 테마가 모두 완료되어 v1.0.0 전제(v0.1 읽기 확장 + v0.3 ingestion
+신뢰성 + v0.6 인증)가 갖춰졌고, v1.0.0 자체는 **새 기능 없이** 보안 하드닝
+(write endpoint의 session 기반 인가, cookie `secure`/CORS 환경설정 분리, 로그인
+화면 user 목록 제거, import-user 초기 password 임의화)과 안정화(회귀 스크립트
+12개 실행 확인, 배포 절차 문서 검증, `APP_VERSION` bump)를 마치고 태그된
+릴리즈입니다. 상세는 `feed-prototype/docs/V1_0_0_RELEASE_SCOPE.md`를 참고합니다.
+직전 테마 v0.6.x(인증 & 멀티유저)는 v0.6.0 password 로그인 + server-side
+session(httpOnly cookie), v0.6.1 User:Account 1:1 identity 운영 정책, v0.6.2
+내 account profile self-service, v0.6.3 auth hardening & cleanup, v0.6.4 계정
+라이프사이클(soft deactivation + post 보존)로 **완료**되었습니다. 상세 scope는
+`feed-prototype/docs/archive/V0_6_0_AUTH_SCOPE.md` ~
+`V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`에 있습니다. 다음 테마는 v1.1.x(Rich Asset
+Experience)입니다(`feed-prototype/docs/ROADMAP.md`).
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
 - `README.md`
 - `feed-prototype/README.md`
 - `feed-prototype/docs/README.md` (문서 색인)
-- `feed-prototype/docs/ROADMAP.md` (버전 트리·테마)
-- `feed-prototype/docs/V0_6_0_AUTH_SCOPE.md` (다음 작업: password login + server-side session)
-- `feed-prototype/docs/V0_6_1_ACCOUNT_IDENTITY_SCOPE.md` (User:Account 1:1 identity 정책)
-- `feed-prototype/docs/V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md` (내 account profile self-service)
+- `feed-prototype/docs/ROADMAP.md` (버전 트리·테마 — 다음 테마: v1.1.x Rich Asset Experience)
+- `feed-prototype/docs/V1_0_0_RELEASE_SCOPE.md` (v1.0.0 must-do/안정화/태그 조건)
+- `feed-prototype/docs/ACCOUNT_MANAGEMENT.md` (계정 관리 명령어 모음 — operator CLI + self-service API)
 - `feed-prototype/docs/GOLDEN_SAMPLE_REGRESSION.md`
 - `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`
 - `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`
 - `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
 
-버전별 상세 scope는 `feed-prototype/docs/`의 `V0_x_y_*_SCOPE.md` 문서를
-참고합니다. v0.4.x 테마가 완료되어 그 scope 문서
-(`V0_4_0_FACET_FILTER_SCOPE.md` ~ `V0_4_2_UX_BACKLOG_SCOPE.md`)와 진입 판단/후보
-계획(`V0_4_X_METADATA_PLAN.md`)은 완료 테마 v0.1.x~v0.3.x와 함께
-`feed-prototype/docs/archive/`로 이동했습니다. 완료된 v0.5.x(협업 — Annotation
-& Collaboration)의 진입 판단·후보 계획은
-`feed-prototype/docs/archive/V0_5_X_COLLABORATION_PLAN.md`, 구현된 상세 scope는
-`feed-prototype/docs/archive/V0_5_0_COMMENTS_SCOPE.md`·`V0_5_1_BOOKMARKS_SCOPE.md`·
-`V0_5_2_NOTIFICATIONS_SCOPE.md`·`V0_5_3_UX_BACKLOG_SCOPE.md`에 있습니다. 과거 MVP별 테스트 절차도
+완료된 테마(v0.1.x~v0.6.x)의 버전별 상세 scope 문서(`V0_x_y_*_SCOPE.md`)와
+진입 판단/후보 계획(`V0_x_X_*_PLAN.md`), 과거 MVP별 테스트 절차는 모두
 `feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
 현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.
 
@@ -74,9 +69,9 @@ core type name 또는 primary component name에 설비 리포트 전용 용어�
 
 ## Current Implementation Scope
 
-v0.0.0 기준선은 MVP1-MVP12로 구축되었고, 그 위에 v0.1.x~v0.5.x 테마가 쌓였으며
-현재 v0.5.x(협업) 테마가 완료되었습니다. 상세 단계 기록은 아래 "Completed Scope
-History"를, 버전 트리는 `ROADMAP.md`를 참고합니다.
+v0.0.0 기준선은 MVP1-MVP12로 구축되었고, 그 위에 v0.1.x~v0.6.x 테마가 모두
+완료되어 v1.0.0(배포 가능한 제품 기준선)이 태그되었습니다. 상세 단계 기록은
+아래 "Completed Scope History"를, 버전 트리는 `ROADMAP.md`를 참고합니다.
 
 현재 제약:
 
@@ -87,11 +82,13 @@ History"를, 버전 트리는 `ROADMAP.md`를 참고합니다.
 - runtime mock-mode overlay는 localStorage에 저장합니다.
 - API mode는 FastAPI와 backend PostgreSQL data를 사용합니다.
 - frontend는 PostgreSQL에 직접 연결하지 않습니다.
-- 현 단계에서는 각 `User`에 정확히 하나의 `Account`가 대응합니다. v0.6.x에서도
-  1:1 원칙을 유지하며, 봇/프로그램/설비 계정은 별도 로그인 User + 1:1 Account로
-  취급합니다.
-- active API user는 backend DB user 중에서 선택하고 local에 저장합니다.
-- active API user selection은 real login, authentication, authorization, account security가 아닙니다.
+- 각 `User`에 정확히 하나의 `Account`가 대응합니다(v0.6.1 운영 정책). 1:1 원칙을
+  유지하며, 봇/프로그램/설비 계정은 별도 로그인 User + 1:1 Account로 취급합니다.
+- API mode 인증은 password 로그인 + server-side session(httpOnly cookie)입니다
+  (v0.6.0~). write endpoint의 행위자는 request body/query의 `user_id`가 아니라
+  로그인 session에서 도출합니다(v1.0.0).
+- mock mode의 active user selection은 localStorage 기반 UI 데모 상태로만 남아
+  있으며 real login, authentication, authorization, account security가 아닙니다.
 
 중요 localStorage key:
 
@@ -262,6 +259,44 @@ v0.5.x — 협업 (Annotation & Collaboration):
   비활성화, Me 탭 Bookmarks empty copy를 작게 정리했다. 현재 릴리즈 문서와 검증
   절차를 v0.5.3 기준으로 맞추며 v0.5.x(협업) 테마 완료.
 
+v0.6.x — 인증 & 멀티유저 (Auth & Multi-user):
+
+- v0.6.0: password 로그인 + server-side session(httpOnly cookie). prototype
+  active API user selection을 실제 인증으로 교체(활성 user는 세션 조회로 도출).
+  password는 서버에 hash로 저장하고 로그인 화면에서 현재 password 기반 변경을
+  지원. OAuth/SSO/JWT는 범위 밖. 상세는 `docs/archive/V0_6_0_AUTH_SCOPE.md`.
+- v0.6.1: User:Account 1:1 identity 운영 정책. 봇/프로그램/설비 계정도 로그인
+  가능한 별도 user + 1:1 account로 취급하고, 계정 전환은 "다른 user로 로그인"으로
+  다룬다. 1:N 소유/대리 작성은 범위 밖.
+  상세는 `docs/archive/V0_6_1_ACCOUNT_IDENTITY_SCOPE.md`.
+- v0.6.2: 내 account profile self-service. 로그인 user가 자기 1:1 account의
+  display_name/bio/avatar를 UI에서 직접 수정(identifier인 handle은 등록 시 고정).
+  상세는 `docs/archive/V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md`.
+- v0.6.3: auth hardening & cleanup. 운영자 password reset
+  CLI(`backend/scripts/reset_password.py`), 세션 만료/무효 401 시 로그인 화면
+  복귀, 로그인 화면 dead code 정리. cookie `secure` 분리·write endpoint의
+  session-only 인가·로그인 화면 user 목록 숨김은 v1.0.0으로 이연.
+  상세는 `docs/archive/V0_6_3_AUTH_HARDENING_SCOPE.md`.
+- v0.6.4: 계정 라이프사이클. `accounts.deactivated_at`(null=active) 기반 soft
+  deactivation — 소유자 self-service 비활성화(`POST /api/accounts/{id}/deactivate`)
+  시 로그인 차단 + 세션 폐기 + discovery 제외, post/협업 데이터는 보존, 신규
+  follow는 409(기존 follow 보존), 재활성화는 운영자
+  CLI(`backend/scripts/reactivate_user.py`)만. 이로써 v0.6.x 테마 완료 — v1.0.0
+  전제 충족. 상세는 `docs/archive/V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`.
+
+v1.0.0 — 첫 major (배포 가능한 제품 기준선):
+
+- 새 기능 없는 보안 하드닝·안정화 릴리즈. (1) write endpoint(posts/comments/
+  bookmarks/notifications/follows/accounts)가 request body/query의 `user_id`를
+  신뢰하지 않고 `get_current_user` session 의존성에서 행위자를 도출 — 비로그인
+  write 401, 타인 리소스 403(`_require_self`), request schema에서 `user_id` 필드
+  제거. (2) `SESSION_COOKIE_SECURE`·`CORS_ALLOW_ORIGINS` 환경설정 분리(기본
+  localhost dev). (3) 로그인 화면의 전체 user 목록(roster) 노출 제거. (4) import가
+  만드는 paired user의 초기 password를 예측 불가능한 임의 값으로 변경. write/
+  self-scoped 회귀 스크립트 6개를 실제 `/api/auth/login` 세션 기반으로 재작성해
+  회귀 12개 green + 배포 절차 문서 검증 후 태그.
+  상세는 `feed-prototype/docs/V1_0_0_RELEASE_SCOPE.md`.
+
 ## Roadmap & Versioning
 
 v0.0.0 이후 작업은 `feed-prototype/docs/ROADMAP.md`의 버전 트리를 따릅니다.
@@ -314,9 +349,11 @@ external post package JSON format은 v0.0.0 시점에 동결되었습니다.
 - component와 type은 general feed와 향후 회사 내부 report feed 모두에 재사용 가능하게 유지합니다.
 - equipment-report example은 가능한 data scenario 중 하나로만 취급하고 core domain으로 삼지 않습니다.
 - API-mode feature를 구현하면서 mock mode를 제거하지 않습니다.
-- v0.6.0 scope에서 password login + server-side session은 허용됩니다. JWT, OAuth,
-  SSO, RBAC/formal authorization system은 계속 범위 밖입니다.
-- 외부 import 관련 작업에서 frontend file write logic 또는 actual upload flow는 해당 테마(v0.3.x)가 명시적으로 범위에 넣기 전까지 구현하지 않습니다.
+- password login + server-side session은 v0.6.0에서 도입되었고, v1.0.0부터 write
+  endpoint 인가의 기준입니다. JWT, OAuth, SSO, RBAC/formal authorization system은
+  계속 범위 밖입니다.
+- frontend file write logic 또는 actual upload flow는 로드맵의 테마가 명시적으로
+  범위에 넣기 전까지 구현하지 않습니다(v0.3.x ingestion 테마도 범위에 넣지 않았음).
 
 ## Verification
 
