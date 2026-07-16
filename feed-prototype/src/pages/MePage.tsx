@@ -745,9 +745,18 @@ function ApiMePage() {
                     to={`/accounts/${followed.id}`}
                     className="flex items-center gap-3 rounded-md border border-neutral-200 bg-white p-3 shadow-sm transition hover:border-neutral-300"
                   >
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-sm font-bold text-neutral-600">
-                      {followed.displayName.trim().charAt(0).toUpperCase() || 'A'}
-                    </span>
+                    {followed.avatarUrl ? (
+                      <img
+                        src={followed.avatarUrl}
+                        alt=""
+                        className="size-9 shrink-0 rounded-full bg-neutral-200 object-cover ring-1 ring-neutral-200"
+                      />
+                    ) : (
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-sm font-bold text-neutral-600">
+                        {followed.displayName.trim().charAt(0).toUpperCase() ||
+                          'A'}
+                      </span>
+                    )}
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-bold text-neutral-950">
                         {followed.displayName}

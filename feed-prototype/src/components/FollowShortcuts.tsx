@@ -21,15 +21,18 @@ function avatarInitial(account: Account): string {
 /**
  * Shared presentation: resolve followed account ids to account details via the
  * already-loaded directory (no extra fetch) and render quick links. Ids that no
- * longer resolve are skipped silently.
+ * longer resolve are skipped silently. Only the first MAX_SHORTCUTS accounts
+ * are linked; the rest are summarized as "+N more" (full list lives in /me).
  */
 function FollowShortcutList({ accountIds }: { accountIds: string[] }) {
   const { resolveId } = useAccountDirectory();
 
-  const accounts = accountIds
+  const resolvedAccounts = accountIds
     .map((id) => resolveId(id))
-    .filter((account): account is Account => account !== undefined)
-    .slice(0, MAX_SHORTCUTS);
+    .filter((account): account is Account => account !== undefined);
+
+  const accounts = resolvedAccounts.slice(0, MAX_SHORTCUTS);
+  const hiddenCount = resolvedAccounts.length - accounts.length;
 
   return (
     <section className="space-y-2">
@@ -41,36 +44,43 @@ function FollowShortcutList({ accountIds }: { accountIds: string[] }) {
           Follow accounts to pin quick links here.
         </p>
       ) : (
-        <ul className="space-y-1">
-          {accounts.map((account) => (
-            <li key={account.id}>
-              <Link
-                to={`/accounts/${account.id}`}
-                className="flex items-center gap-2.5 rounded-md border border-transparent px-2 py-1.5 transition hover:border-neutral-200 hover:bg-white"
-              >
-                {account.avatarUrl ? (
-                  <img
-                    src={account.avatarUrl}
-                    alt=""
-                    className="size-7 shrink-0 rounded-full bg-neutral-200 object-cover ring-1 ring-neutral-200"
-                  />
-                ) : (
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-600 ring-1 ring-neutral-200">
-                    {avatarInitial(account)}
+        <>
+          <ul className="space-y-1">
+            {accounts.map((account) => (
+              <li key={account.id}>
+                <Link
+                  to={`/accounts/${account.id}`}
+                  className="flex items-center gap-2.5 rounded-md border border-transparent px-2 py-1.5 transition hover:border-neutral-200 hover:bg-white"
+                >
+                  {account.avatarUrl ? (
+                    <img
+                      src={account.avatarUrl}
+                      alt=""
+                      className="size-7 shrink-0 rounded-full bg-neutral-200 object-cover ring-1 ring-neutral-200"
+                    />
+                  ) : (
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-600 ring-1 ring-neutral-200">
+                      {avatarInitial(account)}
+                    </span>
+                  )}
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-neutral-950">
+                      {account.displayName}
+                    </span>
+                    <span className="block truncate text-xs font-medium text-neutral-500">
+                      @{account.handle}
+                    </span>
                   </span>
-                )}
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-neutral-950">
-                    {account.displayName}
-                  </span>
-                  <span className="block truncate text-xs font-medium text-neutral-500">
-                    @{account.handle}
-                  </span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {hiddenCount > 0 ? (
+            <p className="px-3 text-xs font-semibold text-neutral-400">
+              +{hiddenCount} more
+            </p>
+          ) : null}
+        </>
       )}
     </section>
   );
