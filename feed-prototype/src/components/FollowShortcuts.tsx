@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useActiveApiUser } from '../auth/apiActiveUser';
 import { isApiMode } from '../config/dataSource';
@@ -21,17 +21,21 @@ function avatarInitial(account: Account): string {
 /**
  * Shared presentation: resolve followed account ids to account details via the
  * already-loaded directory (no extra fetch) and render quick links. Ids that no
- * longer resolve are skipped silently. Only the first MAX_SHORTCUTS accounts
- * are linked; the rest are summarized as "+N more" (full list lives in /me).
+ * longer resolve are skipped silently. Only the first MAX_SHORTCUTS accounts are
+ * linked initially; the rest are summarized as "+N more", which expands the
+ * list in place when clicked (and can be collapsed again).
  */
 function FollowShortcutList({ accountIds }: { accountIds: string[] }) {
   const { resolveId } = useAccountDirectory();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const resolvedAccounts = accountIds
     .map((id) => resolveId(id))
     .filter((account): account is Account => account !== undefined);
 
-  const accounts = resolvedAccounts.slice(0, MAX_SHORTCUTS);
+  const accounts = isExpanded
+    ? resolvedAccounts
+    : resolvedAccounts.slice(0, MAX_SHORTCUTS);
   const hiddenCount = resolvedAccounts.length - accounts.length;
 
   return (
@@ -76,9 +80,21 @@ function FollowShortcutList({ accountIds }: { accountIds: string[] }) {
             ))}
           </ul>
           {hiddenCount > 0 ? (
-            <p className="px-3 text-xs font-semibold text-neutral-400">
+            <button
+              type="button"
+              onClick={() => setIsExpanded(true)}
+              className="w-full rounded-md px-3 py-1 text-left text-xs font-semibold text-neutral-500 transition hover:bg-white hover:text-neutral-700"
+            >
               +{hiddenCount} more
-            </p>
+            </button>
+          ) : isExpanded && resolvedAccounts.length > MAX_SHORTCUTS ? (
+            <button
+              type="button"
+              onClick={() => setIsExpanded(false)}
+              className="w-full rounded-md px-3 py-1 text-left text-xs font-semibold text-neutral-500 transition hover:bg-white hover:text-neutral-700"
+            >
+              Show less
+            </button>
           ) : null}
         </>
       )}
