@@ -2,7 +2,7 @@
 
 `feed-prototype`은 Vite + React + TypeScript 기반의 Instagram-like local/general feed prototype입니다.
 
-현재 릴리즈: `v1.0.0` (배포 가능한 제품 기준선). v0.1.x(탐색과 발견) ~ v0.6.x(인증 &
+현재 릴리즈: `v1.0.1` (v1.0.0 기준선 + UX hotfix). v0.1.x(탐색과 발견) ~ v0.6.x(인증 &
 멀티유저) 테마가 모두 완료되어 v1.0.0 전제가 갖춰졌고, v1.0.0 자체는 **새 기능 없이**
 write endpoint를 session 기반으로 인가하는 보안 하드닝·안정화 릴리즈입니다(상세는
 `docs/V1_0_0_RELEASE_SCOPE.md`). 자세한 버전 트리는 `docs/ROADMAP.md`를 참고하세요.

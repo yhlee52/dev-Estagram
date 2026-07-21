@@ -29,6 +29,8 @@
 
 | 날짜 | 화면 | 내용 | 반영 버전 |
 |---|---|---|---|
+| 2026-07-16 | 전역 (우측 rail Following) | `FollowShortcuts`가 팔로우 계정을 `MAX_SHORTCUTS`(8)명까지만 보여주고 초과분은 아무 안내 없이 잘렸음(v0.2.0 구현 시 방어적 상수, scope 문서에 제한 명시 없음). 잘린 인원 수를 목록 하단 "+N more" 표기로 노출(전체 목록은 Me 탭에 존재) | v1.0.1 (hotfix) |
+| 2026-07-16 | /me (Following 목록) | Following 목록이 `avatarUrl`이 있어도 항상 이니셜 원만 렌더링. 같은 데이터를 쓰는 우측 rail(`FollowShortcuts`)과 비일관(v0.5.1 구현 누락). `avatarUrl` 존재 시 프로필 이미지를 표시하고 없을 때만 이니셜 fallback | v1.0.1 (hotfix) |
 | 2026-06-16 | /notifications (Unread 탭) | 읽지 않은 알림이 없을 때도 전체 알림 0건과 같은 "No notifications yet" 문구를 보여, 이미 읽은 알림이 있는 사용자에게 상태가 모호했음. Unread 탭 전용 empty state("No unread notifications")로 분리하고, Mark all read 버튼은 로딩 중에도 비활성화 | v0.5.3 |
 | 2026-06-16 | /me (Bookmarks) | 북마크 empty state가 "Tap Save"라고 안내해 데스크톱 중심 prototype의 조작 맥락과 살짝 어긋남. "Use Save..."로 바꿔 입력 장치에 덜 묶인 문구로 정리 | v0.5.3 |
 | 2026-06-14 | /me (API 모드) | Following 수만 보이고 팔로잉한 계정 목록/바로가기는 없음. v0.5.1 Me 탭에 "Following" 목록 섹션 추가(팔로우 계정 → 프로필 바로가기). 같은 Me 탭 북마크 목록 작업과 함께 반영 | v0.5.1 |

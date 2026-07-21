@@ -62,7 +62,7 @@ function DesktopShell({ userMenu }: DesktopShellProps) {
           </main>
 
           <aside className="hidden border-l border-neutral-200 px-3 py-4 lg:block">
-            <div className="sticky top-20">
+            <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
               <RightRail />
             </div>
           </aside>
