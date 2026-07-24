@@ -297,6 +297,30 @@ v1.0.0 — 첫 major (배포 가능한 제품 기준선):
   회귀 12개 green + 배포 절차 문서 검증 후 태그.
   상세는 `feed-prototype/docs/V1_0_0_RELEASE_SCOPE.md`.
 
+v1.2.x — 외부/객체 스토리지 Ingestion (S3/MinIO):
+
+- 기존 로컬 filesystem external post ingestion을 S3-compatible object storage(집:
+  MinIO / 회사: S3) 기반 watch ingestion으로 확장. 기존 filesystem 경로(v0.3.x)는
+  무변경, S3는 두 번째 discovery backend로 병행. S3/MinIO 객체는 immutable(런타임
+  계층에 write/rename/move/delete 없음), 처리 상태는 PostgreSQL `import_batch.
+  ingest_state`가 source of truth, `_READY.json`은 완료 신호일 뿐.
+- v1.2.0: read-only object store 추상화(`s3_storage`) + `_READY.json` 스키마·검증
+  (`s3_ready`) + 배치 발견/검증(`s3_discovery`) + `S3_*` 설정. boto3 추가.
+- v1.2.1: `import_batch` 확장(+`ingest_state`) & `post_assets` object identity +
+  migration 0013 + claim(`FOR UPDATE`)/idempotency/timeout/retry + `import_payload`
+  연결(`s3_ingest`, asset_identity_resolver 훅).
+- v1.2.2: watch worker + one-shot CLI(`process_s3_incoming`, graceful shutdown,
+  WorkerHealth) — filesystem `process_incoming`과 별도 모듈.
+- v1.2.3: 로컬 MinIO `docker-compose.minio.yml` + producer 업로드 CLI
+  (`scripts/upload_post_batch.py`) + 샘플 배치 + end-to-end runbook.
+- v1.2.4: S3 asset URL 서빙 — backend proxy(`GET /api/assets/{id}`) + serializer
+  절대 URL(`asset_url`), DB엔 object identity만. frontend 변경 없음.
+- v1.2.5: 테마 wrap-up(문서 색인/아키텍처 Mermaid/검증 체크리스트). 자동 단위
+  테스트는 MinIO/DB 없이 통과. **라이브 e2e와 `APP_RELEASE_LABEL` 처리 방침은 사용자
+  최종 확인 단계**(로드맵상 v1.1.x Rich Asset은 미구현 상태에서 v1.2.x 먼저 구현).
+  상세는 `feed-prototype/docs/S3_INGESTION_ARCHITECTURE.md`,
+  `V1_2_0`~`V1_2_5_*_SCOPE.md`, `MINIO_LOCAL_DEV.md`.
+
 ## Roadmap & Versioning
 
 v0.0.0 이후 작업은 `feed-prototype/docs/ROADMAP.md`의 버전 트리를 따릅니다.

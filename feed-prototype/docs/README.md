@@ -30,6 +30,10 @@ user를 세션 user 조회로 대체), v0.6.1 User:Account 1:1 identity 운영 �
 - `V1_0_0_RELEASE_SCOPE.md`: v1.0.0(배포 가능한 제품 기준선) must-do/안정화/태그 조건
 - `EXTERNAL_POST_PACKAGE_GUIDE.md`: external post package 작성 guide (format 중심)
 - `GOLDEN_SAMPLE_REGRESSION.md`: external package golden sample dry-run 회귀 안내
+- `S3_INGESTION_ARCHITECTURE.md`: S3/MinIO ingestion 전체 아키텍처(Mermaid
+  sequence·state diagram, object layout, immutability, asset URL 정책, 보안) — v1.2.x
+- `MINIO_LOCAL_DEV.md`: 집 개발환경용 로컬 MinIO 설정 + producer→worker→feed
+  end-to-end runbook — v1.2.x
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog
 - `../data/external_posts/README.md`: external post package 작업 guide
 
