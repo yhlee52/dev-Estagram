@@ -30,6 +30,7 @@ v0.5.x  협업 (Annotation & Collaboration)
 v0.6.x  인증 & 멀티유저 (Auth & Multi-user)
 v1.0.0  첫 major: 배포 가능한 제품 기준선
 v1.1.x  Rich Asset Experience
+v1.2.x  외부/객체 스토리지 Ingestion (S3/MinIO)
 ```
 
 순서의 근거:
@@ -370,12 +371,76 @@ v1.0.0으로 올립니다. 별도 신규 기능 없이 안정화/문서화/배�
 - PDF inline preview.
 - CSV preview 확장 (정렬, 더 보기).
 
+## v1.2.x — 외부/객체 스토리지 Ingestion (S3/MinIO)
+
+목표: 외부 분석/생성 프로그램이 배치를 S3-compatible object storage(집: 로컬
+MinIO / 회사: S3)에 업로드하면, backend watch worker가 이를 주기적으로 발견해
+기존 import 파이프라인으로 DB에 반영한다. 기존 filesystem ingestion(v0.3.x)은
+그대로 두고 S3를 두 번째 discovery backend로 추가한다. "그 이후 후보"에 있던
+`S3 등 외부 asset storage`를 이 테마로 승격한다.
+
+핵심 원칙:
+
+- S3/MinIO 객체는 immutable. rename/move/copy-delete/삭제 없이 원본 key 그대로
+  둔다. 처리 상태의 source of truth는 PostgreSQL이다(S3 이름/위치 아님).
+- `_READY.json`은 "이 배치를 읽어도 된다"는 완료 신호일 뿐, 상태 저장소가 아니다.
+  같은 배치가 매 polling마다 보이는 것은 정상이며 재처리 여부는 DB로 판단한다.
+- import 검증/DB 생성 로직은 복제하지 않고 `import_payload`를 재사용한다.
+
+- v1.2.0: Storage 추상화 + S3 discovery (기반). read-only S3 client
+  (list ready markers/read json/head/exists/pagination, mutation 없음), `S3_*`
+  설정, `_READY.json` 모델·검증(schema version, batch_external_id↔prefix 일치,
+  manifest_key 상대경로/traversal 차단, manifest·asset 존재, optional checksum/
+  asset_count), S3 batch discovery. MinIO 없이 통과하는 단위 테스트(botocore
+  Stubber/fake adapter). DB 스키마 변경 없음.
+- v1.2.1: PostgreSQL ingestion tracking 확장. 기존 `import_batch`를 nullable
+  컬럼으로 확장하고 신규 `ingest_state`(pending/processing/completed/failed/
+  ignored) 컬럼 추가(기존 `status`/`/api/imports` 무영향). Alembic migration.
+  batch claim(unique + row lock), post/asset external_id 기반 idempotency,
+  processing timeout·failed retry 정책. `import_payload` 연결.
+- v1.2.2: Watch worker + one-shot CLI. 신규 `process_s3_incoming`(filesystem
+  `process_incoming` 구조 미러링, discovery만 S3). configurable interval/limit,
+  graceful shutdown, structured logging, 성공/실패/skip 통계, worker health
+  (last_poll/last_success/last_error/currently_processing).
+- v1.2.3: MinIO 로컬 개발환경 + producer. `docker-compose.minio.yml`(API 9000/
+  console 9001, 영속 볼륨, bucket 자동 생성 init), producer 업로드 예제 CLI
+  (`scripts/upload_post_batch.py`, asset→manifest→_READY 순서 보장, overwrite/
+  dry-run), integration 검증 절차 문서. (여기서부터 MinIO 필요.)
+- v1.2.4: Asset URL 제공 + frontend 회귀. S3 객체용 backend asset proxy
+  endpoint + serializer가 절대 URL 생성, DB엔 canonical object identity 저장
+  (presigned는 대안). private bucket·MinIO·회사 S3 모두 지원, frontend 변경
+  최소화 회귀 확인. 아키텍처/운영 문서(Mermaid sequence·state diagram) 보강.
+- v1.2.5: `UX_BACKLOG.md` 반영(테마 마지막 MINOR). 신규 기능 없이 운영 가시성/
+  문서/검증 절차 정리. 이로써 v1.2.x 테마 완료.
+
+### v1.2.x 제약
+
+```text
+S3/MinIO 객체는 어떤 상태에서도 변경하지 않는다 (immutable object source)
+배치 처리 상태는 PostgreSQL tracking record로만 관리한다
+기존 filesystem ingestion(v0.3.x)을 제거하거나 동작을 바꾸지 않는다
+feed_posts.json(external package format)은 동결 유지, _READY.json은 신규 아티팩트
+import 검증/DB 생성은 import_payload를 재사용한다 (복제 금지)
+신규 의존성은 boto3만 추가한다 (moto 등 테스트 의존성은 도입하지 않음)
+API mode 전용. mock mode/frontend upload UI는 범위 밖
+```
+
+### v1.2.x non-goals
+
+```text
+S3 객체 rename/move/lifecycle/삭제, copy 후 delete
+외부 URL fetch (manifest가 선언한 batch-relative asset만 허용)
+frontend에서의 업로드 flow/UI
+IAM/버킷 정책 자동화 (권장 최소권한은 문서로만)
+전체 스택 docker compose (MinIO 전용 compose만 추가)
+feed_posts.json 포맷 변경, mock mode 확장
+```
+
 ## 그 이후 후보 (시기 미정)
 
 ```text
 semantic search / vector search
 외부 알림 채널 (메일, 메신저)
 RBAC / SSO
-S3 등 외부 asset storage
 saved filter 공유
 ```

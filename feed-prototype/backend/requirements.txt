@@ -4,6 +4,10 @@ sqlmodel
 psycopg[binary]
 pydantic-settings
 alembic
+# S3-compatible object-storage ingestion backend (v1.2.0). Used only when
+# INGEST_STORAGE_BACKEND=s3; the filesystem backend needs none of it. boto3
+# ships botocore, whose Stubber the unit tests use (no moto dependency).
+boto3
 # Used by fastapi.testclient.TestClient in scripts/check_*.py.
 httpx
 httpx2
