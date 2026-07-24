@@ -57,14 +57,12 @@ data/external_posts/
 `incoming/` 처리 경로에서만 일어나며, 단일 파일 CLI(`import_external_posts
 --input`)와 HTTP import(`POST /api/imports`)는 파일을 이동하지 않습니다. watch가
 쓰다 만 파일을 집지 않도록 package writer는 임시 파일에 쓴 뒤 rename(atomic)으로
-`incoming/`에 넣는 것을 권장합니다. 상세는 `docs/archive/V0_3_2_AUTO_INGESTION_SCOPE.md`.
+`incoming/`에 넣는 것을 권장합니다.
 (MVP10~v0.3.1까지는 자동 이동이 없었고 수동 보관만 가능했습니다.)
 
 v0.0.0 / MVP12 기준 JSON package 작성 가이드는 `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`를 먼저 참고하세요.
 
-MVP10 format history와 세부 참고는 `feed-prototype/docs/archive/MVP10_EXTERNAL_POST_FORMAT.md`에 남겨둡니다.
-
-현재 실행 절차와 dry-run/import 검증은 `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`를 참고하세요. 과거 MVP10 회귀 테스트 절차는 `feed-prototype/docs/archive/MVP10_TEST_PROCEDURE.md`에 보관되어 있습니다.
+현재 실행 절차와 dry-run/import 검증은 루트 `README.md` 실행 가이드와 `feed-prototype/docs/GOLDEN_SAMPLE_REGRESSION.md`를 참고하세요. (MVP10 시절 format history/테스트 절차 문서는 저장소 정리로 제거되었으며 과거 내용은 git history 참고.)
 
 ## Import 흐름
 
@@ -355,7 +353,7 @@ post payload에서 `assets` 필드를 생략하면 기존 asset은 유지됩니�
 - 목적지가 결정적이라 같은 package 재import 시 덮어씁니다(누적 없음).
 - DB 스키마/마이그레이션·package format 변경은 없습니다.
 
-예제: `examples/managed_copy_sample/`(상대 로컬 SVG asset + 서빙 URL asset). 상세 guide는 `../../docs/archive/V0_3_3_ASSET_STORAGE_SCOPE.md`.
+예제: `examples/managed_copy_sample/`(상대 로컬 SVG asset + 서빙 URL asset).
 
 ## 지속 import 체크리스트
 

@@ -150,9 +150,9 @@ FastAPI + PostgreSQL 기반 mode입니다. 실제 DB를 read/write하며 user, a
 
 상세 실행 절차와 릴리즈 확인 절차는 아래 문서에서 관리합니다.
 
-- `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`
+- `feed-prototype/docs/README.md` (문서 색인)
 - `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`
-- `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
+- `feed-prototype/docs/MINIO_LOCAL_DEV.md` (로컬 MinIO + end-to-end runbook)
 
 환경 설정은 각 `.env.example`을 복사해 `.env`를 만드는 방식으로 시작합니다. 실제 `.env`는 commit하지 않습니다. Vite 환경변수를 바꾼 뒤에는 frontend dev server를 재시작하고, external import 전에는 backend `DATABASE_URL`이 의도한 DB를 가리키는지 확인합니다.
 

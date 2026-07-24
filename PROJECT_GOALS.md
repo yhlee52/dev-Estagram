@@ -76,9 +76,7 @@ v0.0.0 위에 쌓인 테마:
 다음 테마는 v1.1.x(Rich Asset Experience)입니다. 이미지/plot zoom & pan,
 `mime_type` 기반 interactive chart opt-in 렌더링(Vega-Lite/Plotly JSON), PDF
 inline preview, CSV preview 확장이 로드맵에 예약되어 있습니다(상세는
-`feed-prototype/docs/ROADMAP.md`). 완료된 v0.6.x 상세 scope는
-`feed-prototype/docs/archive/V0_6_0_AUTH_SCOPE.md` ~
-`V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`를 참고합니다. v0.3.0부터
+`feed-prototype/docs/ROADMAP.md`). v0.3.0부터
 mock mode는 "UI 데모 전용 동결" 상태이며, 신규 기능은 API mode에만 추가합니다.
 
 ## 개발 원칙

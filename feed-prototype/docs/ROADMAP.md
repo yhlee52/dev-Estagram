@@ -223,8 +223,8 @@ metadata 스키마 강제/검증
 ingestion(v0.3)·metadata 트리아지(v0.4)로 "데이터를 잘 읽는" 축이 갖춰졌으니,
 그 위에 사람의 입력을 얹는 단계입니다.
 
-진입 판단·후보 계획·재사용 기반은 `archive/V0_5_X_COLLABORATION_PLAN.md`를 참고합니다.
-각 MINOR 확정 scope는 `archive/V0_5_*_SCOPE.md`에 보관합니다.
+v0.5.x의 진입 판단/후보 계획과 각 MINOR 확정 scope 문서는 저장소 정리로 제거되었습니다
+(과거 내용은 git history 참고).
 
 - v0.5.0: comments (테마 기반). **완료.** post별 평면 댓글 — 작성/조회/수정/삭제
   (작성자 본인). 신규 `comments` 테이블 + `GET`/`POST /api/posts/{id}/comments`·
@@ -250,8 +250,7 @@ ingestion(v0.3)·metadata 트리아지(v0.4)로 "데이터를 잘 읽는" 축이
 - v0.5.3: `UX_BACKLOG.md` 반영(테마 마지막 MINOR). **완료.** 현재 Open backlog는
   없었으므로 협업 표면 UX audit으로 `/notifications` Unread empty state, Mark all
   read 로딩 비활성화, Me 탭 Bookmarks empty copy를 작게 정리하고 현재 릴리즈
-  문서/검증 절차를 v0.5.3 기준으로 맞췄습니다. 상세는
-  `archive/V0_5_3_UX_BACKLOG_SCOPE.md`. 이로써 **v0.5.x 테마 완료**.
+  문서/검증 절차를 v0.5.3 기준으로 맞췄습니다. 이로써 **v0.5.x 테마 완료**.
 
 작성자/북마크 소유자/알림 수신자는 prototype active user selection으로
 식별합니다(MVP8 1:1 ownership 체크 패턴). 실제 인증/권한은 v0.6.x입니다.
@@ -285,33 +284,29 @@ external package에 댓글/북마크 싣기 (format 변경 필요)
 
 - v0.6.0: password 로그인 + server-side session. 현재 prototype user
   selection을 실제 인증으로 교체. OAuth/SSO/JWT는 범위 밖. Password는 서버에
-  hash로 저장하고, 로그인 화면에서 현재 password 기반 변경을 지원한다. 상세 scope와
-  검증은 `archive/V0_6_0_AUTH_SCOPE.md`를 따른다.
+  hash로 저장하고, 로그인 화면에서 현재 password 기반 변경을 지원한다.
 - v0.6.1: User:Account 1:1 운영 정책 정리. 봇/프로그램/설비 계정도 로그인 가능한
   별도 user로 취급하며, 하나의 user는 정확히 하나의 account를 가진다는 원칙을
   유지한다. 계정 전환은 "다른 user로 로그인"하는 문제로 다루고, user가 여러
-  account를 소유하거나 대리 작성하는 구조는 범위 밖. 상세 scope와 검증은
-  `archive/V0_6_1_ACCOUNT_IDENTITY_SCOPE.md`를 따른다.
+  account를 소유하거나 대리 작성하는 구조는 범위 밖.
 - v0.6.2: 내 account profile self-service. 로그인한 user가 자기 1:1 account의
   display_name/bio/avatar를 UI에서 직접 수정. account/handle처럼 식별자에
   해당하는 값은 등록 시 고정(수정 불가). Profile asset은 post asset과 분리된
-  profile 전용 storage 정책으로 다룬다. 상세 scope와 검증은
-  `archive/V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md`를 따른다.
+  profile 전용 storage 정책으로 다룬다.
 - v0.6.3: auth hardening & cleanup. 신규 도메인 기능 없이 인증 표면의 운영성/품질을
   보강한다. (1) 운영자 password reset CLI(`scripts/reset_password.py`)로 V0_6_0
   Password Policy의 운영자 reset 경로를 실제 구현, (2) session 만료/무효 시 frontend가
   401을 받아 로그인 화면으로 복귀, (3) 로그인 화면의 dead code 정리. session cookie
   `secure` 분리·write endpoint의 session-only 인가·로그인 화면 user 목록 숨김은
-  비-localhost 이전 시점으로 명시 이연. 상세 scope와 검증은
-  `archive/V0_6_3_AUTH_HARDENING_SCOPE.md`를 따른다.
+  비-localhost 이전 시점으로 명시 이연.
 - v0.6.4: 계정 라이프사이클 (탈퇴/비활성 + post 보존). **완료.** 계정을 그만 쓰는
   경로를 soft deactivation으로 다룬다. `accounts.deactivated_at`(null=active)에 상태를
   두고, 소유자 self-service 비활성화(`POST /api/accounts/{id}/deactivate`) 시 로그인
   차단 + 세션 폐기 + discovery 제외를 적용하되 post/협업 데이터는 보존한다. 신규 follow는
   409로 차단(기존 follow 보존). 재활성화는 운영자 CLI(`scripts/reactivate_user.py`)만.
   ROADMAP 제약의 "비활성/삭제 시 post 처리 정책 별도 확정"을 이 MINOR에서 닫는다.
-  상세 scope와 검증은 `archive/V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`를 따른다. **이로써 v0.6.x
-  테마 완료** — v1.0.0 전제(v0.1 읽기확장 + v0.3 ingestion + v0.6 인증)가 갖춰졌다.
+  **이로써 v0.6.x 테마 완료** — v1.0.0 전제(v0.1 읽기확장 + v0.3 ingestion + v0.6
+  인증)가 갖춰졌다.
 
 > 배경(2026-06-17 결정): v0.6.x에서는 User:Account 1:N으로 확장하지 않고 1:1
 > 원칙을 유지한다. 설비/봇 계정도 별도의 로그인 user로 취급하면, post/comment/
@@ -357,7 +352,7 @@ v1.0.0으로 올립니다. 별도 신규 기능 없이 안정화/문서화/배�
 중심인 릴리즈입니다.
 
 전제는 v0.6.x 완료로 모두 충족되어 **이 마일스톤을 개시**합니다. 다만 v1.0.0은
-"실사용자에게 배포 가능한 기준선"이므로, `archive/V0_6_3`에서 "비-localhost 이전 시"로 이연한
+"실사용자에게 배포 가능한 기준선"이므로, v0.6.3에서 "비-localhost 이전 시"로 이연한
 보안 하드닝(write endpoint의 session 기반 인가, cookie `secure`, 로그인 화면 user 목록
 숨김)이 태그 전 필수입니다. 상세 must-do/안정화 항목과 태그 조건은
 `V1_0_0_RELEASE_SCOPE.md`를 따릅니다. 이 항목들이 통과하기 전에는 v1.0.0을 태그하지

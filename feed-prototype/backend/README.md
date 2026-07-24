@@ -144,8 +144,6 @@ MVP10은 asset 파일을 복사하지 않습니다. JSON의 `asset.url`에는 UI
 
 ```text
 ../data/external_posts/README.md
-../docs/archive/MVP10_EXTERNAL_POST_FORMAT.md
-../docs/archive/MVP10_TEST_PROCEDURE.md
 ```
 
 ## Data Policy

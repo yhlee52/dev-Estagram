@@ -458,8 +458,9 @@ Import 전에 `backend/.env`의 `DATABASE_URL`이 의도한 DB를 가리키는�
 
 기존 문서 역할:
 
-- `archive/MVP10_EXTERNAL_POST_FORMAT.md`: MVP10 format history와 상세 참고
 - `../data/external_posts/README.md`: external post package 작업 폴더 설명
-- `archive/MVP10_TEST_PROCEDURE.md`: 과거 MVP10 회귀 테스트 절차
+
+> MVP10 시절의 format history/테스트 절차 문서는 저장소 정리로 제거되었습니다
+> (과거 내용은 git history 참고).
 
 새 package를 작성할 때는 이 문서를 먼저 보고, 세부 회귀 확인이 필요할 때 historical MVP 문서를 참고합니다.
