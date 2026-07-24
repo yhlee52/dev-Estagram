@@ -18,6 +18,7 @@ from app.schemas.feed import (
     PostWithAssets,
     UserBookmarkIdsResponse,
 )
+from app.services.asset_url import serialize_asset
 from app.services.bookmarks import (
     get_bookmark,
     get_bookmarked_post_ids,
@@ -133,7 +134,7 @@ def list_user_bookmarks(
                 post=PostWithAssets(
                     **post_read.model_dump(),
                     assets=[
-                        PostAssetRead.model_validate(asset)
+                        serialize_asset(asset)
                         for asset in assets_by_post_id.get(post.id, [])
                     ],
                 ),

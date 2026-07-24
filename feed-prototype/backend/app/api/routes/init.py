@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.routes.accounts import router as accounts_router
+from app.api.routes.assets import router as assets_router
 from app.api.routes.auth import router as auth_router
 from app.api.routes.bookmarks import router as bookmarks_router
 from app.api.routes.comments import router as comments_router
@@ -20,6 +21,7 @@ api_router.include_router(health_router)
 api_router.include_router(auth_router)
 api_router.include_router(users_router)
 api_router.include_router(accounts_router)
+api_router.include_router(assets_router)
 api_router.include_router(posts_router)
 api_router.include_router(comments_router)
 api_router.include_router(bookmarks_router)

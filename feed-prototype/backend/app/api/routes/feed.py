@@ -14,6 +14,7 @@ from app.schemas.feed import (
     PostRead,
     UserRead,
 )
+from app.services.asset_url import serialize_asset
 from app.services.comments import get_comment_counts
 from app.services.post_filters import (
     DEFAULT_LIMIT,
@@ -110,7 +111,7 @@ def get_feed(
             ),
             account=AccountRead.model_validate(accounts_by_id[post.account_id]),
             assets=[
-                PostAssetRead.model_validate(asset)
+                serialize_asset(asset)
                 for asset in assets_by_post_id.get(post.id, [])
             ],
         )
