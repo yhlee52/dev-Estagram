@@ -69,6 +69,13 @@ class Settings(BaseSettings):
     s3_manifest_filename: str = "feed_posts.json"
     s3_ready_filename: str = "_READY.json"
 
+    # Absolute base URL the API prepends when emitting the asset proxy URL for
+    # S3-backed assets (v1.2.4). The frontend uses the stored asset url directly
+    # as an <img src>/link without prepending its API base, so this must be the
+    # backend's own externally reachable origin. Defaults to the local dev
+    # backend; set it for any non-localhost deployment.
+    asset_proxy_base_url: str = "http://127.0.0.1:8000"
+
     # Watch worker knobs (declared here in v1.2.0; consumed by the worker in
     # v1.2.2). Kept as config-only now to avoid a later config-only migration.
     s3_watch_enabled: bool = False

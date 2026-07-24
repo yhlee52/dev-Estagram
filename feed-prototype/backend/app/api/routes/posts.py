@@ -21,6 +21,7 @@ from app.schemas.feed import (
     PostUpdate,
     PostWithAssets,
 )
+from app.services.asset_url import serialize_asset
 from app.services.comments import get_comment_counts
 from app.services.post_filters import (
     DEFAULT_LIMIT,
@@ -123,7 +124,7 @@ def build_post_with_assets(
     )
     return PostWithAssets(
         **post_read.model_dump(),
-        assets=[PostAssetRead.model_validate(asset) for asset in assets],
+        assets=[serialize_asset(asset) for asset in assets],
     )
 
 
@@ -182,7 +183,7 @@ def create_post(
     return FeedItem(
         post=PostRead.model_validate(post),
         account=AccountRead.model_validate(account),
-        assets=[PostAssetRead.model_validate(asset) for asset in assets],
+        assets=[serialize_asset(asset) for asset in assets],
     )
 
 

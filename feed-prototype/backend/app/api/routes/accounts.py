@@ -13,6 +13,7 @@ from app.schemas.feed import (
     PostRead,
     PostWithAssets,
 )
+from app.services.asset_url import serialize_asset
 from app.services.auth import revoke_user_sessions
 from app.services.comments import get_comment_counts
 from app.services.post_filters import PostFilters, apply_filters_to_select
@@ -127,7 +128,7 @@ def build_post_with_assets(
     return PostWithAssets(
         **post_read.model_dump(),
         assets=[
-            PostAssetRead.model_validate(asset)
+            serialize_asset(asset)
             for asset in get_post_assets(session, post.id)
         ],
     )

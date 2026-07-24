@@ -24,6 +24,7 @@ from app.schemas.feed import (
     PostRead,
     PostWithAssets,
 )
+from app.services.asset_url import serialize_asset
 from app.services.comments import get_comment_authors, get_comment_counts
 from app.services.mentions import mentions_handle
 from app.services.post_filters import get_accounts_by_id, get_assets_by_post_id
@@ -258,7 +259,7 @@ def _build_post_with_assets(
     return PostWithAssets(
         **post_read.model_dump(),
         assets=[
-            PostAssetRead.model_validate(asset)
+            serialize_asset(asset)
             for asset in assets_by_post_id.get(post.id, [])
         ],
     )
