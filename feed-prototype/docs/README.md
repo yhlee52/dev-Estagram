@@ -34,6 +34,8 @@ user를 세션 user 조회로 대체), v0.6.1 User:Account 1:1 identity 운영 �
   sequence·state diagram, object layout, immutability, asset URL 정책, 보안) — v1.2.x
 - `MINIO_LOCAL_DEV.md`: 집 개발환경용 로컬 MinIO 설정 + producer→worker→feed
   end-to-end runbook — v1.2.x
+- `S3_VERIFICATION_RUNBOOK.md`: **DB 초기화부터 내 파일을 S3(MinIO)로 검증**까지
+  전체 통합 runbook (권장 시작점) — v1.2.x
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog
 - `../data/external_posts/README.md`: external post package 작업 guide
 
