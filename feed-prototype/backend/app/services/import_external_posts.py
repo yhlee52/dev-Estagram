@@ -5,7 +5,7 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from uuid import uuid4
 
 from pydantic import ValidationError
@@ -20,6 +20,7 @@ from app.models.post import Post
 from app.models.user import User
 from app.schemas.external_import import (
     ExternalImportAccount,
+    ExternalImportAsset,
     ExternalImportBatch,
     ExternalImportPayload,
     ExternalImportPost,
@@ -45,6 +46,28 @@ class ImportSummary:
 
 class ImportErrorWithMessage(Exception):
     pass
+
+
+@dataclass
+class ResolvedAssetIdentity:
+    """What an `asset_identity_resolver` returns for one manifest asset.
+
+    Lets a caller (the S3 ingestion path, v1.2.1) override the stored url and
+    attach permanent object-storage identity to the created `PostAsset`, without
+    the importer knowing about S3. When no resolver is given (filesystem / HTTP
+    import), asset handling is byte-for-byte unchanged.
+    """
+
+    url: str | None
+    src: str | None = None
+    storage_backend: str | None = None
+    bucket: str | None = None
+    object_key: str | None = None
+    size_bytes: int | None = None
+    etag: str | None = None
+
+
+AssetIdentityResolver = Callable[[ExternalImportAsset], ResolvedAssetIdentity | None]
 
 
 def utc_now() -> datetime:
@@ -328,6 +351,7 @@ def replace_assets_for_post(
     batch_external_id: str,
     asset_source_dir: Path | None,
     settings: Settings,
+    asset_identity_resolver: AssetIdentityResolver | None = None,
 ) -> None:
     if "assets" not in post_input.model_fields_set:
         return
@@ -351,6 +375,33 @@ def replace_assets_for_post(
     manage_assets = settings.manage_asset_storage and asset_source_dir is not None
 
     for asset_input in post_input.assets:
+        # An identity resolver (S3 ingestion, v1.2.1) can override the stored url
+        # and attach object-storage identity. When it returns None for an asset,
+        # or no resolver is given, fall back to the existing url/managed-copy
+        # behavior (filesystem / HTTP import stay byte-for-byte identical).
+        identity = asset_identity_resolver(asset_input) if asset_identity_resolver else None
+        if identity is not None:
+            url = identity.url
+            session.add(
+                PostAsset(
+                    id=f"asset-{uuid4()}",
+                    external_id=asset_input.external_id,
+                    post_id=post.id,
+                    type=asset_input.type,
+                    title=asset_input.title,
+                    description=asset_input.description,
+                    url=url,
+                    src=identity.src or url,
+                    sort_order=asset_input.sort_order,
+                    storage_backend=identity.storage_backend,
+                    bucket=identity.bucket,
+                    object_key=identity.object_key,
+                    size_bytes=identity.size_bytes,
+                    etag=identity.etag,
+                )
+            )
+            continue
+
         url = asset_input.url
         if manage_assets:
             url = managed_url_for_asset(
@@ -482,6 +533,7 @@ def import_payload(
     *,
     dry_run: bool,
     asset_source_dir: Path | None = None,
+    asset_identity_resolver: AssetIdentityResolver | None = None,
 ) -> ImportSummary:
     """Import a validated payload.
 
@@ -490,6 +542,10 @@ def import_payload(
     set by the CLI / process_incoming (disk packages) and left None by the HTTP
     route (no files on disk), so HTTP import never copies. Copy only happens when
     `Settings.manage_asset_storage` is on; otherwise this is a no-op.
+
+    `asset_identity_resolver` is an optional hook (S3 ingestion, v1.2.1) that,
+    per asset, returns the stored url plus object-storage identity. When None
+    (filesystem / HTTP import), asset handling is unchanged.
     """
     ensure_unique_payload_ids(payload)
     settings = get_settings()
@@ -545,6 +601,7 @@ def import_payload(
             batch_external_id=payload.batch.external_id,
             asset_source_dir=asset_source_dir,
             settings=settings,
+            asset_identity_resolver=asset_identity_resolver,
         )
 
     # Record the successful batch event atomically with the imported rows
