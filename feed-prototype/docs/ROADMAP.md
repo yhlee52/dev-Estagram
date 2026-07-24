@@ -387,6 +387,11 @@ MinIO / 회사: S3)에 업로드하면, backend watch worker가 이를 주기적
   같은 배치가 매 polling마다 보이는 것은 정상이며 재처리 여부는 DB로 판단한다.
 - import 검증/DB 생성 로직은 복제하지 않고 `import_payload`를 재사용한다.
 
+> 진행: v1.2.0~v1.2.5 **코드 구현 완료**(PR로 분리). 자동 단위 테스트는 MinIO/DB
+> 없이 통과. 라이브 end-to-end(MinIO 업로드→worker→feed 렌더)와 `APP_RELEASE_LABEL`
+> 처리 방침은 사용자 최종 확인 단계에서 마무리. 검증 체크리스트는
+> `V1_2_5_THEME_WRAPUP_SCOPE.md`.
+
 - v1.2.0: Storage 추상화 + S3 discovery (기반). read-only S3 client
   (list ready markers/read json/head/exists/pagination, mutation 없음), `S3_*`
   설정, `_READY.json` 모델·검증(schema version, batch_external_id↔prefix 일치,
