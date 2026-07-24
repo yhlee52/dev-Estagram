@@ -1,0 +1,60 @@
+# Local MinIO for S3-compatible ingestion development (v1.2.3).
+#
+# The project has no base compose, so this is a standalone file: it brings up
+# MinIO (S3 API + web console) and auto-creates the ingestion bucket. The
+# credentials here are DEV-ONLY — never use them for anything real.
+#
+# Run from feed-prototype/ :
+#   docker compose -f docker-compose.minio.yml up -d      # start (detached)
+#   docker compose -f docker-compose.minio.yml logs -f    # watch startup
+#   docker compose -f docker-compose.minio.yml down       # stop, KEEP data
+#   docker compose -f docker-compose.minio.yml down -v    # stop, WIPE data
+#
+#   Console : http://localhost:9001   (login: localadmin / localpassword)
+#   S3 API  : http://localhost:9000
+#
+# These match backend/.env.example's "home MinIO" block:
+#   S3_ENDPOINT_URL=http://localhost:9000  S3_ACCESS_KEY_ID=localadmin
+#   S3_SECRET_ACCESS_KEY=localpassword     S3_BUCKET=estagram
+#   S3_REGION=us-east-1                     S3_FORCE_PATH_STYLE=true
+
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: estagram-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # web console
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-localadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-localpassword}
+    volumes:
+      - minio-data:/data
+      # To keep MinIO data in a Windows folder instead of a Docker-managed
+      # volume, replace the line above with a bind mount, e.g.:
+      #   - D:/estagram-minio-data:/data
+    restart: unless-stopped
+
+  # One-shot helper: waits for MinIO, then creates the bucket (idempotent).
+  minio-setup:
+    image: minio/mc:latest
+    container_name: estagram-minio-setup
+    depends_on:
+      - minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-localadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-localpassword}
+      S3_BUCKET: ${S3_BUCKET:-estagram}
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 \"$${MINIO_ROOT_USER}\" \"$${MINIO_ROOT_PASSWORD}\" >/dev/null 2>&1; do
+        echo 'waiting for minio...'; sleep 1;
+      done;
+      mc mb --ignore-existing local/\"$${S3_BUCKET}\";
+      echo \"MinIO ready. bucket: $${S3_BUCKET}\";
+      "
+    restart: "no"
+
+volumes:
+  minio-data:
