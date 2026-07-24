@@ -50,3 +50,30 @@ class ImportBatch(SQLModel, table=True):
     assets_deleted: int = 0
     assets_created: int = 0
     errors: int = 0
+
+    # --- S3 / object-storage ingestion tracking (v1.2.1) ---------------------
+    # All nullable and unused by the filesystem/HTTP import paths, which leave
+    # them None. Only the S3 watch worker populates them. `status` above stays
+    # the success/failed event snapshot for the existing /api/imports history;
+    # `ingest_state` is a SEPARATE lifecycle used only by S3 ingestion, so the
+    # two never collide.
+    #
+    # ingest_state ∈ {pending, processing, completed, failed, ignored} for S3
+    # rows; None for legacy filesystem/HTTP rows.
+    ingest_state: str | None = Field(default=None, index=True)
+    storage_backend: str | None = None  # "s3" for object-storage batches
+    bucket: str | None = None
+    object_prefix: str | None = None  # {root}/batches/{batch_external_id}
+    manifest_key: str | None = None  # full object key of feed_posts.json
+    ready_key: str | None = None  # full object key of _READY.json
+    discovered_at: datetime | None = None
+    processing_started_at: datetime | None = None
+    completed_at: datetime | None = None
+    failed_at: datetime | None = None
+    attempt_count: int | None = None
+    error_code: str | None = None
+    error_message: str | None = None
+    manifest_etag: str | None = None
+    manifest_last_modified: datetime | None = None
+    created_post_count: int | None = None
+    created_asset_count: int | None = None
