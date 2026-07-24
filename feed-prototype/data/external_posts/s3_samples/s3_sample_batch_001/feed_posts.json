@@ -1,0 +1,47 @@
+{
+  "batch": {
+    "external_id": "s3_sample_batch_001",
+    "source": "s3-sample",
+    "created_at": "2026-07-24T12:00:00"
+  },
+  "accounts": [
+    {
+      "external_id": "acct-s3-sample",
+      "handle": "s3_sample",
+      "display_name": "S3 Sample",
+      "bio": "Sample batch uploaded to MinIO for the v1.2.3 end-to-end check."
+    }
+  ],
+  "posts": [
+    {
+      "external_id": "post-s3-sample-001",
+      "account_external_id": "acct-s3-sample",
+      "title": "S3 ingestion sample",
+      "text": "Uploaded to MinIO by upload_post_batch.py and imported by the S3 watch worker.",
+      "created_at": "2026-07-24T12:00:00",
+      "tags": ["s3-sample", "ingestion"],
+      "metadata_json": {
+        "source": "s3-sample",
+        "scenario": "minio-e2e"
+      },
+      "assets": [
+        {
+          "external_id": "asset-s3-sample-001-csv",
+          "type": "table",
+          "url": "assets/summary.csv",
+          "title": "Summary CSV",
+          "description": "A batch-relative asset that becomes an object in the batch prefix.",
+          "sort_order": 1
+        },
+        {
+          "external_id": "asset-s3-sample-001-link",
+          "type": "link",
+          "url": "https://example.com/s3-sample/001",
+          "title": "Reference link",
+          "description": "A remote asset the uploader leaves untouched (not a batch object).",
+          "sort_order": 2
+        }
+      ]
+    }
+  ]
+}
