@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -39,6 +40,43 @@ class Settings(BaseSettings):
     # the deployed frontend's exact scheme+host+port.
     session_cookie_secure: bool = False
     cors_allow_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+
+    # External post ingestion backend selector (v1.2.0). "filesystem" keeps the
+    # existing incoming/ directory watch (v0.3.x) as the only ingestion path;
+    # "s3" enables the S3-compatible object-storage discovery added in v1.2.x.
+    # The two backends share the same domain importer; only discovery and asset
+    # access differ.
+    ingest_storage_backend: str = "filesystem"
+
+    # S3-compatible object storage (v1.2.0). Same boto3 code targets local MinIO
+    # (home dev) and a company S3 endpoint; only these env values differ. Leave
+    # `s3_endpoint_url` unset for real AWS S3 (SDK resolves the endpoint from the
+    # region); set it to the MinIO/company URL otherwise. Secrets live only in
+    # `.env` (see .env.example placeholders), never committed. `s3_secret_access_key`
+    # is a SecretStr so it is masked in logs/repr.
+    s3_endpoint_url: str | None = None
+    s3_access_key_id: str | None = None
+    s3_secret_access_key: SecretStr | None = None
+    s3_region: str = "ap-northeast-2"
+    s3_bucket: str | None = None
+    s3_root_prefix: str = "estagram"
+    # MinIO and many S3-compatible stores need path-style addressing
+    # (http://host/bucket/key) instead of virtual-hosted-style. AWS S3 uses False.
+    s3_force_path_style: bool = False
+
+    # Object layout knobs (v1.2.0). Reasonable defaults, overridable per env.
+    s3_batches_prefix: str = "batches"
+    s3_manifest_filename: str = "feed_posts.json"
+    s3_ready_filename: str = "_READY.json"
+
+    # Watch worker knobs (declared here in v1.2.0; consumed by the worker in
+    # v1.2.2). Kept as config-only now to avoid a later config-only migration.
+    s3_watch_enabled: bool = False
+    s3_watch_interval_seconds: int = 10
+    s3_watch_batch_limit: int = 20
+    s3_processing_timeout_seconds: int = 1800
+    s3_failed_retry_enabled: bool = False
+    s3_failed_max_attempts: int = 3
 
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env",
