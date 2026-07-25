@@ -255,7 +255,6 @@ payload를 다시 보내면 `external_id` 기준 upsert로 중복 없이 갱신�
 ```text
 data/external_posts/README.md
 docs/EXTERNAL_POST_PACKAGE_GUIDE.md
-docs/archive/V0_3_0_HTTP_IMPORT_SCOPE.md
 ```
 
 ### Import Batch 이력 (v0.3.1)
@@ -273,8 +272,7 @@ curl "http://127.0.0.1:8000/api/imports/<batch_external_id>"
 ```
 
 API mode UI에서는 좌측 네비의 **Imports** 탭(`/imports`)에서 batch 목록과 상세를
-볼 수 있습니다(mock mode에서는 노출되지 않음). 상세 guide는
-`docs/archive/V0_3_1_BATCH_HISTORY_SCOPE.md`.
+볼 수 있습니다(mock mode에서는 노출되지 않음).
 
 ### 디렉터리 일괄 처리 / 자동 이동 / Watch (v0.3.2)
 
@@ -301,8 +299,7 @@ python -m app.services.process_incoming --watch --interval 10
 이동하지 않습니다. external_posts 루트는 `backend/.env`의 `EXTERNAL_POSTS_DIR`
 (또는 `--base-dir`)로 바꿀 수 있고, 기본값은 리포의 `data/external_posts`입니다.
 watch가 쓰다 만 파일을 집지 않도록, package writer는 임시 파일에 쓴 뒤 rename
-(atomic)으로 `incoming/`에 넣는 것을 권장합니다. 상세 guide는
-`docs/archive/V0_3_2_AUTO_INGESTION_SCOPE.md`.
+(atomic)으로 `incoming/`에 넣는 것을 권장합니다.
 
 ### Asset Managed Storage 복사 (v0.3.3, opt-in)
 
@@ -330,8 +327,7 @@ MANAGED_ASSETS_URL_PREFIX=/assets/managed
 - 원본 파일 누락·패키지 밖 경로·복사 실패는 import를 실패시키지 않고 원본 url을
   그대로 둡니다(경고 로그).
 - 목적지가 결정적이라 같은 package 재import 시 덮어씁니다(누적 없음).
-- 기본값 OFF에서는 v0.3.2와 동작이 완전히 동일합니다. 상세 guide는
-  `docs/archive/V0_3_3_ASSET_STORAGE_SCOPE.md`.
+- 기본값 OFF에서는 v0.3.2와 동작이 완전히 동일합니다.
 
 ## Sample Data
 
@@ -361,8 +357,8 @@ recipe, chamber, status, severity 같은 report-like value는 sample metadata va
 ```text
 docs/V1_0_0_RELEASE_SCOPE.md
 docs/ACCOUNT_MANAGEMENT.md
-docs/RELEASE_0_0_RUNBOOK.md
-docs/RELEASE_0_0_CHECKLIST.md
+docs/S3_INGESTION_ARCHITECTURE.md
+docs/MINIO_LOCAL_DEV.md
 docs/EXTERNAL_POST_PACKAGE_GUIDE.md
 docs/README.md
 ```

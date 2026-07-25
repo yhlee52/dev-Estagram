@@ -20,7 +20,7 @@ ROADMAP 기준 v1.0.0은 다음 세 축이 갖춰지면 올립니다 — 현재 
 
 ## Must-do (태그 전 필수)
 
-대부분 `archive/V0_6_3_AUTH_HARDENING_SCOPE.md`의 "Deferred — 비-localhost 이전 시 처리"
+대부분 v0.6.3의 "Deferred — 비-localhost 이전 시 처리"
 항목입니다. v1.0.0이 그 "비-localhost 이전" 시점입니다.
 
 ### 1. Session 기반 write 인가 (보안 blocker) — 구현 완료
@@ -47,7 +47,7 @@ request body/query의 `user_id`를 신뢰하지 않습니다. 행위자는 `get_
 - CORS_ALLOW_ORIGINS 환경설정(쉼표 구분)으로 배포 host에 맞춘 allow_origins 지정.
   기본값은 Vite dev server origin.
 - SameSite=Lax 유지. backend가 localhost 바인딩을 벗어날 때는 HTTPS 종단 + 위 두
-  값을 배포 host에 맞게 설정한다는 전제를 RELEASE_0_0_RUNBOOK.md에 문서화.
+  값을 배포 host에 맞게 설정한다는 전제를 문서화.
 ```
 
 ### 3. 로그인 화면 user 목록 노출 제거 — 구현 완료
@@ -82,7 +82,7 @@ Must-do 1의 session 인가 전환에 맞춰, write/self-scoped endpoint를 쓰�
 - [x] golden sample external package --dry-run 통과 (format 동결 유지)
 - [x] clean DB에서 alembic upgrade head + seed 성공
 - [x] npm run build / npm run lint 통과
-- [x] RELEASE_0_0_RUNBOOK.md / RELEASE_0_0_CHECKLIST.md가 실제 배포 절차로 동작
+- [x] 로컬 실행/배포 절차 문서가 실제 배포 절차로 동작
 - [x] APP_VERSION을 v1.0.0으로 bump
 ```
 

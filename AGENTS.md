@@ -19,10 +19,8 @@ v0.1.x~v0.6.x 테마가 모두 완료되어 v1.0.0 전제(v0.1 읽기 확장 + v
 직전 테마 v0.6.x(인증 & 멀티유저)는 v0.6.0 password 로그인 + server-side
 session(httpOnly cookie), v0.6.1 User:Account 1:1 identity 운영 정책, v0.6.2
 내 account profile self-service, v0.6.3 auth hardening & cleanup, v0.6.4 계정
-라이프사이클(soft deactivation + post 보존)로 **완료**되었습니다. 상세 scope는
-`feed-prototype/docs/archive/V0_6_0_AUTH_SCOPE.md` ~
-`V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`에 있습니다. 다음 테마는 v1.1.x(Rich Asset
-Experience)입니다(`feed-prototype/docs/ROADMAP.md`).
+라이프사이클(soft deactivation + post 보존)로 **완료**되었습니다. 다음 테마는
+v1.1.x(Rich Asset Experience)입니다(`feed-prototype/docs/ROADMAP.md`).
 실행, external package 작성, 릴리즈 검증은 다음 문서를 우선 참고합니다.
 
 - `README.md`
@@ -32,14 +30,15 @@ Experience)입니다(`feed-prototype/docs/ROADMAP.md`).
 - `feed-prototype/docs/V1_0_0_RELEASE_SCOPE.md` (v1.0.0 must-do/안정화/태그 조건)
 - `feed-prototype/docs/ACCOUNT_MANAGEMENT.md` (계정 관리 명령어 모음 — operator CLI + self-service API)
 - `feed-prototype/docs/GOLDEN_SAMPLE_REGRESSION.md`
-- `feed-prototype/docs/RELEASE_0_0_RUNBOOK.md`
 - `feed-prototype/docs/EXTERNAL_POST_PACKAGE_GUIDE.md`
-- `feed-prototype/docs/RELEASE_0_0_CHECKLIST.md`
+- `feed-prototype/docs/S3_INGESTION_ARCHITECTURE.md` (S3/MinIO ingestion 아키텍처 — v1.2.x)
+- `feed-prototype/docs/MINIO_LOCAL_DEV.md` (로컬 MinIO + end-to-end runbook — v1.2.x)
 
 완료된 테마(v0.1.x~v0.6.x)의 버전별 상세 scope 문서(`V0_x_y_*_SCOPE.md`)와
-진입 판단/후보 계획(`V0_x_X_*_PLAN.md`), 과거 MVP별 테스트 절차는 모두
-`feed-prototype/docs/archive/` 아래에 historical reference로 보관됩니다.
-현재 실행/릴리즈 기준은 archived 문서보다 위 문서를 우선합니다.
+진입 판단/후보 계획(`V0_x_X_*_PLAN.md`), 과거 MVP별 테스트 절차, v0.0.0 릴리즈
+문서(구 `feed-prototype/docs/archive/`·`RELEASE_0_0_*`)는 저장소 정리로 제거되었습니다.
+과거 내용이 필요하면 git history에서 확인하고, 현재 실행/릴리즈 기준은 위 현행 문서를
+우선합니다.
 
 ## Core Domain
 
@@ -264,25 +263,22 @@ v0.6.x — 인증 & 멀티유저 (Auth & Multi-user):
 - v0.6.0: password 로그인 + server-side session(httpOnly cookie). prototype
   active API user selection을 실제 인증으로 교체(활성 user는 세션 조회로 도출).
   password는 서버에 hash로 저장하고 로그인 화면에서 현재 password 기반 변경을
-  지원. OAuth/SSO/JWT는 범위 밖. 상세는 `docs/archive/V0_6_0_AUTH_SCOPE.md`.
+  지원. OAuth/SSO/JWT는 범위 밖.
 - v0.6.1: User:Account 1:1 identity 운영 정책. 봇/프로그램/설비 계정도 로그인
   가능한 별도 user + 1:1 account로 취급하고, 계정 전환은 "다른 user로 로그인"으로
   다룬다. 1:N 소유/대리 작성은 범위 밖.
-  상세는 `docs/archive/V0_6_1_ACCOUNT_IDENTITY_SCOPE.md`.
 - v0.6.2: 내 account profile self-service. 로그인 user가 자기 1:1 account의
   display_name/bio/avatar를 UI에서 직접 수정(identifier인 handle은 등록 시 고정).
-  상세는 `docs/archive/V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md`.
 - v0.6.3: auth hardening & cleanup. 운영자 password reset
   CLI(`backend/scripts/reset_password.py`), 세션 만료/무효 401 시 로그인 화면
   복귀, 로그인 화면 dead code 정리. cookie `secure` 분리·write endpoint의
   session-only 인가·로그인 화면 user 목록 숨김은 v1.0.0으로 이연.
-  상세는 `docs/archive/V0_6_3_AUTH_HARDENING_SCOPE.md`.
 - v0.6.4: 계정 라이프사이클. `accounts.deactivated_at`(null=active) 기반 soft
   deactivation — 소유자 self-service 비활성화(`POST /api/accounts/{id}/deactivate`)
   시 로그인 차단 + 세션 폐기 + discovery 제외, post/협업 데이터는 보존, 신규
   follow는 409(기존 follow 보존), 재활성화는 운영자
   CLI(`backend/scripts/reactivate_user.py`)만. 이로써 v0.6.x 테마 완료 — v1.0.0
-  전제 충족. 상세는 `docs/archive/V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md`.
+  전제 충족.
 
 v1.0.0 — 첫 major (배포 가능한 제품 기준선):
 

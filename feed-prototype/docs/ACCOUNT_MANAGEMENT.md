@@ -19,7 +19,7 @@ feed-prototype의 user/account를 다루는 **모든 명령**을 모았습니다
 
 > API base host와 앱을 여는 host를 맞추세요(둘 다 `localhost`). 다르면 세션 쿠키
 > (SameSite=Lax)가 cross-site로 취급돼 드랍되고 로그인이 유지되지 않습니다.
-> 자세한 내용은 `RELEASE_0_0_RUNBOOK.md` 참고.
+> 자세한 실행 절차는 루트 `README.md` 실행 가이드를 참고.
 
 ---
 
@@ -159,13 +159,10 @@ curl http://localhost:8000/api/accounts/demo-account-ari
 | 다른 user/account 대리 관리 | 없음 (1:1·소유자 한정) | 범위 밖 (v0.6.x non-goal) |
 
 write endpoint의 세션 기반 인가 전환은 v1.0.0에서 구현 완료되었습니다. 비-localhost
-배포 시 cookie/CORS 설정은 `V1_0_0_RELEASE_SCOPE.md`와 `RELEASE_0_0_RUNBOOK.md`에
-정리되어 있습니다.
+배포 시 cookie/CORS 설정은 `V1_0_0_RELEASE_SCOPE.md`에 정리되어 있습니다.
 
 ## 관련 문서
 
-- `archive/V0_6_0_AUTH_SCOPE.md` — password 로그인 + 세션
-- `archive/V0_6_2_PROFILE_SELF_SERVICE_SCOPE.md` — profile self-service
-- `archive/V0_6_3_AUTH_HARDENING_SCOPE.md` — 운영자 reset / 이연 항목
-- `archive/V0_6_4_ACCOUNT_LIFECYCLE_SCOPE.md` — 비활성화/재활성화 + post 보존
-- `RELEASE_0_0_RUNBOOK.md` / `RELEASE_0_0_CHECKLIST.md` — 실행/검증 절차
+- 인증/계정 라이프사이클(v0.6.x)의 버전별 상세 scope 문서는 저장소 정리로
+  제거되었습니다(과거 내용은 git history 참고). 배포 관련 설정은
+  `V1_0_0_RELEASE_SCOPE.md`를 참고합니다.
