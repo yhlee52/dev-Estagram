@@ -250,3 +250,21 @@ feed-prototype 폴더에서 (`-f` 를 빼면 설정 파일을 못 찾아 실패�
 ```
 docker compose -f docker-compose.minio.yml down -v
 ```
+
+만일 파일에 문제가 있거나, 포스트 에러가 있어서 다시 작성 후 동일한 배치 폴더 이름으로 만들어 올린다면, 다음을 수행한다.
+
+```
+1) 고친 배치를 덮어쓰기로 다시 올린다
+python -m scripts.upload_post_batch --batch-dir D:\...\my_batch_001 --overwrite
+
+2) 상태를 pending으로 되돌린다  ← SQL 대신
+python -m scripts.reset_batch_state --batch-dir D:\...\my_batch_001
+```
+
+여러 개를 고쳤다면 batch-root를 사용할 수 있다.
+```
+python -m scripts.upload_post_batch --batch-root D:\...\batches --overwrite
+python -m scripts.reset_batch_state  --batch-root D:\...\batches
+```
+
+왜 두 번  실행하냐면, 첫 번째 코드는 MinIO의 배치 객체를, 두 번째 코드는 Postgres의 ingest_state를 변경하기 때문이다.
