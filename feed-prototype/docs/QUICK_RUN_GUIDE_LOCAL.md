@@ -184,6 +184,37 @@ $env:S3_FORCE_PATH_STYLE="true"
 ```
 을 실행한 뒤 업로드를 진행하는 것이 편리.
 
+## 배치가 여러 개일 때 (`--batch-root`)
+
+배치 폴더가 수십~수백 개라면 `--batch-dir` 를 반복하는 대신 상위 폴더 하나를
+`--batch-root` 로 지정하면 그 아래 배치를 전부 한 번에 올린다. 하위 폴더를
+재귀적으로 뒤져 manifest(`feed_posts.json`)를 가진 디렉터리를 배치로 인식하므로,
+깊이가 섞여 있어도 된다.
+
+먼저 dry-run으로 전부 검증만:
+
+```
+python -m scripts.upload_post_batch --batch-root C:\path\to\batches --bucket estagram --dry-run
+```
+
+문제가 없으면 실제 업로드:
+
+```
+python -m scripts.upload_post_batch --batch-root C:\path\to\batches
+```
+
+끝나면 아래처럼 요약이 나온다.
+
+```
+summary: uploaded=173 skipped=2 failed=1 of 176
+```
+
+- 배치 하나가 실패해도 나머지는 계속 진행된다. 실패 목록은 마지막에 따로 출력된다.
+- 이미 올라간 배치는 `failed` 가 아니라 `skipped` 로 집계된다. 그래서 중간에 끊겨도
+  같은 명령을 다시 실행하면 안 올라간 것만 채워진다.
+- `failed` 가 하나라도 있으면 종료 코드가 1이다.
+- `--batch-id` 는 배치 하나를 지정하는 옵션이라 `--batch-root` 와 같이 쓸 수 없다.
+
 # PHASE 8. watch worker 기동 (감지 -> import)
 
 새로운 터미널 D(venv) 를 연 뒤, backend 폴더로 간다

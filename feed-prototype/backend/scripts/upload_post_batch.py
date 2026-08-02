@@ -23,6 +23,17 @@ Layout expected under --batch-dir:
       feed_posts.json            # the frozen manifest (batch.external_id inside)
       assets/
         image_001.png            # referenced by feed_posts.json as "assets/image_001.png"
+
+`--batch-root` uploads every batch under a parent directory in one run, finding
+batch directories by searching recursively for the manifest filename (so nested
+layouts work too). Each batch is still uploaded in the same strict order, and one
+bad batch never aborts the run: the batch is reported as failed and the rest
+continue, with an `uploaded / skipped / failed` summary at the end. Batches that
+are already in the bucket count as `skipped`, not `failed`, so an interrupted run
+can simply be re-run to upload only what is missing.
+
+    python -m scripts.upload_post_batch --batch-root ./post_batches --dry-run
+    python -m scripts.upload_post_batch --batch-root ./post_batches
 """
 
 from __future__ import annotations
@@ -51,6 +62,14 @@ from app.services.s3_storage import S3IngestConfig, build_s3_client
 
 class UploadError(Exception):
     pass
+
+
+class BatchAlreadyUploadedError(UploadError):
+    """The batch's `_READY.json` is already in the bucket and --overwrite was not given.
+
+    A distinct type so `--batch-root` can count an existing batch as `skipped`
+    instead of `failed` — that is what makes an interrupted bulk run resumable.
+    """
 
 
 @dataclass(frozen=True)
@@ -155,6 +174,24 @@ def build_upload_plan(
     )
 
 
+def discover_batch_dirs(batch_root: Path, manifest_filename: str) -> list[Path]:
+    """Find every batch directory under `batch_root`, deepest-first-safe and sorted.
+
+    A directory counts as a batch when it directly contains the manifest file. The
+    search is recursive so a parent holding batches at mixed depths still works.
+    Pure (no network, no parsing) — validation happens per batch in build_upload_plan.
+    """
+    if not batch_root.is_dir():
+        raise UploadError(f"--batch-root is not a directory: {batch_root}")
+
+    batch_dirs = sorted(
+        {manifest.parent for manifest in batch_root.rglob(manifest_filename) if manifest.is_file()}
+    )
+    if not batch_dirs:
+        raise UploadError(f"no {manifest_filename} found anywhere under {batch_root}")
+    return batch_dirs
+
+
 def _object_exists(client: Any, bucket: str, key: str) -> bool:
     from botocore.exceptions import ClientError
 
@@ -175,31 +212,48 @@ def upload_plan(
     *,
     overwrite: bool,
     dry_run: bool,
+    verbose: bool = True,
 ) -> None:
-    """Upload assets, then the manifest, then `_READY.json` last."""
+    """Upload assets, then the manifest, then `_READY.json` last.
+
+    `verbose=False` silences the per-object log so `--batch-root` can print one
+    line per batch instead of one line per object.
+    """
     if not overwrite and _object_exists(client, bucket, plan.ready_key):
-        raise UploadError(
+        raise BatchAlreadyUploadedError(
             f"batch already uploaded (found {plan.ready_key}). Use --overwrite to replace, "
             "but note the backend will not auto-reprocess a completed batch — reset its "
             "state or use a new revision id (e.g. <id>_v2)."
         )
 
-    print(f"batch: {plan.batch_id}  bucket: {bucket}")
-    print(f"assets: {len(plan.assets)} object(s), {plan.asset_occurrences} manifest ref(s)")
+    if verbose:
+        print(f"batch: {plan.batch_id}  bucket: {bucket}")
+        print(f"assets: {len(plan.assets)} object(s), {plan.asset_occurrences} manifest ref(s)")
 
     for item in plan.assets:
-        _put(client, bucket, item.object_key, item.local_path.read_bytes(), item.content_type, dry_run, "asset")
-    _put(client, bucket, plan.manifest.object_key, plan.manifest.local_path.read_bytes(), "application/json", dry_run, "manifest")
+        _put(client, bucket, item.object_key, item.local_path.read_bytes(), item.content_type, dry_run, "asset", verbose)
+    _put(client, bucket, plan.manifest.object_key, plan.manifest.local_path.read_bytes(), "application/json", dry_run, "manifest", verbose)
     # _READY.json strictly last.
     ready_bytes = json.dumps(plan.ready_marker, indent=2).encode("utf-8")
-    _put(client, bucket, plan.ready_key, ready_bytes, "application/json", dry_run, "ready")
+    _put(client, bucket, plan.ready_key, ready_bytes, "application/json", dry_run, "ready", verbose)
 
-    print("dry-run: nothing uploaded" if dry_run else "upload complete")
+    if verbose:
+        print("dry-run: nothing uploaded" if dry_run else "upload complete")
 
 
-def _put(client: Any, bucket: str, key: str, data: bytes, content_type: str, dry_run: bool, kind: str) -> None:
-    marker = "[dry-run] " if dry_run else ""
-    print(f"  {marker}{kind:8} -> {key} ({len(data)} bytes, {content_type})")
+def _put(
+    client: Any,
+    bucket: str,
+    key: str,
+    data: bytes,
+    content_type: str,
+    dry_run: bool,
+    kind: str,
+    verbose: bool = True,
+) -> None:
+    if verbose:
+        marker = "[dry-run] " if dry_run else ""
+        print(f"  {marker}{kind:8} -> {key} ({len(data)} bytes, {content_type})")
     if not dry_run:
         client.put_object(Bucket=bucket, Key=key, Body=data, ContentType=content_type)
 
@@ -247,7 +301,13 @@ def _build_client(config: S3IngestConfig, profile: str | None) -> Any:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Upload a post batch directory to S3/MinIO (v1.2.3).")
-    parser.add_argument("--batch-dir", required=True, help="Local batch directory to upload.")
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--batch-dir", default=None, help="Local batch directory to upload.")
+    target.add_argument(
+        "--batch-root",
+        default=None,
+        help="Parent directory: upload every batch found underneath it (recursive).",
+    )
     parser.add_argument("--batch-id", default=None, help="Batch id / prefix name (default: manifest batch.external_id).")
     parser.add_argument("--endpoint-url", default=None, help="S3 endpoint (default: S3_ENDPOINT_URL).")
     parser.add_argument("--bucket", default=None, help="Target bucket (default: S3_BUCKET).")
@@ -256,33 +316,92 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--profile", default=None, help="AWS profile for credentials (instead of S3_ACCESS_KEY_ID/SECRET).")
     parser.add_argument("--overwrite", action="store_true", help="Re-upload even if the batch already exists.")
     parser.add_argument("--dry-run", action="store_true", help="Validate and print the plan without uploading.")
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.batch_root and args.batch_id:
+        parser.error("--batch-id applies to a single batch; it cannot be combined with --batch-root.")
+    return args
+
+
+def _run_single(batch_dir: Path, config: S3IngestConfig, args: argparse.Namespace) -> int:
+    """Upload one batch. Any problem raises, so the caller exits non-zero."""
+    plan = build_upload_plan(batch_dir, config, batch_id=args.batch_id)
+    if args.dry_run:
+        # Print the plan without needing a client/endpoint.
+        print(f"batch: {plan.batch_id}  bucket: {config.bucket}")
+        print(f"assets: {len(plan.assets)} object(s), {plan.asset_occurrences} manifest ref(s)")
+        for item in plan.assets:
+            print(f"  [dry-run] asset    -> {item.object_key} ({item.content_type})")
+        print(f"  [dry-run] manifest -> {plan.manifest.object_key}")
+        print(f"  [dry-run] ready    -> {plan.ready_key}")
+        print("dry-run: nothing uploaded")
+    else:
+        client = _build_client(config, args.profile)
+        upload_plan(client, config.bucket, plan, overwrite=args.overwrite, dry_run=False)
+    return 0
+
+
+def _run_batch_root(batch_root: Path, config: S3IngestConfig, args: argparse.Namespace) -> int:
+    """Upload every batch under `batch_root`, never aborting on a single bad batch.
+
+    Discovery problems (bad root, nothing found) still raise — there is nothing to
+    do. Per-batch problems are caught and tallied so batch 3 of 200 failing does
+    not throw away the other 197.
+    """
+    batch_dirs = discover_batch_dirs(batch_root, config.manifest_filename)
+    total = len(batch_dirs)
+    print(f"batch-root: {batch_root}")
+    print(f"discovered: {total} batch director{'y' if total == 1 else 'ies'}  bucket: {config.bucket}")
+
+    client = None if args.dry_run else _build_client(config, args.profile)
+    uploaded: list[str] = []
+    skipped: list[str] = []
+    failed: list[tuple[Path, str]] = []
+
+    for index, batch_dir in enumerate(batch_dirs, start=1):
+        label = f"[{index}/{total}] {batch_dir.name}"
+        try:
+            plan = build_upload_plan(batch_dir, config)
+            if args.dry_run:
+                print(f"{label}: ok       batch={plan.batch_id}  {len(plan.assets)} object(s)")
+                uploaded.append(plan.batch_id)
+                continue
+            upload_plan(client, config.bucket, plan, overwrite=args.overwrite, dry_run=False, verbose=False)
+            print(f"{label}: uploaded batch={plan.batch_id}  {len(plan.assets)} object(s)")
+            uploaded.append(plan.batch_id)
+        except BatchAlreadyUploadedError:
+            print(f"{label}: skipped  already in bucket")
+            skipped.append(batch_dir.name)
+        except UploadError as exc:
+            reason = " ".join(str(exc).split())
+            print(f"{label}: FAILED   {reason}", file=sys.stderr)
+            failed.append((batch_dir, reason))
+        except Exception as exc:  # noqa: BLE001
+            reason = f"{type(exc).__name__}: {exc}"
+            print(f"{label}: FAILED   {reason}", file=sys.stderr)
+            failed.append((batch_dir, reason))
+
+    verb = "validated" if args.dry_run else "uploaded"
+    print(f"\nsummary: {verb}={len(uploaded)} skipped={len(skipped)} failed={len(failed)} of {total}")
+    if failed:
+        print("failed batches:", file=sys.stderr)
+        for batch_dir, reason in failed:
+            print(f"  {batch_dir}: {reason}", file=sys.stderr)
+    return 1 if failed else 0
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
         config = _config_from_args(args)
-        plan = build_upload_plan(Path(args.batch_dir), config, batch_id=args.batch_id)
-        client = _build_client(config, args.profile) if not args.dry_run else None
-        if args.dry_run:
-            # Print the plan without needing a client/endpoint.
-            print(f"batch: {plan.batch_id}  bucket: {config.bucket}")
-            print(f"assets: {len(plan.assets)} object(s), {plan.asset_occurrences} manifest ref(s)")
-            for item in plan.assets:
-                print(f"  [dry-run] asset    -> {item.object_key} ({item.content_type})")
-            print(f"  [dry-run] manifest -> {plan.manifest.object_key}")
-            print(f"  [dry-run] ready    -> {plan.ready_key}")
-            print("dry-run: nothing uploaded")
-        else:
-            upload_plan(client, config.bucket, plan, overwrite=args.overwrite, dry_run=False)
+        if args.batch_root:
+            return _run_batch_root(Path(args.batch_root), config, args)
+        return _run_single(Path(args.batch_dir), config, args)
     except UploadError as exc:
         print(f"upload failed: {exc}", file=sys.stderr)
         return 1
     except Exception as exc:  # noqa: BLE001
         print(f"upload failed: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1
-    return 0
 
 
 if __name__ == "__main__":

@@ -30,7 +30,7 @@
 python -m scripts.check_s3_ingest            # 발견/검증 (19)
 python -m scripts.check_s3_ingest_tracking   # tracking/claim/idempotency (10)
 python -m scripts.check_s3_watch             # watch worker orchestration (6)
-python -m scripts.check_upload_post_batch    # producer 업로드 계획/순서 (7)
+python -m scripts.check_upload_post_batch    # producer 업로드 계획/순서/batch-root (12)
 python -m scripts.check_asset_url            # asset proxy URL 직렬화 (3)
 ```
 
