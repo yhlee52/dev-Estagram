@@ -269,21 +269,36 @@ python -m scripts.reset_batch_state  --batch-root D:\...\batches
 
 왜 두 번  실행하냐면, 첫 번째 코드는 MinIO의 배치 객체를, 두 번째 코드는 Postgres의 ingest_state를 변경하기 때문이다.
 
-## 재게시할 때 알아둘 것
+# 완전 재개시 방법
 
-**manifest에서 뺀 포스트는 삭제된다.** `posts[]`는 그 배치의 완전한 포스트 목록이라,
-같은 배치를 재import하면 이전에는 있었지만 이번 manifest에 없는 포스트가 댓글·북마크·
-asset과 함께 지워진다. 남기고 싶은 포스트는 manifest에 계속 넣어두어야 한다.
-삭제 범위는 그 배치 소속 포스트로 한정되므로 다른 배치는 영향을 받지 않는다.
+⚠️ 먼저 워커를 멈추세요
+가장 흔한 함정입니다. Postgres만 초기화하면 MinIO에 _READY.json이 176개 그대로 있으므로, 워커가 다음 poll에서 전부 다시 import합니다. 게다가 지금 .env에 S3_WATCH_BATCH_LIMIT=0이 들어가 있어서 한 번에 전부 들어옵니다.
 
-**한 batch id를 여러 폴더가 선언하면 거부된다.** batch id가 곧 S3 prefix라서,
-같은 id를 쓰는 폴더들은 서로를 덮어쓴다. `--batch-root` 는 업로드 전에 이를 검사해
-아무것도 올리지 않고 중단한다(`--dry-run` 에서도 잡힌다). 폴더마다 고유한
-`batch.external_id` 를 주거나, `--batch-dir` 로 하나씩 올려야 한다.
+반대로 MinIO만 지우면 import_batch가 completed로 남아 포스트가 그대로 있습니다. 둘은 반드시 같이 초기화해야 합니다.
 
-```
-upload failed: 1 batch id(s) are declared by more than one directory. ...
-  feed_batch_20260130_last_friday_lodging_dates
-    - .../20260130_mirae_anonymous_neon_glamping
-    - .../20260130_riahan_yjeun_private_bar_hotel
-```
+1. 프로세스 정지
+터미널 A(uvicorn)와 D(worker)를 Ctrl+C. 프론트(터미널 B)는 켜두셔도 됩니다.
+
+2. MinIO 초기화 — feed-prototype 폴더에서
+
+docker compose -f docker-compose.minio.yml down -v
+docker compose -f docker-compose.minio.yml up -d
+docker compose -f docker-compose.minio.yml logs --tail 20
+-v가 핵심입니다. MinIO는 minio-data라는 Docker named volume을 쓰는데, -v 없이는 볼륨이 남아 데이터가 그대로 살아납니다. 로그에 MinIO ready. bucket: estagram이 다시 뜨면 빈 버킷으로 재생성된 겁니다.
+
+3. Postgres 초기화 — feed-prototype/backend 폴더에서
+
+alembic downgrade base
+alembic upgrade head
+python -m app.services.seed
+migration 0001~0013 전부 downgrade가 제대로 구현돼 있어서 downgrade base면 테이블이 깨끗이 지워집니다. 확인은 alembic current.
+
+(뭔가 꼬이면 pgAdmin에서 feed_ops DB를 drop 후 재생성하고 alembic upgrade head부터 하셔도 됩니다.)
+
+4. 재기동
+
+uvicorn app.main:app --reload                                    # 터미널 A
+python -m app.services.process_s3_incoming --watch --interval 10 # 터미널 D
+5. 브라우저
+localStorage에 이전 user id/handle이 남아 있어서 로그인 상태가 어긋날 수 있습니다. localhost:5173에서 로그아웃하거나 사이트 데이터를 지우고 데모 계정(ari/mika/nova)으로 다시 로그인하세요.
+
