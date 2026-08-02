@@ -72,7 +72,9 @@ class ImportBatch(SQLModel, table=True):
     failed_at: datetime | None = None
     attempt_count: int | None = None
     error_code: str | None = None
-    error_message: str | None = None
+    # The S3 path reuses the `error_message` column declared above (v0.3.1); it
+    # is deliberately not re-declared here. Re-declaring it silently shadowed
+    # the original field and led 0013 to try to ADD an already-existing column.
     manifest_etag: str | None = None
     manifest_last_modified: datetime | None = None
     created_post_count: int | None = None

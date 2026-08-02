@@ -36,7 +36,10 @@ _IMPORT_BATCH_COLUMNS = [
     ("failed_at", sa.DateTime(timezone=True)),
     ("attempt_count", sa.Integer()),
     ("error_code", sa.String()),
-    ("error_message", sa.String()),
+    # NOTE: `error_message` is NOT listed here — 0006 already created it on this
+    # table and the S3 path reuses that same column. Adding it again fails with
+    # DuplicateColumn on a clean upgrade, and dropping it on downgrade would
+    # destroy a column 0006 owns.
     ("manifest_etag", sa.String()),
     ("manifest_last_modified", sa.DateTime(timezone=True)),
     ("created_post_count", sa.Integer()),
