@@ -36,6 +36,11 @@ v0.1.x(탐색)·v0.2.x(레이아웃)·v0.3.x(Ingestion)·v0.4.x(메타데이터 
   end-to-end runbook — v1.2.x
 - `S3_VERIFICATION_RUNBOOK.md`: **DB 초기화부터 내 파일을 S3(MinIO)로 검증**까지
   전체 통합 runbook (권장 시작점) — v1.2.x
+- `QUICK_RUN_GUIDE_LOCAL.md`: 개인 로컬 PC(Docker MinIO)에서 전체 스택을 띄우는
+  단계별 quick run guide — v1.2.x
+- `QUICK_RUN_GUIDE_COMPANY.md`: 회사 환경 quick run guide — 사내 S3 연결 +
+  서빙 PC 한 대에 프로세스를 띄우고 `http://<서빙PC IP>:5173`으로 사내망 어디서든
+  접속하는 설정(`CORS_ALLOW_ORIGINS`/`ASSET_PROXY_BASE_URL`/0.0.0.0 바인딩) — v1.2.x
 - `UX_BACKLOG.md`: 사용 중 발견한 UX 불편/아이디어 기록 backlog
 - `../data/external_posts/README.md`: external post package 작업 guide
 
