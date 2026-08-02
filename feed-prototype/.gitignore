@@ -21,6 +21,9 @@ __pycache__/
 backend/.env
 backend/.env.local
 backend/.venv/
+# Local helper that exports S3_* credentials into the shell for the producer
+# CLI (see docs/S3_VERIFICATION_RUNBOOK.md §6). Contains secrets.
+backend/set-minio-env.ps1
 backend/uploads/*
 !backend/uploads/.gitkeep
 

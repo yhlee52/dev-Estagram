@@ -17,14 +17,52 @@
 
 - **Docker Desktop** 실행 중 (MinIO용)
 - **PostgreSQL** 로컬 실행 중
-- **Python venv** + 의존성
+- **Python 환경** + 의존성
+
+### Docker Desktop 실행
+
+엔진이 떠 있어야 MinIO가 뜹니다. 확인:
 
 ```powershell
+docker info --format "{{.ServerVersion}}"   # 버전이 찍히면 준비 완료
+```
+
+`npipe:////./pipe/dockerDesktopLinuxEngine ... cannot find the file` 가 나오면
+**설치 문제가 아니라 엔진이 꺼져 있는 것**입니다. 시작 메뉴에서 실행하거나:
+
+```powershell
+Start-Process "$env:LOCALAPPDATA\Programs\DockerDesktop\Docker Desktop.exe"
+```
+
+> 설치 위치는 환경마다 다릅니다(`C:\Program Files\Docker\Docker\` 인 경우도,
+> 위처럼 `%LOCALAPPDATA%\Programs\DockerDesktop\` 인 경우도 있습니다).
+> 엔진 기동에 30~60초 걸립니다.
+
+### Python 환경
+
+venv든 conda든 무방합니다. 이후 **모든 backend 명령은 이 환경을 활성화한 상태로
+`feed-prototype/backend`에서** 실행합니다.
+
+```powershell
+# venv
 cd feed-prototype\backend
 python -m venv .venv           # 이미 있으면 생략
 .\.venv\Scripts\activate
+
+# 또는 conda
+conda activate <env-name>
+cd feed-prototype\backend
+```
+
+```powershell
 pip install -r requirements.txt   # boto3 포함
 ```
+
+> `requirements.txt`의 `httpx2` 는 레포 어디서도 import하지 않는 잔여 항목입니다.
+> 설치가 거기서 실패하면 그 줄만 지우고 재실행하세요.
+
+> 이미 한 번 세팅을 마쳤고 **PC를 재부팅한 뒤 다시 시작**하는 경우라면
+> 0~3단계를 반복할 필요 없이 13절(재부팅 후 재개)로 가세요.
 
 ---
 
@@ -203,6 +241,53 @@ $env:S3_FORCE_PATH_STYLE="true"
 python -m scripts.upload_post_batch --batch-dir C:\path\to\my_batch_001
 ```
 
+`$env:` 는 **그 터미널 세션에만** 유지됩니다. 같은 터미널에서는 몇 번을 업로드하든
+한 번만 설정하면 되지만, 터미널을 닫으면 사라집니다.
+
+### 값별 출처 (전부 env로 줄 필요는 없음)
+
+| 값 | 플래그 대체 | 비고 |
+|---|---|---|
+| `S3_ACCESS_KEY_ID` | 없음 (env 전용) | 필수 |
+| `S3_SECRET_ACCESS_KEY` | 없음 (env 전용) | 필수 |
+| `S3_FORCE_PATH_STYLE` | 없음 (env 전용) | **MinIO는 사실상 필수** (아래) |
+| `S3_BUCKET` | `--bucket` | 둘 중 하나 필수 |
+| `S3_ENDPOINT_URL` | `--endpoint-url` | |
+| `S3_ROOT_PREFIX` | `--root-prefix` | 기본 `estagram` |
+| `S3_REGION` | 없음 (env 전용) | 기본 `ap-northeast-2`, **생략 가능** |
+
+따라서 최소 구성은 env 3개 + 플래그입니다:
+
+```powershell
+$env:S3_ACCESS_KEY_ID="localadmin"
+$env:S3_SECRET_ACCESS_KEY="localpassword"
+$env:S3_FORCE_PATH_STYLE="true"
+
+python -m scripts.upload_post_batch --batch-dir C:\path\to\my_batch_001 `
+  --bucket estagram --endpoint-url http://localhost:9000
+```
+
+- **`S3_FORCE_PATH_STYLE=true` 를 빼먹는 것이 가장 흔한 실패**입니다. 없으면 boto3가
+  virtual-host 방식으로 `estagram.localhost:9000` 에 접속을 시도해 DNS 해석에서
+  죽습니다. MinIO는 path-style이 필요합니다.
+- **`S3_REGION` 은 물리적 위치와 무관합니다.** MinIO는 본인 PC의 `localhost:9000`
+  에서 돌고, region은 SigV4 서명 문자열 생성에만 쓰이며 MinIO는 값을 검증하지
+  않습니다. `us-east-1`이든 `ap-northeast-2`든 동작하고 생략해도 됩니다. region이
+  실제로 중요해지는 건 11절(회사 S3 전환) 때이며, 그때는 버킷이 실제로 위치한
+  리전을 정확히 넣어야 합니다.
+
+### 반복 입력이 귀찮으면
+
+`set-minio-env.ps1` 같은 스크립트를 만들어두고 새 터미널마다 **dot-source** 합니다
+(앞의 점이 있어야 현재 세션에 적용됩니다):
+
+```powershell
+. .\set-minio-env.ps1
+```
+
+> 이 파일에는 자격증명이 들어가므로 커밋되지 않게 하세요. 레포의 `.gitignore`가
+> `backend/set-minio-env.ps1` 를 무시하도록 되어 있습니다.
+
 업로드 순서는 **asset → feed_posts.json → _READY.json(마지막)** 으로 보장됩니다.
 MinIO 콘솔(http://localhost:9001)의 `estagram/batches/my_batch_001/` 아래에
 파일들이 보이면 성공입니다.
@@ -294,6 +379,9 @@ import 전후로 **그대로** 있는지 확인합니다. worker는 S3를 읽기
 | 증상 | 원인/해결 |
 |---|---|
 | `docker: command not found` | Docker Desktop 미실행/미설치. 실행 후 새 터미널. |
+| `cannot find the file ... dockerDesktopLinuxEngine` | Docker **엔진이 꺼진 것**(설치 문제 아님). 0절 참고. |
+| producer가 `estagram.localhost` 로 붙으며 DNS 실패 | `S3_FORCE_PATH_STYLE=true` 누락. env 전용이라 플래그로 못 줍니다. |
+| 재부팅 후 `docker ps` 에 estagram-minio 없음 | 종료 전 `compose down` 을 했다면 컨테이너가 삭제된 것. `up -d` 재실행(데이터는 volume에 보존). |
 | producer `bucket is required` | 셸에 `S3_BUCKET` 없음 or `--bucket` 누락. |
 | producer `batch already uploaded` | 이미 올린 배치. `--overwrite` 또는 새 id. |
 | worker `S3_BUCKET is required` | `.env`에 `S3_*`/`INGEST_STORAGE_BACKEND=s3` 누락. |
@@ -335,3 +423,52 @@ python -m scripts.check_s3_watch
 python -m scripts.check_upload_post_batch
 python -m scripts.check_asset_url
 ```
+
+> 주의: 이 스크립트들은 SQLModel 메타데이터로 테이블을 만들고 **alembic 체인을 타지
+> 않습니다.** 즉 마이그레이션 자체의 회귀는 잡지 못하므로, 마이그레이션을 건드렸다면
+> 빈 DB에서 `alembic upgrade head` → `downgrade base` → `upgrade head` 왕복을
+> 따로 확인하세요.
+
+---
+
+## 13. 재부팅 후 재개
+
+한 번 세팅을 마친 뒤 PC를 재시작한 경우입니다. **데이터는 전부 보존되고, 프로세스만
+다시 띄우면 됩니다.**
+
+### 자동으로 복구되는 것
+
+| 항목 | 이유 |
+|---|---|
+| PostgreSQL (DB/스키마/seed/import된 포스트) | 서비스가 `StartType=Automatic` 이면 부팅 시 자동 시작 |
+| MinIO 데이터 (버킷·업로드한 배치 객체) | Docker named volume(`*_minio-data`)에 보존 |
+| MinIO 컨테이너 | compose의 `restart: unless-stopped` — **Docker 엔진이 뜨면** 자동 복귀 |
+
+### 수동으로 해야 하는 것
+
+1. **Docker Desktop 실행** — 자동 시작이 꺼져 있으면 이걸 안 켜는 한 MinIO도 안
+   옵니다(`restart: unless-stopped` 는 엔진이 떠야 발동). 0절 참고.
+   ```powershell
+   docker info --format "{{.ServerVersion}}"   # 엔진 확인
+   docker ps                                   # estagram-minio 가 Up 인지
+   ```
+   컨테이너가 아예 없으면(종료 전 `compose down` 을 한 경우):
+   ```powershell
+   docker compose -f docker-compose.minio.yml up -d
+   ```
+2. **셸 환경변수 재설정** — `$env:` 는 세션 한정이라 반드시 날아갑니다(6절).
+3. **프로세스 3개 재기동** — backend(uvicorn), worker(`--watch`), frontend(`npm run dev`).
+
+### 복구 확인
+
+```powershell
+curl http://127.0.0.1:8000/api/imports
+```
+
+이전에 import한 배치 이력이 그대로 보이면 PostgreSQL·MinIO 둘 다 정상입니다.
+`completed` 배치는 재처리되지 않으므로 worker를 다시 띄워도 **중복 포스트는 생기지
+않습니다**(9절).
+
+> **`docker compose down -v` 는 volume까지 지웁니다** — 업로드한 배치 객체가 전부
+> 사라지므로, 의도적으로 초기화할 때만 사용하세요. `down` (=`-v` 없이)은 데이터를
+> 보존합니다.
