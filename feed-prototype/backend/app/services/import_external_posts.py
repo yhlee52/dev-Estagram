@@ -15,6 +15,8 @@ from app.core.config import Settings, get_settings
 from app.db.session import create_session
 from app.models.account import Account
 from app.models.asset import PostAsset
+from app.models.bookmark import Bookmark
+from app.models.comment import Comment
 from app.models.import_batch import ImportBatch
 from app.models.post import Post
 from app.models.user import User
@@ -38,6 +40,7 @@ class ImportSummary:
     posts_created: int = 0
     posts_updated: int = 0
     posts_skipped: int = 0
+    posts_deleted: int = 0
     asset_replace_target_posts: int = 0
     assets_deleted: int = 0
     assets_created: int = 0
@@ -527,6 +530,47 @@ def record_failed_batch(
         session.rollback()
 
 
+def prune_posts_removed_from_batch(
+    session: Session,
+    batch_external_id: str,
+    declared_post_external_ids: set[str],
+    *,
+    dry_run: bool,
+    summary: ImportSummary,
+) -> None:
+    """Delete posts still attributed to this batch that its manifest no longer declares.
+
+    A batch's manifest is the complete statement of that batch's posts, so
+    re-importing a corrected manifest has to remove what was dropped from it —
+    otherwise a post deleted by the author stays in the feed forever, and the
+    only way out is hand-written SQL.
+
+    Scoped to `import_batch_external_id == batch_external_id`, so a batch can
+    never delete another batch's posts. Assets, comments and bookmarks go first,
+    matching `DELETE /api/posts/{id}`; those tables have no cascade.
+    """
+    removed = [
+        post
+        for post in session.exec(
+            select(Post).where(Post.import_batch_external_id == batch_external_id)
+        ).all()
+        if post.external_id not in declared_post_external_ids
+    ]
+    summary.posts_deleted += len(removed)
+    if dry_run or not removed:
+        return
+
+    for post in removed:
+        for asset in get_post_assets(session, post.id):
+            session.delete(asset)
+        for comment in session.exec(select(Comment).where(Comment.post_id == post.id)).all():
+            session.delete(comment)
+        for bookmark in session.exec(select(Bookmark).where(Bookmark.post_id == post.id)).all():
+            session.delete(bookmark)
+        session.delete(post)
+    session.flush()
+
+
 def import_payload(
     session: Session,
     payload: ExternalImportPayload,
@@ -604,6 +648,16 @@ def import_payload(
             asset_identity_resolver=asset_identity_resolver,
         )
 
+    # The manifest is the batch's full post list, so anything it dropped since
+    # the last import is no longer part of the batch and must go.
+    prune_posts_removed_from_batch(
+        session,
+        payload.batch.external_id,
+        {post_input.external_id for post_input in payload.posts},
+        dry_run=dry_run,
+        summary=summary,
+    )
+
     # Record the successful batch event atomically with the imported rows
     # (caller commits). dry_run writes nothing, including no batch row, so the
     # dry-run "no DB writes" contract holds for both CLI and HTTP.
@@ -634,6 +688,7 @@ def print_summary(
         print(f"- create: {summary.posts_created}")
         print(f"- update: {summary.posts_updated}")
         print(f"- skip: {summary.posts_skipped}")
+        print(f"- delete (dropped from manifest): {summary.posts_deleted}")
         print("Assets:")
         print(f"- replace target posts: {summary.asset_replace_target_posts}")
         print(f"- delete existing: {summary.assets_deleted}")
@@ -652,6 +707,7 @@ def print_summary(
     print(f"Posts created: {summary.posts_created}")
     print(f"Posts updated: {summary.posts_updated}")
     print(f"Posts skipped: {summary.posts_skipped}")
+    print(f"Posts deleted (dropped from manifest): {summary.posts_deleted}")
     print(f"Asset replace target posts: {summary.asset_replace_target_posts}")
     print(f"Assets deleted: {summary.assets_deleted}")
     print(f"Assets created: {summary.assets_created}")

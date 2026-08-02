@@ -24,7 +24,9 @@ from scripts.upload_post_batch import (
     UploadError,
     build_upload_plan,
     discover_batch_dirs,
+    find_batch_id_collisions,
     parse_args,
+    peek_batch_id,
     upload_plan,
 )
 
@@ -282,6 +284,80 @@ def check_cli_target_flags() -> None:
     expect_exit(lambda: parse_args(["--batch-root", "./p", "--batch-id", "x"]))  # ambiguous
 
 
+def check_batch_id_collision_detected() -> None:
+    """Two directories declaring one batch id would overwrite each other in S3.
+
+    The batch id is the object prefix, so without this the later directories
+    look like a harmless "already uploaded" skip, and with --overwrite the last
+    one silently wins — losing the others' posts with no error anywhere.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        # same batch_external_id declared from two different directories
+        make_batch(
+            root,
+            "dir_one",
+            assets=[{"type": "image", "url": "assets/a.png", "sort_order": 1}],
+            asset_files={"a.png": b"a"},
+            batch_external_id="shared_id",
+        )
+        make_batch(
+            root,
+            "dir_two",
+            assets=[{"type": "image", "url": "assets/b.png", "sort_order": 1}],
+            asset_files={"b.png": b"b"},
+            batch_external_id="shared_id",
+        )
+        make_batch(
+            root,
+            "dir_three",
+            assets=[{"type": "image", "url": "assets/c.png", "sort_order": 1}],
+            asset_files={"c.png": b"c"},
+        )
+
+        batch_dirs = discover_batch_dirs(root, "feed_posts.json")
+        assert len(batch_dirs) == 3
+        collisions = find_batch_id_collisions(batch_dirs, "feed_posts.json")
+        assert set(collisions) == {"shared_id"}, f"expected shared_id collision, got {collisions}"
+        assert sorted(d.name for d in collisions["shared_id"]) == ["dir_one", "dir_two"]
+
+
+def check_no_collision_when_ids_unique() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        for name in ("one", "two"):
+            make_batch(
+                root,
+                f"batch_{name}",
+                assets=[{"type": "image", "url": "assets/x.png", "sort_order": 1}],
+                asset_files={"x.png": b"x"},
+            )
+        batch_dirs = discover_batch_dirs(root, "feed_posts.json")
+        assert find_batch_id_collisions(batch_dirs, "feed_posts.json") == {}
+
+
+def check_peek_batch_id_is_forgiving() -> None:
+    """Unreadable manifests yield None here; build_upload_plan reports the real error."""
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        good = make_batch(
+            root,
+            "good",
+            assets=[{"type": "image", "url": "assets/x.png", "sort_order": 1}],
+            asset_files={"x.png": b"x"},
+            batch_external_id="peeked",
+        )
+        assert peek_batch_id(good, "feed_posts.json") == "peeked"
+
+        broken = root / "broken"
+        broken.mkdir()
+        (broken / "feed_posts.json").write_text("{not json", encoding="utf-8")
+        assert peek_batch_id(broken, "feed_posts.json") is None
+
+        (root / "no_manifest").mkdir()
+        assert peek_batch_id(root / "no_manifest", "feed_posts.json") is None
+
+
 CHECKS = [
     ("valid plan", check_valid_plan),
     ("dedup + occurrence count", check_dedup_and_occurrences),
@@ -295,6 +371,9 @@ CHECKS = [
     ("already-uploaded raises distinct error", check_already_uploaded_is_distinct_error),
     ("quiet upload keeps ordering", check_quiet_upload_still_ordered),
     ("cli target flags", check_cli_target_flags),
+    ("batch id collision detected", check_batch_id_collision_detected),
+    ("no collision when ids unique", check_no_collision_when_ids_unique),
+    ("peek_batch_id is forgiving", check_peek_batch_id_is_forgiving),
 ]
 
 

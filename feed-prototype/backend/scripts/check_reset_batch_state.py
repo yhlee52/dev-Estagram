@@ -23,7 +23,7 @@ from scripts.reset_batch_state import (
     parse_args,
     plan_reset,
     read_batch_id,
-    resolve_batch_ids,
+    resolve_targets,
 )
 
 MANIFEST = "feed_posts.json"
@@ -107,14 +107,14 @@ def check_read_batch_id_errors() -> None:
 
 def check_resolve_from_batch_ids() -> None:
     args = parse_args(["--batch-id", "b1", "--batch-id", "b2", "--batch-id", "b1"])
-    assert resolve_batch_ids(args, MANIFEST) == ["b1", "b2"], "repeatable, order-preserving, de-duplicated"
+    assert resolve_targets(args, MANIFEST).batch_ids == ["b1", "b2"], "repeatable, order-preserving, de-duplicated"
 
 
 def check_resolve_from_batch_dir() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         d = write_batch(Path(tmp), "some_folder_name", "the-real-id")
         args = parse_args(["--batch-dir", str(d)])
-        assert resolve_batch_ids(args, MANIFEST) == ["the-real-id"]
+        assert resolve_targets(args, MANIFEST).batch_ids == ["the-real-id"]
 
 
 def check_resolve_from_batch_root() -> None:
@@ -125,7 +125,9 @@ def check_resolve_from_batch_root() -> None:
         (root / "not_a_batch").mkdir()
 
         args = parse_args(["--batch-root", str(root)])
-        assert sorted(resolve_batch_ids(args, MANIFEST)) == ["id-a", "id-b"]
+        resolved = resolve_targets(args, MANIFEST)
+        assert sorted(resolved.batch_ids) == ["id-a", "id-b"]
+        assert resolved.unreadable == [] and resolved.collisions == {}
 
 
 def check_resolve_root_errors() -> None:
@@ -133,13 +135,46 @@ def check_resolve_root_errors() -> None:
         empty = Path(tmp) / "empty"
         empty.mkdir()
         expect_error(
-            lambda: resolve_batch_ids(parse_args(["--batch-root", str(empty)]), MANIFEST),
+            lambda: resolve_targets(parse_args(["--batch-root", str(empty)]), MANIFEST),
             f"no {MANIFEST} found",
         )
         expect_error(
-            lambda: resolve_batch_ids(parse_args(["--batch-root", str(Path(tmp) / "missing")]), MANIFEST),
+            lambda: resolve_targets(parse_args(["--batch-root", str(Path(tmp) / "missing")]), MANIFEST),
             "--batch-root is not a directory",
         )
+
+
+def check_resolve_root_tolerates_bad_manifest() -> None:
+    """One unreadable manifest must not throw away the whole run.
+
+    The republish loop is "upload --batch-root, then reset --batch-root". If the
+    upload tolerates a bad batch but the reset aborts, the upload succeeds and
+    nothing is re-imported — the correction silently never lands.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_batch(root, "good_a", "id-a")
+        write_batch(root, "good_b", "id-b")
+        write_batch(root, "broken", None, raw="{not json")
+
+        resolved = resolve_targets(parse_args(["--batch-root", str(root)]), MANIFEST)
+        assert sorted(resolved.batch_ids) == ["id-a", "id-b"], "good batches still resolve"
+        assert len(resolved.unreadable) == 1, "the bad one is reported, not raised"
+        assert resolved.unreadable[0][0].name == "broken"
+
+
+def check_resolve_root_detects_collisions() -> None:
+    """Two directories sharing a batch id share one tracking row and one prefix."""
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_batch(root, "folder_one", "same-id")
+        write_batch(root, "folder_two", "same-id")
+        write_batch(root, "folder_three", "unique-id")
+
+        resolved = resolve_targets(parse_args(["--batch-root", str(root)]), MANIFEST)
+        assert set(resolved.collisions) == {"same-id"}
+        assert len(resolved.collisions["same-id"]) == 2
+        assert sorted(d.name for d in resolved.collisions["same-id"]) == ["folder_one", "folder_two"]
 
 
 def check_cli_target_flags() -> None:
@@ -163,6 +198,8 @@ CHECKS = [
     ("resolve --batch-dir", check_resolve_from_batch_dir),
     ("resolve --batch-root (flat + nested)", check_resolve_from_batch_root),
     ("resolve --batch-root errors", check_resolve_root_errors),
+    ("resolve --batch-root tolerates bad manifest", check_resolve_root_tolerates_bad_manifest),
+    ("resolve --batch-root detects id collisions", check_resolve_root_detects_collisions),
     ("cli target flags", check_cli_target_flags),
 ]
 

@@ -70,13 +70,27 @@ def read_batch_id(batch_dir: Path, manifest_filename: str) -> str:
     return batch_id.strip()
 
 
-def resolve_batch_ids(args: argparse.Namespace, manifest_filename: str) -> list[str]:
-    """Turn whichever target flag was given into a de-duplicated list of batch ids."""
+@dataclass(frozen=True)
+class ResolvedTargets:
+    batch_ids: list[str]
+    unreadable: list[tuple[Path, str]]  # manifests that could not be parsed
+    collisions: dict[str, list[Path]]  # batch id -> directories declaring it
+
+
+def resolve_targets(args: argparse.Namespace, manifest_filename: str) -> ResolvedTargets:
+    """Turn whichever target flag was given into batch ids, plus what went wrong.
+
+    A single unreadable manifest under `--batch-root` must not throw away the
+    whole run — it is reported alongside the batches that did resolve, matching
+    how `upload_post_batch --batch-root` tolerates one bad batch. Collisions are
+    reported separately because those abort: two directories sharing a batch id
+    mean the tree itself is wrong, and resetting "one of them" is meaningless.
+    """
     if args.batch_id:
-        return list(dict.fromkeys(args.batch_id))
+        return ResolvedTargets(list(dict.fromkeys(args.batch_id)), [], {})
 
     if args.batch_dir:
-        return [read_batch_id(Path(args.batch_dir), manifest_filename)]
+        return ResolvedTargets([read_batch_id(Path(args.batch_dir), manifest_filename)], [], {})
 
     root = Path(args.batch_root)
     if not root.is_dir():
@@ -84,7 +98,35 @@ def resolve_batch_ids(args: argparse.Namespace, manifest_filename: str) -> list[
     batch_dirs = sorted({m.parent for m in root.rglob(manifest_filename) if m.is_file()})
     if not batch_dirs:
         raise ResetError(f"no {manifest_filename} found anywhere under {root}")
-    return list(dict.fromkeys(read_batch_id(d, manifest_filename) for d in batch_dirs))
+
+    batch_ids: list[str] = []
+    unreadable: list[tuple[Path, str]] = []
+    by_id: dict[str, list[Path]] = {}
+    for batch_dir in batch_dirs:
+        try:
+            batch_id = read_batch_id(batch_dir, manifest_filename)
+        except ResetError as exc:
+            unreadable.append((batch_dir, " ".join(str(exc).split())))
+            continue
+        by_id.setdefault(batch_id, []).append(batch_dir)
+        batch_ids.append(batch_id)
+
+    collisions = {bid: dirs for bid, dirs in by_id.items() if len(dirs) > 1}
+    return ResolvedTargets(list(dict.fromkeys(batch_ids)), unreadable, collisions)
+
+
+def format_collisions(collisions: dict[str, list[Path]]) -> str:
+    lines = [
+        f"{len(collisions)} batch id(s) are declared by more than one directory. They share "
+        "one object prefix and one tracking row, so resetting them individually is not "
+        "possible. Nothing was reset:"
+    ]
+    for batch_id, dirs in sorted(collisions.items()):
+        lines.append(f"  {batch_id}")
+        for batch_dir in dirs:
+            lines.append(f"    - {batch_dir}")
+    lines.append("Give each directory its own batch.external_id.")
+    return "\n".join(lines)
 
 
 def plan_reset(ingest_state: str | None, *, force: bool) -> tuple[bool, str]:
@@ -171,10 +213,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
         manifest_filename = get_settings().s3_manifest_filename
-        batch_ids = resolve_batch_ids(args, manifest_filename)
+        targets = resolve_targets(args, manifest_filename)
+        if targets.collisions:
+            print(f"reset failed: {format_collisions(targets.collisions)}", file=sys.stderr)
+            return 1
         session = create_session()
         try:
-            outcomes = reset_batches(session, batch_ids, force=args.force, dry_run=args.dry_run)
+            outcomes = reset_batches(
+                session, targets.batch_ids, force=args.force, dry_run=args.dry_run
+            )
         finally:
             session.close()
     except ResetError as exc:
@@ -190,10 +237,19 @@ def main(argv: list[str] | None = None) -> int:
 
     counts = {action: sum(1 for o in outcomes if o.action == action) for action in ("reset", "skipped", "missing")}
     verb = "would reset" if args.dry_run else "reset"
-    print(f"\n{verb}={counts['reset']} skipped={counts['skipped']} missing={counts['missing']} of {len(outcomes)}")
+    total = len(outcomes) + len(targets.unreadable)
+    summary = f"\n{verb}={counts['reset']} skipped={counts['skipped']} missing={counts['missing']}"
+    if targets.unreadable:
+        summary += f" unreadable={len(targets.unreadable)}"
+    print(f"{summary} of {total}")
+
+    if targets.unreadable:
+        print("unreadable manifests:", file=sys.stderr)
+        for batch_dir, reason in targets.unreadable:
+            print(f"  {batch_dir}: {reason}", file=sys.stderr)
     if counts["reset"] and not args.dry_run:
         print("next poll of the watch worker will re-import them.")
-    return 0
+    return 1 if targets.unreadable else 0
 
 
 if __name__ == "__main__":
