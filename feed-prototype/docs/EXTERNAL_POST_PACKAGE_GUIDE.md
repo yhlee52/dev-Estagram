@@ -35,6 +35,12 @@ session 정보는 external package에 싣지 않습니다. 봇/프로그램/설�
 v0.6.2부터 UI에서 사용자가 직접 저장한 account profile(`profile_source=user`)은
 같은 package를 재import해도 `display_name`, `bio`, `avatar_url`을 덮어쓰지 않습니다.
 
+`posts[]`는 **그 batch의 완전한 post 목록**입니다. 같은 `batch.external_id`를
+재import하면, 이전 manifest에는 있었지만 이번 manifest에 없는 post는 해당 post의
+asset·comment·bookmark와 함께 삭제됩니다. 삭제 범위는 `import_batch_external_id`가
+그 batch인 post로 한정되므로 다른 batch의 post는 영향을 받지 않습니다. post를
+남겨두고 싶다면 manifest에 계속 포함시켜야 합니다.
+
 ## 1. Package 목적
 
 External post package는 외부 프로그램이 생성한 `account`, `post`, `assets`, `metadata` JSON을 backend DB에 import하기 위한 입력 파일입니다.

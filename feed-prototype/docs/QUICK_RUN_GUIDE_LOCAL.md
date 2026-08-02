@@ -268,3 +268,22 @@ python -m scripts.reset_batch_state  --batch-root D:\...\batches
 ```
 
 왜 두 번  실행하냐면, 첫 번째 코드는 MinIO의 배치 객체를, 두 번째 코드는 Postgres의 ingest_state를 변경하기 때문이다.
+
+## 재게시할 때 알아둘 것
+
+**manifest에서 뺀 포스트는 삭제된다.** `posts[]`는 그 배치의 완전한 포스트 목록이라,
+같은 배치를 재import하면 이전에는 있었지만 이번 manifest에 없는 포스트가 댓글·북마크·
+asset과 함께 지워진다. 남기고 싶은 포스트는 manifest에 계속 넣어두어야 한다.
+삭제 범위는 그 배치 소속 포스트로 한정되므로 다른 배치는 영향을 받지 않는다.
+
+**한 batch id를 여러 폴더가 선언하면 거부된다.** batch id가 곧 S3 prefix라서,
+같은 id를 쓰는 폴더들은 서로를 덮어쓴다. `--batch-root` 는 업로드 전에 이를 검사해
+아무것도 올리지 않고 중단한다(`--dry-run` 에서도 잡힌다). 폴더마다 고유한
+`batch.external_id` 를 주거나, `--batch-dir` 로 하나씩 올려야 한다.
+
+```
+upload failed: 1 batch id(s) are declared by more than one directory. ...
+  feed_batch_20260130_last_friday_lodging_dates
+    - .../20260130_mirae_anonymous_neon_glamping
+    - .../20260130_riahan_yjeun_private_bar_hotel
+```

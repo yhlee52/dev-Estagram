@@ -192,6 +192,56 @@ def discover_batch_dirs(batch_root: Path, manifest_filename: str) -> list[Path]:
     return batch_dirs
 
 
+def peek_batch_id(batch_dir: Path, manifest_filename: str) -> str | None:
+    """Read `batch.external_id` cheaply, or None if the manifest is unusable.
+
+    Deliberately forgiving: a manifest this cannot read is still reported per
+    batch by `build_upload_plan`, which produces the real error message. This
+    exists only to spot id collisions before anything is uploaded.
+    """
+    try:
+        payload = json.loads((batch_dir / manifest_filename).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    batch_id = (payload.get("batch") or {}).get("external_id") if isinstance(payload, dict) else None
+    return batch_id.strip() if isinstance(batch_id, str) and batch_id.strip() else None
+
+
+def find_batch_id_collisions(
+    batch_dirs: list[Path], manifest_filename: str
+) -> dict[str, list[Path]]:
+    """Group directories that declare the same `batch.external_id`.
+
+    The batch id *is* the object prefix, so two directories sharing one id write
+    over each other: without --overwrite the later ones look like an ordinary
+    "already uploaded" skip, and with --overwrite the last one silently wins.
+    Neither is recoverable after the fact, so `--batch-root` refuses to start.
+    """
+    by_id: dict[str, list[Path]] = {}
+    for batch_dir in batch_dirs:
+        batch_id = peek_batch_id(batch_dir, manifest_filename)
+        if batch_id is not None:
+            by_id.setdefault(batch_id, []).append(batch_dir)
+    return {batch_id: dirs for batch_id, dirs in by_id.items() if len(dirs) > 1}
+
+
+def format_collisions(collisions: dict[str, list[Path]]) -> str:
+    lines = [
+        f"{len(collisions)} batch id(s) are declared by more than one directory. Every "
+        "directory sharing an id uploads to the same prefix and overwrites the others, "
+        "so nothing was uploaded:"
+    ]
+    for batch_id, dirs in sorted(collisions.items()):
+        lines.append(f"  {batch_id}")
+        for batch_dir in dirs:
+            lines.append(f"    - {batch_dir}")
+    lines.append(
+        "Give each directory its own batch.external_id, or upload them individually "
+        "with --batch-dir."
+    )
+    return "\n".join(lines)
+
+
 def _object_exists(client: Any, bucket: str, key: str) -> bool:
     from botocore.exceptions import ClientError
 
@@ -351,6 +401,12 @@ def _run_batch_root(batch_root: Path, config: S3IngestConfig, args: argparse.Nam
     total = len(batch_dirs)
     print(f"batch-root: {batch_root}")
     print(f"discovered: {total} batch director{'y' if total == 1 else 'ies'}  bucket: {config.bucket}")
+
+    # Refuse before uploading anything: a collision destroys data silently, and
+    # --dry-run must catch it too, which is the whole point of running one.
+    collisions = find_batch_id_collisions(batch_dirs, config.manifest_filename)
+    if collisions:
+        raise UploadError(format_collisions(collisions))
 
     client = None if args.dry_run else _build_client(config, args.profile)
     uploaded: list[str] = []
