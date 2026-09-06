@@ -281,24 +281,31 @@ python -m scripts.reset_batch_state  --batch-root D:\...\batches
 
 2. MinIO 초기화 — feed-prototype 폴더에서
 
+```
 docker compose -f docker-compose.minio.yml down -v
 docker compose -f docker-compose.minio.yml up -d
 docker compose -f docker-compose.minio.yml logs --tail 20
+```
 -v가 핵심입니다. MinIO는 minio-data라는 Docker named volume을 쓰는데, -v 없이는 볼륨이 남아 데이터가 그대로 살아납니다. 로그에 MinIO ready. bucket: estagram이 다시 뜨면 빈 버킷으로 재생성된 겁니다.
 
 3. Postgres 초기화 — feed-prototype/backend 폴더에서
 
+```
 alembic downgrade base
 alembic upgrade head
 python -m app.services.seed
+```
 migration 0001~0013 전부 downgrade가 제대로 구현돼 있어서 downgrade base면 테이블이 깨끗이 지워집니다. 확인은 alembic current.
 
 (뭔가 꼬이면 pgAdmin에서 feed_ops DB를 drop 후 재생성하고 alembic upgrade head부터 하셔도 됩니다.)
 
 4. 재기동
 
+```
 uvicorn app.main:app --reload                                    # 터미널 A
 python -m app.services.process_s3_incoming --watch --interval 10 # 터미널 D
+```
+
 5. 브라우저
 localStorage에 이전 user id/handle이 남아 있어서 로그인 상태가 어긋날 수 있습니다. localhost:5173에서 로그아웃하거나 사이트 데이터를 지우고 데모 계정(ari/mika/nova)으로 다시 로그인하세요.
 
