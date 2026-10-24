@@ -23,7 +23,7 @@ EXTERNAL_POSTS_DIR=C:/feed-data
 
 ```text
 VITE_DATA_SOURCE=api
-VITE_API_BASE_URL=http://127.0.0.1:8000
+VITE_API_BASE_URL=http://localhost:8000
 ```
 
 ## 2. DB와 테스트 계정
@@ -55,9 +55,9 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Vite가 표시한 `http://127.0.0.1:5173` 주소를 열고 seed 계정으로 로그인합니다.
-브라우저 주소를 `localhost`로 열었다면 API 주소도 `localhost`로 맞춰 세션 cookie가
-동일 사이트로 취급되게 합니다.
+Vite가 표시한 `http://localhost:5173` 주소를 열고 seed 계정으로 로그인합니다.
+브라우저에서 `127.0.0.1`로 열어도 로컬 API 주소는 같은 호스트 이름으로 맞춰집니다.
+seed 계정 `ari`의 초기 비밀번호는 `ari`입니다.
 
 ## 4. 로컬 패키지 가져오기
 

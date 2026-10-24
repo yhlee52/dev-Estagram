@@ -61,9 +61,8 @@ python -m app.services.process_incoming --base-dir C:/feed-data --watch --interv
 - Backend: `backend/.env.example`을 `backend/.env`로 복사하고 `DATABASE_URL`,
   `EXTERNAL_POSTS_DIR`을 설정합니다.
 - Frontend: `.env.example`을 `.env`로 복사해 `VITE_DATA_SOURCE=api`,
-  `VITE_API_BASE_URL=http://127.0.0.1:8000`을 설정합니다.
-- 같은 PC에서 브라우저 주소와 API 주소는 둘 다 `127.0.0.1`을 사용하면 세션 cookie
-  설정이 단순합니다.
+  `VITE_API_BASE_URL=http://localhost:8000`을 설정합니다. 로컬 접속에서는 앱이
+  브라우저의 `localhost`/`127.0.0.1` 호스트 이름에 API 주소를 맞춥니다.
 - frontend 검증: `npm.cmd run build`
 - backend 기능 검증: `python -m scripts.check_social_interactions`,
   `python -m scripts.check_local_asset_serving`,
