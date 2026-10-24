@@ -8,6 +8,7 @@ from app.models.account import Account
 from app.models.asset import PostAsset
 from app.models.bookmark import Bookmark
 from app.models.comment import Comment
+from app.models.like import PostLike
 from app.models.post import Post, utc_now
 from app.models.user import User
 from app.schemas.feed import (
@@ -253,6 +254,9 @@ def delete_post(
 
     for bookmark in session.exec(select(Bookmark).where(Bookmark.post_id == post_id)).all():
         session.delete(bookmark)
+
+    for like in session.exec(select(PostLike).where(PostLike.post_id == post_id)).all():
+        session.delete(like)
 
     session.delete(post)
     session.commit()

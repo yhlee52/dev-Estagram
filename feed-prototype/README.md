@@ -200,6 +200,14 @@ curl -c cookies.txt -X POST http://127.0.0.1:8000/api/auth/login \
 curl -b cookies.txt http://127.0.0.1:8000/api/auth/session
 ```
 
+로컬 소셜 기능 확인: `alembic upgrade head`로 `0014` migration을 적용한 다음,
+`ari`로 로그인해 게시글 카드 또는 상세의 **♡**를 눌러 좋아요를 추가·취소합니다.
+왼쪽 **Messages**에서 `mika`를 골라 메시지를 보내고, `mika`로 다시 로그인해
+같은 대화에서 답장할 수 있습니다. 상대 계정 프로필의 **Message** 버튼으로도
+대화를 시작할 수 있습니다. 좋아요·메시지는 API mode 전용이며 서버와 DB를
+다시 시작해도 남습니다. 새 API의 DB 없이 실행하는 회귀 검사는 backend에서
+`python -m scripts.check_social_interactions`로 실행합니다.
+
 가입/로그인/profile 수정/password 변경/계정 비활성화·재활성화 등 모든 계정 관련
 명령어는 `docs/ACCOUNT_MANAGEMENT.md`에 정리되어 있습니다.
 
