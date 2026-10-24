@@ -1,6 +1,6 @@
 """Directory-batch ingestion for the external_posts working tree (v0.3.2).
 
-Drives the long-standing `data/external_posts/{incoming,archive,failed}` folder
+Drives `EXTERNAL_POSTS_DIR/{incoming,archive,failed}`
 convention: scan `incoming/` for packages, import each by reusing `run_import`,
 then move the package to `archive/` (success) or `failed/` (failure). A simple
 polling `--watch` loop repeats this on an interval (no external dependencies).
@@ -12,7 +12,7 @@ Scope notes:
 - dry_run has no side effects: no DB writes (run_import contract) and no moves.
 - DB is the source of truth; the file move is best-effort bookkeeping. An import
   can succeed (batch recorded) while its move fails — the data is still correct.
-- asset file managed-storage copy is out of scope here (v0.3.3).
+- Relative package assets are copied under `EXTERNAL_POSTS_DIR/assets` by default.
 
 Usage (from `feed-prototype/backend`, with DATABASE_URL set):
 

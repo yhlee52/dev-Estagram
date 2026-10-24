@@ -1,19 +1,10 @@
-"""Optional managed-storage copy for imported asset files (v0.3.3, opt-in).
+"""Copy relative package assets into the configured local data directory.
 
-Enabled by `Settings.manage_asset_storage`. When on, importing a package whose
-asset `url` is a *relative local path* (not an already-served `/assets/...` URL
-and not a remote `scheme://` URL) copies the referenced file — resolved relative
-to the package directory — into the managed storage tree (already served by the
-frontend) and rewrites the stored url to the managed url.
-
-Stability contract (see `docs/archive/V0_3_3_ASSET_STORAGE_SCOPE.md`):
-- Already-served and remote urls are left untouched (format freeze / backward
-  compat). No new package fields; the decision keys off the existing url string.
-- Copy is best-effort: a missing source, a path escaping the package dir, or any
-  copy error never fails the import — the original url is kept and a warning is
-  logged.
-- Destinations are deterministic, so re-importing the same asset overwrites
-  rather than accumulating.
+A disk package can reference files beside its JSON manifest. Copies are
+stored under EXTERNAL_POSTS_DIR/assets (or MANAGED_ASSETS_DIR) with stable names.
+The stored /assets/managed/... URL is served by the backend asset route.
+Already-absolute browser URLs are preserved. Missing or escaping files leave
+the original URL in place and log a warning without failing the import.
 """
 
 from __future__ import annotations
@@ -36,6 +27,19 @@ def is_already_served_url(url: str) -> bool:
     (`assets/foo.png`, `./foo.png`) return False and become copy candidates.
     """
     return url.startswith("/") or bool(re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", url))
+
+
+def managed_asset_path(url: str, settings: Settings) -> Path | None:
+    """Resolve an internal managed URL inside the configured local asset root."""
+    prefix = settings.managed_assets_url_prefix.rstrip("/") + "/"
+    if not url.startswith(prefix):
+        return None
+    parts = url[len(prefix):].split("/")
+    if not parts or any(not re.fullmatch(r"[a-zA-Z0-9._-]+", part) or part in {".", ".."} for part in parts):
+        return None
+    root = settings.resolved_managed_assets_dir.resolve()
+    candidate = root.joinpath(*parts).resolve()
+    return candidate if candidate.is_relative_to(root) else None
 
 
 def resolve_local_source(url: str, source_dir: Path) -> Path | None:
@@ -91,7 +95,7 @@ def copy_into_managed(
     else:
         file_name = f"{key_segment}{suffix}"
 
-    dest_dir = settings.managed_assets_dir / batch_segment
+    dest_dir = settings.resolved_managed_assets_dir / batch_segment
     dest_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source, dest_dir / file_name)
 

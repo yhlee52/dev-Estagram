@@ -1,311 +1,92 @@
-# QUICK RUN GUIDE : LOCAL
+# 로컬 실행 가이드 (Windows PowerShell)
 
----
+한 PC에서 PostgreSQL, FastAPI, Vite와 폴더 감시 프로세스를 실행합니다.
 
-# PHASE 0. 사전 준비
+## 1. 데이터 폴더와 환경설정
 
-사전 환경 설정을 준비 및 체크한다.
+원하는 경로를 정하고 `incoming` 폴더를 만듭니다. 아래는 `C:/feed-data` 예시입니다.
 
-1. Docker desktop 실행. 
-
-localadmin / localpassword
-
-데스크탑 도커는 시작 메뉴에서 찾아서 실행하면 됨
-
-2. PostgreSQL(pgadmin) 실행 및 feed_ops DB 존재 확인
-
-3. 가상환경 및 기타 의존성 설치 확인
-
-pip install -r requirements.txt
-
-# PHASE 1. backend/.env 작성
-
-```
-feed-prototype/backend/.env
+```powershell
+New-Item -ItemType Directory -Force C:/feed-data/incoming
+Copy-Item feed-prototype/backend/.env.example feed-prototype/backend/.env
+Copy-Item feed-prototype/.env.example feed-prototype/.env
 ```
 
-```
-DATABASE_URL=postgresql+psycopg://postgres:<비밀번호>@localhost:5432/feed_ops
+`feed-prototype/backend/.env`의 값을 실제 로컬 DB에 맞춥니다.
 
-INGEST_STORAGE_BACKEND=s3
-S3_ENDPOINT_URL=http://localhost:9000
-S3_ACCESS_KEY_ID=localadmin
-S3_SECRET_ACCESS_KEY=localpassword
-S3_REGION=us-east-1
-S3_BUCKET=estagram
-S3_ROOT_PREFIX=estagram
-S3_FORCE_PATH_STYLE=true
-ASSET_PROXY_BASE_URL=http://127.0.0.1:8000
+```text
+DATABASE_URL=postgresql+psycopg://USER:PASSWORD@localhost:5432/feed_dev
+EXTERNAL_POSTS_DIR=C:/feed-data
 ```
 
-alembic이 이 .env 파일의 DATABASE_URL을 읽으므로 이 파일을 먼저 만들어야 함
+`feed-prototype/.env`에는 다음을 넣습니다.
 
-# PHASE 2. DB 스키마 + 시드
-
-DB가 비어있다면 downgrade 없이 바로
-
-```
-alembic upgrade head
-```
-
-잘 만들어졌는지 체크를 위해선
-```
-alembic current
-```
-
-로그인용 데모 계정 ari/mika/nova 생성
-```
-python -m app.services.seed
-```
-
-추가:
-
-DB 다운그레이드
-```
-alembic downgrade base
-```
-
-# PHASE 3. MinIO 기동
-
-feed-prototype 폴더에서...
-
-```
-docker compose -f docker-compose.minio.yml up -d
-```
-```
-docker compose -f docker-compose.minio.yml logs --tail 20
-```
-
-아래 문구가 뜨면 정상
-
-```
-MinIO ready. bucket: estagram
-```
-
-http://localhost:9001/ 에 접속해 확인한다.
-
-# PHASE 4. backend + frontend 기동
-
-- 터미널 A (venv) 
-
-feed-prototype/backend 위치에서
-
-```
-uvicorn app.main:app --reload
-```
-
-- 터미널 B
-
-feed-prototype/.env 생성한 뒤
-
-```
+```text
 VITE_DATA_SOURCE=api
-VITE_API_BASE_URL=http://localhost:8000
+VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-작성 후
+## 2. DB와 테스트 계정
 
-첫 실행 시엔
+로컬 PostgreSQL에 `feed_dev` 데이터베이스를 만든 뒤 backend에서 실행합니다.
 
-```
-npm install
-```
-
-을 수행.
-
-이후
-
-```
-npm run dev
-```
-
-반드시 
-```
-http://localhost:5173
-```
-으로 접속해야 한다.
-
-# PHASE 5. 배치 폴더 만들기
-
-```
-my_batch_001/
-├─ feed_posts.json
-└─ assets/
-   ├─ photo1.png
-   └─ data1.csv
-```
-
-아래는 핵심 규칙으로, 어기면 업로드를 거부한다.
-
-- batch.external_id == 폴더 이름
-- asset url은 배치 상대경로(assets/파일명)만 — 절대경로 / .. / http:// / s3:// 금지
-- type은 image | plot | table | file | link 중 하나
-- manifest가 참조하는 파일이 assets/에 실제로 존재
-
-# PHASE 7. MinIO에 업로드(producer)
-
-새로운 터미널 C(venv)를 사용. 주의점은 이 producer는 .env가 아니라 셀 환경변수를 읽음
-
-1. 먼저 dry-run을 통해 manifest 검증하고 계획만 출력한다
-
-```
-python -m scripts.upload_post_batch --batch-dir C:\path\to\my_batch_001 --bucket estagram --dry-run
-```
-
-2. 실제 업로드
-```
-$env:S3_ENDPOINT_URL="http://localhost:9000"
-$env:S3_ACCESS_KEY_ID="localadmin"
-$env:S3_SECRET_ACCESS_KEY="localpassword"
-$env:S3_REGION="us-east-1"
-$env:S3_BUCKET="estagram"
-$env:S3_ROOT_PREFIX="estagram"
-$env:S3_FORCE_PATH_STYLE="true"
-python -m scripts.upload_post_batch --batch-dir C:\path\to\my_batch_001
-```
-
-이후 MinIO 콘솔에서 위 파일들을 확인하면 됨
-
-각 터미널마다 위 환경변수가 적용되므로, 새 터미널을 사용할 때엔 다시 입력해야 함.
-
-환경변수 파일 set-minio-env.ps1 을 만든 뒤,
-```
-$env:S3_ENDPOINT_URL="http://localhost:9000"
-$env:S3_ACCESS_KEY_ID="localadmin"
-$env:S3_SECRET_ACCESS_KEY="localpassword"
-$env:S3_BUCKET="estagram"
-$env:S3_ROOT_PREFIX="estagram"
-$env:S3_FORCE_PATH_STYLE="true"
-```
-
-을 적어넣은 뒤, 
-```
-. ./set-minio-env.ps1
-```
-을 실행한 뒤 업로드를 진행하는 것이 편리.
-
-## 배치가 여러 개일 때 (`--batch-root`)
-
-배치 폴더가 수십~수백 개라면 `--batch-dir` 를 반복하는 대신 상위 폴더 하나를
-`--batch-root` 로 지정하면 그 아래 배치를 전부 한 번에 올린다. 하위 폴더를
-재귀적으로 뒤져 manifest(`feed_posts.json`)를 가진 디렉터리를 배치로 인식하므로,
-깊이가 섞여 있어도 된다.
-
-먼저 dry-run으로 전부 검증만:
-
-```
-python -m scripts.upload_post_batch --batch-root C:\path\to\batches --bucket estagram --dry-run
-```
-
-문제가 없으면 실제 업로드:
-
-```
-python -m scripts.upload_post_batch --batch-root C:\path\to\batches
-```
-
-끝나면 아래처럼 요약이 나온다.
-
-```
-summary: uploaded=173 skipped=2 failed=1 of 176
-```
-
-- 배치 하나가 실패해도 나머지는 계속 진행된다. 실패 목록은 마지막에 따로 출력된다.
-- 이미 올라간 배치는 `failed` 가 아니라 `skipped` 로 집계된다. 그래서 중간에 끊겨도
-  같은 명령을 다시 실행하면 안 올라간 것만 채워진다.
-- `failed` 가 하나라도 있으면 종료 코드가 1이다.
-- `--batch-id` 는 배치 하나를 지정하는 옵션이라 `--batch-root` 와 같이 쓸 수 없다.
-
-# PHASE 8. watch worker 기동 (감지 -> import)
-
-새로운 터미널 D(venv) 를 연 뒤, backend 폴더로 간다
-
-```
-python -m app.services.process_s3_incoming --watch --interval 10
-```
-
-실행하여 로그에 s3_watch poll discovered=1 completed=1 가 보이면 import 성공
-
-테스트 팁 : PHASE 8 worker를 PHASE 7 보다 먼저 실행해 놓으면 watch 모드 검증에 더 적합함
-
----
-
-# 기타 팁
-
-시스템 재시작 시 자동으로 복구되는 것들
-
-- PostgreSQL (feed_ops, 스키마, seed, import 된 포스트)
-- MinIO 데이터 (버킷, 업로드한 배치 객체)
-- MinIO 컨테이너
-
-수동으로 다시 해야 하는 것들
-
-- Docker Desktop 실행
-- 환경변수 재설정 (. ./set-minio-env.ps1)
-- 프로세스 재기동 (backend, worker, frontend)
-
-주의! 만일 의도적으로 MinIO에 올린 배치 객체를 전부 초기화하고 싶다면?
-
-feed-prototype 폴더에서 (`-f` 를 빼면 설정 파일을 못 찾아 실패한다)
-
-```
-docker compose -f docker-compose.minio.yml down -v
-```
-
-만일 파일에 문제가 있거나, 포스트 에러가 있어서 다시 작성 후 동일한 배치 폴더 이름으로 만들어 올린다면, 다음을 수행한다.
-
-```
-1) 고친 배치를 덮어쓰기로 다시 올린다
-python -m scripts.upload_post_batch --batch-dir D:\...\my_batch_001 --overwrite
-
-2) 상태를 pending으로 되돌린다  ← SQL 대신
-python -m scripts.reset_batch_state --batch-dir D:\...\my_batch_001
-```
-
-여러 개를 고쳤다면 batch-root를 사용할 수 있다.
-```
-python -m scripts.upload_post_batch --batch-root D:\...\batches --overwrite
-python -m scripts.reset_batch_state  --batch-root D:\...\batches
-```
-
-왜 두 번  실행하냐면, 첫 번째 코드는 MinIO의 배치 객체를, 두 번째 코드는 Postgres의 ingest_state를 변경하기 때문이다.
-
-# 완전 재개시 방법
-
-⚠️ 먼저 워커를 멈추세요
-가장 흔한 함정입니다. Postgres만 초기화하면 MinIO에 _READY.json이 176개 그대로 있으므로, 워커가 다음 poll에서 전부 다시 import합니다. 게다가 지금 .env에 S3_WATCH_BATCH_LIMIT=0이 들어가 있어서 한 번에 전부 들어옵니다.
-
-반대로 MinIO만 지우면 import_batch가 completed로 남아 포스트가 그대로 있습니다. 둘은 반드시 같이 초기화해야 합니다.
-
-1. 프로세스 정지
-터미널 A(uvicorn)와 D(worker)를 Ctrl+C. 프론트(터미널 B)는 켜두셔도 됩니다.
-
-2. MinIO 초기화 — feed-prototype 폴더에서
-
-```
-docker compose -f docker-compose.minio.yml down -v
-docker compose -f docker-compose.minio.yml up -d
-docker compose -f docker-compose.minio.yml logs --tail 20
-```
--v가 핵심입니다. MinIO는 minio-data라는 Docker named volume을 쓰는데, -v 없이는 볼륨이 남아 데이터가 그대로 살아납니다. 로그에 MinIO ready. bucket: estagram이 다시 뜨면 빈 버킷으로 재생성된 겁니다.
-
-3. Postgres 초기화 — feed-prototype/backend 폴더에서
-
-```
-alembic downgrade base
-alembic upgrade head
+```powershell
+cd feed-prototype/backend
+python -m pip install -r requirements.txt
+python -m alembic upgrade head
 python -m app.services.seed
 ```
-migration 0001~0013 전부 downgrade가 제대로 구현돼 있어서 downgrade base면 테이블이 깨끗이 지워집니다. 확인은 alembic current.
 
-(뭔가 꼬이면 pgAdmin에서 feed_ops DB를 drop 후 재생성하고 alembic upgrade head부터 하셔도 됩니다.)
+Seed 계정은 `ari`, `mika`, `nova`이며 초기 password는 각각 handle과 같습니다.
+기존 계정은 seed가 덮어쓰지 않습니다.
 
-4. 재기동
+## 3. 서버 실행
 
+첫 번째 터미널, backend 디렉터리:
+
+```powershell
+python -m uvicorn app.main:app --reload
 ```
-uvicorn app.main:app --reload                                    # 터미널 A
-python -m app.services.process_s3_incoming --watch --interval 10 # 터미널 D
+
+두 번째 터미널, `feed-prototype` 디렉터리:
+
+```powershell
+npm.cmd ci
+npm.cmd run dev
 ```
 
-5. 브라우저
-localStorage에 이전 user id/handle이 남아 있어서 로그인 상태가 어긋날 수 있습니다. localhost:5173에서 로그아웃하거나 사이트 데이터를 지우고 데모 계정(ari/mika/nova)으로 다시 로그인하세요.
+Vite가 표시한 `http://127.0.0.1:5173` 주소를 열고 seed 계정으로 로그인합니다.
+브라우저 주소를 `localhost`로 열었다면 API 주소도 `localhost`로 맞춰 세션 cookie가
+동일 사이트로 취급되게 합니다.
 
+## 4. 로컬 패키지 가져오기
+
+예제 폴더를 데이터 폴더의 `incoming/`으로 복사합니다.
+
+```powershell
+Copy-Item -Recurse ../data/external_posts/examples/managed_copy_sample C:/feed-data/incoming/
+```
+
+세 번째 터미널, backend 디렉터리에서 먼저 dry-run을 확인합니다.
+
+```powershell
+python -m app.services.process_incoming --dry-run
+python -m app.services.process_incoming
+```
+
+지속 감시가 필요하면 한 번 처리 명령 대신 아래를 실행합니다.
+
+```powershell
+python -m app.services.process_incoming --watch --interval 10
+```
+
+성공한 패키지는 `archive/`, 실패한 패키지는 `failed/`로 이동합니다. 상대 경로
+자산의 복사본은 `assets/`에 쌓입니다. 데이터 폴더를 바꾸려면 `.env`의
+`EXTERNAL_POSTS_DIR`을 바꾸고 감시 프로세스를 다시 시작합니다.
+
+## 5. 확인
+
+앱의 Home/Explore에 새 post가 보이는지, Imports에 batch 이력이 있는지,
+상세 화면의 자산이 열리는지 확인합니다. 좋아요와 메시지는 계정 두 개로 로그인해
+주고받아 볼 수 있습니다. package JSON 작성법은
+[외부 게시글 패키지 가이드](EXTERNAL_POST_PACKAGE_GUIDE.md)를 따릅니다.
