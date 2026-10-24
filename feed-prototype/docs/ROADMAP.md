@@ -31,6 +31,7 @@ v0.6.x  인증 & 멀티유저 (Auth & Multi-user)
 v1.0.0  첫 major: 배포 가능한 제품 기준선
 v1.1.x  Rich Asset Experience
 v1.2.x  외부/객체 스토리지 Ingestion (S3/MinIO)
+v1.3.x  Social Interactions (로컬 API 모드)
 ```
 
 순서의 근거:
@@ -435,6 +436,22 @@ IAM/버킷 정책 자동화 (권장 최소권한은 문서로만)
 전체 스택 docker compose (MinIO 전용 compose만 추가)
 feed_posts.json 포맷 변경, mock mode 확장
 ```
+
+## v1.3.x — Social Interactions (로컬 API 모드)
+
+목표: 테스트 계정으로 기본 SNS 상호작용을 확인한다. v0.5.x에서 이연한 like와
+1:1 메시지를 하나의 **기본 소셜 동작** 변경 묶음(v1.3.0 후보)으로 다룬다.
+현재 배포 라벨(`APP_RELEASE_LABEL`)은 별도 릴리즈 검증 전까지 유지한다.
+
+- v1.3.0 후보: post별 사용자당 좋아요 1개, 취소·개수 표시(카드/상세),
+  로그인 계정 사이의 1:1 텍스트 메시지 전송·대화 조회·최근 대화 목록.
+  세션에서 행위자를 정하고 비활성 계정으로 새 메시지 전송을 막는다.
+  PostgreSQL migration `0014`, API mode 전용. post 삭제 시 좋아요도 정리한다.
+- v1.3.1: `UX_BACKLOG.md` 반영용으로 예약.
+
+실시간 push/WebSocket, 읽음 표시, 파일 첨부, 그룹 대화, 좋아요 알림,
+메시지 검색·삭제는 이 변경 묶음의 범위 밖이다. mock mode와 동결된 external
+post package 형식은 그대로 둔다.
 
 ## 그 이후 후보 (시기 미정)
 

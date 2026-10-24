@@ -7,6 +7,7 @@ import HomeFeed from './pages/HomeFeed';
 import ImportsPage from './pages/ImportsPage';
 import ImportBatchDetailPage from './pages/ImportBatchDetailPage';
 import MePage from './pages/MePage';
+import MessagesPage from './pages/MessagesPage';
 import EditPostPage from './pages/EditPostPage';
 import NewPostPage from './pages/NewPostPage';
 import NotificationsPage from './pages/NotificationsPage';
@@ -38,6 +39,8 @@ const router = createBrowserRouter([
         path: 'notifications',
         element: <NotificationsPage />,
       },
+      { path: 'messages', element: <MessagesPage /> },
+      { path: 'messages/:accountId', element: <MessagesPage /> },
       {
         path: 'imports',
         element: <ImportsPage />,

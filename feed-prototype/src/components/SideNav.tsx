@@ -8,6 +8,7 @@ const navItems = [
   { to: '/accounts', label: 'Accounts' },
   { to: '/me', label: 'Me' },
   ...(isApiMode() ? [{ to: '/notifications', label: 'Notifications' }] : []),
+  ...(isApiMode() ? [{ to: '/messages', label: 'Messages' }] : []),
   // Import batch history is API-mode only (mock mode is demo-frozen from v0.3.0).
   ...(isApiMode() ? [{ to: '/imports', label: 'Imports' }] : []),
 ];

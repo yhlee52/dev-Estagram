@@ -10,6 +10,7 @@ import { formatDateTime } from '../utils/format';
 import AssetRenderer from './AssetRenderer';
 import AssetGallery from './AssetGallery';
 import BookmarkButton from './BookmarkButton';
+import LikeButton from './LikeButton';
 import MentionText from './MentionText';
 import MetadataSummary from './MetadataSummary';
 import PinnedMetadataChips from './PinnedMetadataChips';
@@ -257,6 +258,9 @@ export default function FeedCard({ item }: FeedCardProps) {
               <time dateTime={postUpdatedAt}>
                 Updated: {formatDateTime(postUpdatedAt)}
               </time>
+            ) : null}
+            {isApiDataSource ? (
+              <LikeButton key={`${activeApiUserId}:${post.id}`} postId={post.id} userId={activeApiUserId} />
             ) : null}
             {isApiDataSource ? (
               <button

@@ -10,6 +10,7 @@ import BookmarkPanel from '../components/BookmarkPanel';
 import CommentsSection from '../components/CommentsSection';
 import ConfirmDialog from '../components/ConfirmDialog';
 import EmptyState from '../components/EmptyState';
+import LikeButton from '../components/LikeButton';
 import MentionText from '../components/MentionText';
 import MetadataTable from '../components/MetadataTable';
 import PostBadges from '../components/PostBadges';
@@ -418,6 +419,12 @@ export default function PostDetail() {
       ) : null}
 
       {post.metadata ? <MetadataTable metadata={post.metadata} /> : null}
+
+      {isApiDataSource ? (
+        <div className="flex items-center gap-2">
+          <LikeButton key={`${activeApiUserId}:${post.id}`} postId={post.id} userId={activeApiUserId} />
+        </div>
+      ) : null}
 
       {isApiDataSource ? <BookmarkPanel postId={post.id} /> : null}
 

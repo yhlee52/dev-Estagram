@@ -254,6 +254,15 @@ export default function AccountProfile() {
           </p>
         ) : null}
 
+        {isApiDataSource && !isOwnApiAccount && !isDeactivated ? (
+          <Link
+            to={`/messages/${account.id}`}
+            className="flex h-11 w-full items-center justify-center rounded-md border border-neutral-200 bg-white px-4 text-sm font-bold text-neutral-800 transition hover:bg-neutral-100"
+          >
+            Message
+          </Link>
+        ) : null}
+
         {isOwnApiAccount ? (
           <Link
             to="/posts/new"
