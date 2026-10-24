@@ -3,9 +3,9 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 // The backend ingestion paths churn files while the dev server runs:
-// directory-batch processing (process_incoming, v0.3.2) moves packages around
-// under data/external_posts/{incoming,archive,failed}, managed asset storage
-// (v0.3.3) copies asset files into public/assets/managed/, and the generated
+// directory-batch processing moves packages around under
+// data/external_posts/{incoming,archive,failed}, managed asset storage copies
+// files into data/external_posts/assets/, and the generated
 // assets that packages reference by /assets/generated/... url are dropped into
 // public/assets/generated/ one by one during testing. All live inside the Vite
 // root, so the dev server's file watcher would otherwise react to that churn —
