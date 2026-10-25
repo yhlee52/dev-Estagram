@@ -12,6 +12,12 @@ export type MetadataMatch = 'contains' | 'exact';
 export type PostFilters = {
   keyword?: string;
   tag?: string;
+  tags?: string[];
+  people?: Array<{ accountId: string; mode: 'related' | 'authored' | 'mentioned_tagged' }>;
+  /** Preserve malformed shared URL conditions so the UI can explain and remove them. */
+  invalidPeople?: string[];
+  place?: string;
+  scope?: 'all' | 'feed';
   metadataKey?: string;
   metadataValue?: string;
   metadataMatch?: MetadataMatch;

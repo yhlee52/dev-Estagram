@@ -7,6 +7,11 @@ import type { PostFilters } from '../types/filters';
 export const emptyPostFilters: PostFilters = {
   keyword: '',
   tag: '',
+  tags: [],
+  people: [],
+  invalidPeople: [],
+  place: '',
+  scope: 'all',
   metadataKey: '',
   metadataValue: '',
   assetType: '',
@@ -22,6 +27,11 @@ export function hasActivePostFilters(filters: PostFilters): boolean {
   return Boolean(
     filters.keyword?.trim() ||
       filters.tag?.trim() ||
+      Boolean(filters.tags?.length) ||
+      Boolean(filters.people?.length) ||
+      Boolean(filters.invalidPeople?.length) ||
+      filters.place?.trim() ||
+      filters.scope === 'feed' ||
       filters.metadataKey?.trim() ||
       filters.metadataValue?.trim() ||
       filters.assetType ||
@@ -35,6 +45,12 @@ export function hasActivePostFilters(filters: PostFilters): boolean {
 }
 
 export function getPostFilterValidationError(filters: PostFilters): string {
+  if (filters.invalidPeople?.length) return 'URL에 잘못된 인물 조건이 있습니다. 해당 조건을 지우고 다시 검색해 주세요.';
+  if ((filters.people?.length ?? 0) > 5 || (filters.tags?.length ?? 0) + (filters.tag?.trim() ? 1 : 0) > 5) return '인물과 태그는 각각 최대 5개까지 선택할 수 있습니다.';
+  const tags = [filters.tag, ...(filters.tags ?? [])].filter((value): value is string => Boolean(value?.trim())).map((value) => value.trim().toLocaleLowerCase());
+  if (new Set(tags).size !== tags.length) return '같은 태그가 중복되었습니다. 하나를 지워 주세요.';
+  const people = (filters.people ?? []).map((value) => value.accountId);
+  if (new Set(people).size !== people.length) return '같은 인물 조건이 중복되었습니다. 하나를 지워 주세요.';
   if (filters.metadataValue?.trim() && !filters.metadataKey?.trim()) {
     return 'Metadata key is required when metadata value is set.';
   }

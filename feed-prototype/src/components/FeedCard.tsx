@@ -232,6 +232,9 @@ export default function FeedCard({ item }: FeedCardProps) {
         <div className="space-y-3">
           <div className="space-y-1.5">
             <PostBadges post={post} />
+            {post.searchMatches?.length ? <p className="text-xs font-semibold text-indigo-700">
+              일치 이유: {post.searchMatches.map((match) => `@${match.accountHandle ?? match.accountId} · ${match.reasons.map((reason) => ({ author: '작성', mention: '멘션', tag: '태그' }[reason] ?? reason)).join('·')}`).join(', ')}
+            </p> : null}
             <h2 className="text-base font-bold leading-6 text-neutral-950">
               {post.title}
             </h2>

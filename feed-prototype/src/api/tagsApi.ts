@@ -7,11 +7,12 @@ import type { ApiTagCount, ApiTagListResponse } from "./types";
  * The backend groups tags case-insensitively, mirroring the `tag` filter, so the
  * returned tags are lowercase. `limit` caps how many tags come back.
  */
-export const getTags = async (limit?: number): Promise<ApiTagCount[]> => {
+export const getTags = async (limit?: number, prefix?: string): Promise<ApiTagCount[]> => {
   const searchParams = new URLSearchParams();
   if (limit !== undefined) {
     searchParams.set("limit", String(limit));
   }
+  if (prefix !== undefined) searchParams.set('prefix', prefix);
 
   const queryString = searchParams.toString();
   const response = await apiGet<ApiTagListResponse>(

@@ -29,6 +29,11 @@ export function filtersToSearchParams(filters: PostFilters): URLSearchParams {
 
   setTrimmed('keyword', filters.keyword);
   setTrimmed('tag', filters.tag);
+  for (const tag of filters.tags ?? []) if (tag.trim()) params.append('tag', tag.trim());
+  for (const person of filters.people ?? []) params.append('person', `${person.mode}:${person.accountId}`);
+  for (const value of filters.invalidPeople ?? []) params.append('person', value);
+  setTrimmed('place', filters.place);
+  if (filters.scope === 'feed') params.set('scope', 'feed');
   setTrimmed('metadata_key', filters.metadataKey);
   setTrimmed('metadata_value', filters.metadataValue);
   // Only encode exact match (facet-selected); contains is the default so older
@@ -76,9 +81,21 @@ export function filtersFromSearchParams(params: URLSearchParams): PostFilters {
   const bookmarkedOnlyRaw = params.get('bookmarked_only');
   const metadataMatch = params.get('metadata_match') === 'exact' ? 'exact' : undefined;
 
+  const people = params.getAll('person').map((raw) => {
+    const separator = raw.indexOf(':');
+    const mode = raw.slice(0, separator);
+    const accountId = raw.slice(separator + 1);
+    return { raw, mode, accountId, valid: separator > 0 && Boolean(accountId) && ['related', 'authored', 'mentioned_tagged'].includes(mode) };
+  });
+
   return {
     keyword: params.get('keyword') ?? '',
-    tag: params.get('tag') ?? '',
+    tag: params.getAll('tag')[0] ?? '',
+    tags: params.getAll('tag').slice(1),
+    people: people.filter((value) => value.valid).map((value) => ({ mode: value.mode as 'related' | 'authored' | 'mentioned_tagged', accountId: value.accountId })),
+    invalidPeople: people.filter((value) => !value.valid).map((value) => value.raw),
+    place: params.get('place') ?? '',
+    scope: params.get('scope') === 'feed' ? 'feed' : 'all',
     metadataKey: params.get('metadata_key') ?? '',
     metadataValue: params.get('metadata_value') ?? '',
     metadataMatch,

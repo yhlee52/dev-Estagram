@@ -40,6 +40,11 @@ export const buildPostFilterQuery = (
   if (filters) {
     appendStringParam(searchParams, 'keyword', filters.keyword);
     appendStringParam(searchParams, 'tag', filters.tag);
+    for (const tag of filters.tags ?? []) searchParams.append('tag', tag);
+    for (const person of filters.people ?? []) searchParams.append('person', `${person.mode}:${person.accountId}`);
+    for (const value of filters.invalidPeople ?? []) searchParams.append('person', value);
+    appendStringParam(searchParams, 'place', filters.place);
+    if (filters.scope === 'feed') searchParams.set('scope', 'feed');
     appendStringParam(searchParams, 'metadata_key', filters.metadataKey);
     appendStringParam(searchParams, 'metadata_value', filters.metadataValue);
     // Only emit exact match (the facet-selected case); contains is the default.

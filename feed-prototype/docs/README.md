@@ -13,5 +13,6 @@
 | [Golden sample 회귀](GOLDEN_SAMPLE_REGRESSION.md) | 기존 패키지 호환성 확인 |
 | [로드맵](ROADMAP.md) · [UX backlog](UX_BACKLOG.md) | 다음 작업 범위와 UX 항목 |
 | [프로필·한국어·탐색 UX](UX_IMPROVEMENT_PLAN.md) | v2.1.x 화면 동작, API 계약, 검증 |
+| [스마트 홈 검색](SMART_HOME_SEARCH_PLAN.md) | v2.2.x 검색 의미, API·DB 계약, 적용·검증 |
 
 과거 버전별 범위·검증 기록은 Git history에서 확인할 수 있습니다.
