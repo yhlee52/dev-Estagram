@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="노바의 일러스트 아바타">
+  <rect width="128" height="128" rx="64" fill="#e5e2fa"/>
+  <rect x="29" y="36" width="70" height="65" rx="22" fill="#6f63bb"/>
+  <path d="M64 36V24" stroke="#6f63bb" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="64" cy="22" r="6" fill="#f6bd70"/>
+  <circle cx="49" cy="65" r="8" fill="#faf9ff"/><circle cx="79" cy="65" r="8" fill="#faf9ff"/>
+  <path d="M49 84q15 10 30 0" fill="none" stroke="#faf9ff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M14 128q8-27 50-27t50 27" fill="#4f448f"/>
+</svg>

@@ -12,6 +12,11 @@ Vite + React + TypeScript, backend는 FastAPI + PostgreSQL입니다. 현재 릴�
   동작 검증에는 사용하지 않습니다.
 
 설치와 순서는 [로컬 실행 가이드](docs/QUICK_RUN_GUIDE_LOCAL.md)를 따르세요.
+새 DB의 API 데모 계정 `ari`·`mika`·`nova`에는 한국어 프로필, 고정 글과 실제
+로컬 자산이 포함됩니다. 이미 seed한 DB의 데모 내용을 갱신하려면
+`python -m app.services.seed --refresh-demo`를 명시적으로 실행합니다.
+이 명령은 비밀번호와 다른 계정 데이터는 유지하며 데모 프로필의 수정 사항과
+고정 글 순서는 갱신합니다. Mock 모드의 정적 데이터는 별도 UI 데모입니다.
 
 ## 로컬 데이터 위치
 

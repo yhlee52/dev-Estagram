@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="월요일부터 금요일까지 완료한 작업 수가 증가하는 그래프">
+  <rect width="1200" height="800" fill="#edf5f4"/><rect x="90" y="80" width="1020" height="640" rx="28" fill="#fff"/>
+  <g fill="#385766" font-family="sans-serif"><text x="150" y="155" font-size="42" font-weight="700">주간 완료 작업</text><text x="150" y="205" font-size="24">작은 진전을 모아 보았습니다</text></g>
+  <path d="M180 610H1020M180 500H1020M180 390H1020M180 280H1020" stroke="#e1ebea" stroke-width="3"/>
+  <path d="M220 570 390 525 560 450 730 460 900 335 1000 280" fill="none" stroke="#4b96a0" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#4b96a0"><circle cx="220" cy="570" r="13"/><circle cx="390" cy="525" r="13"/><circle cx="560" cy="450" r="13"/><circle cx="730" cy="460" r="13"/><circle cx="900" cy="335" r="13"/><circle cx="1000" cy="280" r="13"/></g>
+  <g fill="#536c70" font-family="sans-serif" font-size="27"><text x="200" y="660">월</text><text x="370" y="660">화</text><text x="540" y="660">수</text><text x="710" y="660">목</text><text x="880" y="660">금</text></g>
+</svg>

@@ -27,12 +27,8 @@ CHECKS = (
 )
 
 
-def main() -> int:
-    source = make_url(get_settings().database_url)
-    if not source.drivername.startswith("postgresql"):
-        raise RuntimeError("An isolated PostgreSQL database is required")
+def run_check_set(source, admin, checks: tuple[str, ...]) -> int:
     database_name = f"feed_profile_check_{uuid4().hex[:12]}"
-    admin = create_engine(source.set(database="postgres"), isolation_level="AUTOCOMMIT")
     created = False
     try:
         with admin.connect() as connection:
@@ -41,17 +37,31 @@ def main() -> int:
         test_url = source.set(database=database_name).render_as_string(hide_password=False)
         env = {**os.environ, "DATABASE_URL": test_url, "PROFILE_UX_TEST_DATABASE_URL": test_url}
         for command in ((sys.executable, "-m", "alembic", "upgrade", "head"),
-                        *((sys.executable, "-m", check) for check in CHECKS)):
+                        *((sys.executable, "-m", check) for check in checks)):
             print("Running", " ".join(command[:3]), flush=True)
             result = subprocess.run(command, env=env, check=False)
             if result.returncode:
                 return result.returncode
-        print("Isolated profile regressions passed", flush=True)
         return 0
     finally:
         if created:
             with admin.connect() as connection:
                 connection.execute(text(f'DROP DATABASE IF EXISTS "{database_name}" WITH (FORCE)'))
+
+
+def main() -> int:
+    source = make_url(get_settings().database_url)
+    if not source.drivername.startswith("postgresql"):
+        raise RuntimeError("An isolated PostgreSQL database is required")
+    admin = create_engine(source.set(database="postgres"), isolation_level="AUTOCOMMIT")
+    try:
+        for checks in (CHECKS, ("scripts.check_demo_seed",)):
+            result = run_check_set(source, admin, checks)
+            if result:
+                return result
+        print("Isolated profile regressions and demo seed check passed", flush=True)
+        return 0
+    finally:
         admin.dispose()
 
 

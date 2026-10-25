@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="아리의 일러스트 아바타">
+  <rect width="128" height="128" rx="64" fill="#fde9d7"/>
+  <circle cx="64" cy="73" r="36" fill="#f4b58d"/>
+  <path d="M28 66c0-31 15-48 37-48 26 0 40 20 36 51-10-8-16-22-16-27-12 17-31 23-57 24Z" fill="#513b40"/>
+  <circle cx="51" cy="74" r="3" fill="#3c3033"/><circle cx="77" cy="74" r="3" fill="#3c3033"/>
+  <path d="M56 90q8 7 16 0" fill="none" stroke="#9e4d4a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M25 128q4-29 39-29t39 29" fill="#dc7566"/>
+</svg>
