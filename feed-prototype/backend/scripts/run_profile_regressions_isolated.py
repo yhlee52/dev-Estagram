@@ -55,7 +55,7 @@ def main() -> int:
         raise RuntimeError("An isolated PostgreSQL database is required")
     admin = create_engine(source.set(database="postgres"), isolation_level="AUTOCOMMIT")
     try:
-        for checks in (CHECKS, ("scripts.check_demo_seed",)):
+        for checks in (CHECKS, ("scripts.check_demo_seed",), ("scripts.check_smart_search",)):
             result = run_check_set(source, admin, checks)
             if result:
                 return result

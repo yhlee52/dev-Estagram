@@ -107,6 +107,8 @@ export const mapApiPostToPost = (
   tags: post.tags ?? getStringArray(post.metadata_json, 'tags'),
   assets: assets.map(mapApiAssetToPostAsset),
   commentCount: post.comment_count ?? 0,
+  taggedAccountIds: post.tagged_account_ids ?? [],
+  searchMatches: (post as ApiPost & { search_matches?: Array<{ account_id: string; account_handle?: string | null; reasons: string[] }> }).search_matches?.map((match) => ({ accountId: match.account_id, accountHandle: match.account_handle ?? undefined, reasons: match.reasons })) ?? [],
   metadata_json: metadataOrUndefined(post.metadata_json),
   metadata: {
     ...(post.metadata_json ?? {}),

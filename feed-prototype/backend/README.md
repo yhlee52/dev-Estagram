@@ -47,6 +47,13 @@ python -m scripts.check_managed_asset_copy
 프로필 검색·요약·관계·고정 게시글과 계정 편집 필드는
 [UX 개선 계획](../docs/UX_IMPROVEMENT_PLAN.md)에 정리했습니다. 기존
 `GET /api/accounts`와 `GET /api/accounts/{id}/posts` 배열 응답은 유지합니다.
+
+v2.2.x 스마트 검색은 `GET /api/posts`에 반복 가능한 `person`, `tag`와 `place`,
+`scope=all|feed`를 추가합니다. `GET /api/tags?prefix=...`와
+`GET /api/places?prefix=...`가 자동완성 후보를 반환합니다. 기존 DB의 게시글
+멘션 관계는 migration 후 `python -m scripts.rebuild_post_account_refs --dry-run`
+으로 확인하고 `--apply`로 재계산합니다. 검색 의미와 인증 경계는
+[스마트 홈 검색](../docs/SMART_HOME_SEARCH_PLAN.md)에 있습니다.
 `run_profile_regressions_isolated`는 설정된 PostgreSQL 서버에 임시 DB를
 만들어 마이그레이션과 기존 회귀를 실행한 후 삭제합니다. 설정된 앱 DB는 변경하지
 않으며 PostgreSQL 사용자에게 DB 생성 권한이 필요합니다.

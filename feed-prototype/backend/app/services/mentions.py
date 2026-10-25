@@ -6,7 +6,7 @@ import re
 MENTION_PATTERN = r"@([a-zA-Z0-9_]+(?:[.-][a-zA-Z0-9_]+)*)"
 HASHTAG_PATTERN = r"#([a-zA-Z][a-zA-Z0-9_]*(?:[.-][a-zA-Z0-9_]+)*)"
 TOKEN_RE = re.compile(rf"(?:{MENTION_PATTERN})|(?:{HASHTAG_PATTERN})")
-WORD_CHAR_RE = re.compile(r"[a-zA-Z0-9_]")
+WORD_CHAR_RE = re.compile(r"[\w]")
 
 
 def normalize_mention_handle(handle: str) -> str:
@@ -29,6 +29,9 @@ def find_mentioned_handles(text: str) -> set[str]:
 
         raw = match.group(0)
         if raw.startswith("@"):
+            following = text[match.end():match.end() + 1]
+            if following and re.fullmatch(r"[a-zA-Z0-9_.-]", following):
+                continue
             handles.add(normalize_mention_handle(match.group(1)))
 
     return handles

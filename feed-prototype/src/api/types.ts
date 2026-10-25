@@ -107,6 +107,7 @@ export interface ApiPost {
   updated_at: string;
   // Derived count of comments on this post (v0.5.0); absent on mock/legacy data.
   comment_count?: number;
+  tagged_account_ids?: string[];
 }
 
 export interface ApiPostAssetPayload {
@@ -123,6 +124,7 @@ export interface ApiPostCreatePayload {
   tags?: string[];
   metadata_json?: ApiMetadata | null;
   assets?: ApiPostAssetPayload[];
+  tagged_account_ids?: string[];
 }
 
 export interface ApiPostUpdatePayload {
@@ -131,10 +133,14 @@ export interface ApiPostUpdatePayload {
   tags?: string[];
   metadata_json?: ApiMetadata | null;
   assets?: ApiPostAssetPayload[];
+  tagged_account_ids?: string[];
 }
 
 export interface ApiPostWithAssets extends ApiPost {
   assets: ApiPostAsset[];
+  account?: ApiAccount | null;
+  tagged_account_ids?: string[];
+  search_matches?: Array<{ account_id: string; account_handle?: string | null; reasons: Array<'author' | 'mention' | 'tag'> }>;
 }
 
 export interface ApiPaginatedPosts {

@@ -14,6 +14,7 @@ from app.api.routes.messages import router as messages_router
 from app.api.routes.metadata import router as metadata_router
 from app.api.routes.notifications import router as notifications_router
 from app.api.routes.posts import router as posts_router
+from app.api.routes.places import router as places_router
 from app.api.routes.tags import router as tags_router
 from app.api.routes.users import router as users_router
 
@@ -32,6 +33,7 @@ api_router.include_router(bookmarks_router)
 api_router.include_router(notifications_router)
 api_router.include_router(imports_router)
 api_router.include_router(tags_router)
+api_router.include_router(places_router)
 api_router.include_router(metadata_router)
 api_router.include_router(follows_router)
 api_router.include_router(feed_router)

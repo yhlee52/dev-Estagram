@@ -59,6 +59,7 @@ export default function NewPostPage() {
         tags: values.tags,
         metadata_json: values.metadata_json,
         assets: values.assets,
+        tagged_account_ids: values.tagged_account_ids,
       });
 
       navigate(`/posts/${createdItem.post.id}`);

@@ -37,6 +37,15 @@ python -m alembic upgrade head
 python -m app.services.seed
 ```
 
+기존 DB에 이미 있던 게시글의 본문 멘션도 인물 검색에 넣으려면 migration 후
+다음 명령을 한 번 실행합니다. 원문과 명시적 인물 태그는 바꾸지 않으며 재실행할
+수 있습니다.
+
+```powershell
+python -m scripts.rebuild_post_account_refs --dry-run
+python -m scripts.rebuild_post_account_refs --apply
+```
+
 Seed 계정은 `ari`, `mika`, `nova`이며 초기 password는 각각 handle과 같습니다.
 새 DB에는 한국어 소개·게시글 9개, 고정 글, 댓글·좋아요·북마크 메모·메시지 예시가
 들어갑니다. 아바타·커버·사진·그래프·CSV·JSON은 저장소의

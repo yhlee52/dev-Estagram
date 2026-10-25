@@ -12,6 +12,7 @@ router = APIRouter(prefix="/api/tags", tags=["tags"])
 @router.get("", response_model=TagListResponse)
 def list_tags(
     limit: int = Query(default=DEFAULT_TAG_LIMIT, ge=1, le=MAX_TAG_LIMIT),
+    prefix: str | None = Query(default=None),
     session: Session = Depends(get_session),
 ) -> TagListResponse:
-    return TagListResponse(items=get_top_tags(session, limit=limit))
+    return TagListResponse(items=get_top_tags(session, limit=limit, prefix=prefix))

@@ -60,7 +60,7 @@ my-batch/
 | 최상위 | `batch` | `accounts`, `posts` |
 | `batch` | `external_id` | `source`, `created_at` |
 | `accounts[]` | `external_id`, `handle`, `display_name` | `bio`, `avatar_url` |
-| `posts[]` | `external_id`, `account_external_id`, `title` | `text`, `created_at`, `tags`, `metadata_json`, `assets` |
+| `posts[]` | `external_id`, `account_external_id`, `title` | `text`, `created_at`, `tags`, `metadata_json`, `assets`, `tagged_account_external_ids` |
 | `assets[]` | `type`, `url` | `external_id`, `title`, `description`, `sort_order` |
 
 `assets[].type`은 `image`, `plot`, `table`, `file`, `link` 중 하나입니다. 이미지와
@@ -68,6 +68,14 @@ plot은 갤러리, CSV table은 표 미리보기, file과 link는 열기 카드�
 여러 자산은 `assets` 배열에 넣고 `sort_order`로 순서를 지정합니다. 제목은 200자,
 본문은 5000자 이내입니다. `metadata_json`은 자유로운 JSON object로, 앱의 공통
 도메인에 없는 시나리오별 값을 담습니다.
+
+`metadata_json.location`에 문자열 장소를 넣으면 스마트 검색의 장소 조건과 후보에
+사용됩니다. 선택형 `tagged_account_external_ids`는 이 패키지나 DB에 등록된
+`accounts.external_id`의 배열이며 최대 5개입니다. 생략하면 기존 인물 태그를
+유지하고, 빈 배열이면 모두 해제하고, 값을 넣으면 교체합니다. 미등록 ID와 중복
+ID는 import 오류입니다. 내부 Account ID나 handle을 넣지 않습니다. 본문의
+`@handle` 멘션은 원문에서 따로 해석하며 댓글 멘션은 게시글 인물 검색 대상이
+아닙니다.
 
 `account_external_id`는 이 패키지의 account 또는 DB에 이미 있는 account의
 `external_id`를 가리킵니다. import가 새 account에 대응하는 User를 만듭니다.

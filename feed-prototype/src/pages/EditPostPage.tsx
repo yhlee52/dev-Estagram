@@ -172,6 +172,7 @@ export default function EditPostPage() {
         tags: values.tags,
         metadata_json: values.metadata_json,
         assets: values.assets,
+        tagged_account_ids: values.tagged_account_ids,
       });
       setPost(mapApiPostToPost(updatedPost, updatedPost.assets));
       navigate(`/posts/${postId}`);

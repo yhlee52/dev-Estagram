@@ -14,6 +14,7 @@ from app.schemas.feed import (
     UserRegistrationResponse,
 )
 from app.services.auth import set_user_password
+from app.services.post_account_refs import rebuild_mentions_for_handles
 
 
 HANDLE_PATTERN = re.compile(r"^[a-z0-9_-]{3,32}$")
@@ -90,6 +91,8 @@ def create_user_with_account(
     )
     session.add(account)
     set_user_password(session, user.id, user_create.password)
+    session.flush()
+    rebuild_mentions_for_handles(session, {account.handle})
 
     try:
         session.commit()
