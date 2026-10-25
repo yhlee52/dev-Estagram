@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
-import { getAccounts } from '../api/accountsApi';
+import { useLocation, useSearchParams } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import { getPosts } from '../api/postsApi';
 import { getTags } from '../api/tagsApi';
@@ -10,6 +9,7 @@ import EmptyState from '../components/EmptyState';
 import ExploreTags from '../components/ExploreTags';
 import FeedCard from '../components/FeedCard';
 import PostFilterPanel from '../components/PostFilterPanel';
+import SmartSearchBar, { type SmartSearchDraft } from '../components/SmartSearchBar';
 import {
   emptyPostFilters,
   getPostFilterValidationError,
@@ -20,7 +20,7 @@ import { getDataSourceMode } from '../config/dataSource';
 import { mapApiAccountToAccount, mapApiPostToPost } from '../data/apiFeedRepository';
 import postsData from '../data/posts.json';
 import { useEffectiveAccounts } from '../hooks/useEffectiveData';
-import type { Account, FeedItem, Post } from '../types/feed';
+import type { FeedItem, Post } from '../types/feed';
 import type { PostFilters } from '../types/filters';
 import { ApiAccountsSearch } from './AccountsPage';
 import AppliedFiltersSummary from '../components/AppliedFiltersSummary';
@@ -98,11 +98,10 @@ function getBrowseErrorMessage(error: unknown): string {
 
 function mapPostsToItems(
   posts: ApiPostWithAssets[],
-  accountsById: Map<string, Account>,
 ): FeedItem[] {
   return posts
     .map((post) => {
-      const account = accountsById.get(post.account_id);
+      const account = post.account ? mapApiAccountToAccount(post.account) : undefined;
       if (!account) {
         return undefined;
       }
@@ -116,13 +115,15 @@ function mapPostsToItems(
 }
 
 export default function PostsBrowsePage() {
+  const location = useLocation();
+  const initialSmartDraft = (location.state as { smartDraft?: SmartSearchDraft } | null)?.smartDraft;
   const mockAccounts = useEffectiveAccounts();
   const { activeApiUserId } = useActiveApiUser();
   const [searchParams, setSearchParams] = useSearchParams();
   const accountTab = isApiDataSource && searchParams.get('tab') === 'accounts';
   const restoreKey = `explore-return:${activeApiUserId}:${searchParams.toString()}`;
-  const queryKeyRef = useRef(searchParams.toString());
-  useEffect(() => { queryKeyRef.current = searchParams.toString(); }, [searchParams]);
+  const queryKeyRef = useRef('');
+  useEffect(() => { queryKeyRef.current = `${activeApiUserId}:${searchParams.toString()}`; }, [activeApiUserId, searchParams]);
   // The URL is the source of truth for applied filters so that hashtag links
   // like `/posts?tag=<tag>` (v0.1.1) take effect even when we are already on
   // this page (no remount) and survive reload/share.
@@ -133,7 +134,7 @@ export default function PostsBrowsePage() {
   const [draftFilters, setDraftFilters] = useState<PostFilters>(appliedFilters);
   const [syncedSearch, setSyncedSearch] = useState(() => searchParams.toString());
   const [filterError, setFilterError] = useState('');
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(Boolean(initialSmartDraft));
 
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
@@ -169,7 +170,6 @@ export default function PostsBrowsePage() {
   const [metadataKeySuggestions, setMetadataKeySuggestions] = useState<
     ApiMetadataKeyCount[]
   >([]);
-  const accountsByIdRef = useRef<Map<string, Account>>(new Map());
 
   // Load popular tags once for the search box autocomplete (v0.1.2). Failures
   // are non-fatal: the search box just falls back to plain keyword input.
@@ -225,19 +225,11 @@ export default function PostsBrowsePage() {
       } catch { /* History restoration is optional. */ }
 
       try {
-        const [accountsResponse, firstPage] = await Promise.all([
-          getAccounts(true),
-          getPosts(appliedFilters, { limit: PAGE_LIMIT, activeUserId: activeApiUserId }),
-        ]);
+        const firstPage = await getPosts(appliedFilters, { limit: PAGE_LIMIT, activeUserId: activeApiUserId });
 
         if (!isMounted) {
           return;
         }
-
-        const accountsById = new Map(
-          accountsResponse.map(mapApiAccountToAccount).map((account) => [account.id, account]),
-        );
-        accountsByIdRef.current = accountsById;
 
         const loaded = [...firstPage.items];
         let nextCursor = firstPage.next_cursor;
@@ -249,7 +241,7 @@ export default function PostsBrowsePage() {
           hasMore = page.has_more;
         }
         if (!isMounted) return;
-        setApiItems(mapPostsToItems(loaded, accountsById));
+        setApiItems(mapPostsToItems(loaded));
         setNextCursor(nextCursor);
         setHasMore(hasMore);
         if (restore && Number.isFinite(restore.y)) requestAnimationFrame(() => window.scrollTo(0, restore!.y));
@@ -292,7 +284,7 @@ export default function PostsBrowsePage() {
 
       setApiItems((current) => [
         ...current,
-        ...mapPostsToItems(postsResponse.items, accountsByIdRef.current),
+        ...mapPostsToItems(postsResponse.items),
       ]);
       setNextCursor(postsResponse.next_cursor);
       setHasMore(postsResponse.has_more);
@@ -408,8 +400,8 @@ export default function PostsBrowsePage() {
           <p className="text-xs font-semibold leading-5 text-neutral-600">
             팔로우 여부와 관계없이 모든 게시글에서 검색합니다.
           </p>
-          <button type="button" aria-expanded={advancedOpen} onClick={() => setAdvancedOpen((value) => !value)}
-            className="text-sm font-bold text-neutral-800 underline">상세 조건 {advancedOpen ? '접기' : '열기'}</button>
+          <SmartSearchBar key={currentSearch} filters={draftFilters} initialDraft={!currentSearch ? initialSmartDraft : undefined} onApply={commitFilters}
+            onAdvanced={() => setAdvancedOpen((value) => !value)} showScope />
           <PostFilterPanel
             filters={draftFilters}
             onChange={(nextFilters) => {
@@ -425,11 +417,12 @@ export default function PostsBrowsePage() {
             resultCount={!isLoading && !error ? items.length : undefined}
             mode="browse"
             advancedOpen={advancedOpen}
+            showPrimarySearch={false}
             activeUserId={activeApiUserId}
-            error={filterError}
+            error={filterError || getPostFilterValidationError(appliedFilters)}
             hasAppliedFilters={hasAppliedFilters}
             tagSuggestions={tagSuggestions}
-            onSelectTag={(tag) => commitFilters({ ...draftFilters, keyword: '', tag })}
+            onSelectTag={(tag) => commitFilters({ ...draftFilters, keyword: '', tag, tags: [] })}
             metadataKeySuggestions={metadataKeySuggestions}
             onSelectFacet={(key, value) =>
               commitFilters({

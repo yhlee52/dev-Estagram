@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { ApiClientError, ApiNetworkError } from '../api/client';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
 import PostFilterPanel from '../components/PostFilterPanel';
+import SmartSearchBar from '../components/SmartSearchBar';
 import AppliedFiltersSummary from '../components/AppliedFiltersSummary';
 import {
   emptyPostFilters,
@@ -62,7 +63,9 @@ const feedScopeOptions: Array<{
 
 export default function HomeFeed() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [feedScope, setFeedScope] = useState<FeedScope>('following');
+  const [legacyFiltersOpen, setLegacyFiltersOpen] = useState(false);
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -167,6 +170,14 @@ export default function HomeFeed() {
       setError('');
 
       try {
+        let restore: { count: number; y: number } | null = null;
+        if (isApiDataSource && !searchParams.toString()) {
+          try {
+            const saved = window.sessionStorage.getItem(`home-return:${activeApiUserId}`);
+            if (saved) restore = JSON.parse(saved) as { count: number; y: number };
+            window.sessionStorage.removeItem(`home-return:${activeApiUserId}`);
+          } catch { /* Scroll restoration is optional. */ }
+        }
         const page = await getHomeFeedItems({
           activeUserId: isApiDataSource ? activeApiUserId : activeUserId,
           scope: feedScope,
@@ -174,10 +185,25 @@ export default function HomeFeed() {
           limit: PAGE_LIMIT,
         });
 
+        const loaded = [...page.items];
+        let restoredCursor = page.nextCursor;
+        let restoredMore = page.hasMore;
+        for (let pageNumber = 1; isMounted && restore && loaded.length < Math.min(restore.count, PAGE_LIMIT * 10) && restoredCursor && restoredMore && pageNumber < 10; pageNumber += 1) {
+          const extra = await getHomeFeedItems({
+            activeUserId: isApiDataSource ? activeApiUserId : activeUserId,
+            scope: feedScope,
+            filters: isApiDataSource ? appliedFilters : undefined,
+            cursor: restoredCursor,
+            limit: PAGE_LIMIT,
+          });
+          loaded.push(...extra.items); restoredCursor = extra.nextCursor; restoredMore = extra.hasMore;
+        }
+
         if (isMounted) {
-          setFeedItems(page.items);
-          setNextCursor(page.nextCursor);
-          setHasMore(page.hasMore);
+          setFeedItems(loaded);
+          setNextCursor(restoredCursor);
+          setHasMore(restoredMore);
+          if (restore && Number.isFinite(restore.y)) requestAnimationFrame(() => window.scrollTo(0, restore!.y));
         }
       } catch (feedError) {
         if (isMounted) {
@@ -212,6 +238,7 @@ export default function HomeFeed() {
     feedScope,
     followingIds,
     accounts,
+    searchParams,
   ]);
 
   const handleLoadMore = async () => {
@@ -354,7 +381,15 @@ export default function HomeFeed() {
             </button>
           </div>
 
-          <PostFilterPanel
+          <SmartSearchBar filters={emptyPostFilters} onAdvanced={(smartDraft) => {
+            try { window.sessionStorage.setItem(`home-return:${activeApiUserId}`, JSON.stringify({ count: feedItems.length, y: window.scrollY })); } catch { /* optional history state */ }
+            navigate('/posts', { state: { smartDraft } });
+          }} onApply={(next) => {
+            try { window.sessionStorage.setItem(`home-return:${activeApiUserId}`, JSON.stringify({ count: feedItems.length, y: window.scrollY })); } catch { /* optional history state */ }
+            navigate(`/posts?${filtersToSearchParams({ ...next, scope: 'all' })}`);
+          }} />
+          {searchParams.toString() ? <button type="button" aria-expanded={legacyFiltersOpen} onClick={() => setLegacyFiltersOpen((value) => !value)} className="text-xs font-semibold underline">현재 홈 필터 {legacyFiltersOpen ? '접기' : '조정'}</button> : null}
+          {searchParams.toString() && legacyFiltersOpen ? <PostFilterPanel
             filters={draftFilters}
             onChange={(nextFilters) => {
               if (nextFilters.metadataKey?.trim()) {
@@ -368,11 +403,12 @@ export default function HomeFeed() {
             isLoading={isLoading}
             resultCount={!isLoading && !error && activeApiUserId ? feedItems.length : undefined}
             mode="feed"
+            showPrimarySearch={false}
             activeUserId={activeApiUserId}
             error={filterError}
             hasAppliedFilters={hasAppliedFilters}
             tagSuggestions={tagSuggestions}
-            onSelectTag={(tag) => commitFilters({ ...draftFilters, keyword: '', tag })}
+            onSelectTag={(tag) => commitFilters({ ...draftFilters, keyword: '', tag, tags: [] })}
             metadataKeySuggestions={metadataKeySuggestions}
             onSelectFacet={(key, value) =>
               commitFilters({
@@ -382,7 +418,7 @@ export default function HomeFeed() {
                 metadataMatch: 'exact',
               })
             }
-          />
+          /> : null}
         </div>
       ) : (
         <div className="grid grid-cols-2 rounded-md border border-neutral-200 bg-neutral-100 p-1">

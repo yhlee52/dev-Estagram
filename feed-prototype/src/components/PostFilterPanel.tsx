@@ -13,6 +13,7 @@ type PostFilterPanelProps = {
   resultCount?: number;
   mode: 'feed' | 'browse';
   advancedOpen?: boolean;
+  showPrimarySearch?: boolean;
   activeUserId?: string;
   error?: string;
   hasAppliedFilters?: boolean;
@@ -43,6 +44,7 @@ export default function PostFilterPanel({
   resultCount,
   mode,
   advancedOpen = true,
+  showPrimarySearch = true,
   activeUserId,
   error = '',
   hasAppliedFilters = false,
@@ -69,7 +71,7 @@ export default function PostFilterPanel({
       onCompositionEnd={() => { isComposing.current = false; }}>
       {/* Promoted full-width search (v0.2.1): the primary way in, set apart from
           the secondary filter grid below. */}
-      <div className="flex gap-2"><div className="min-w-0 flex-1"><TagSearchInput
+      {showPrimarySearch ? <div className="flex gap-2"><div className="min-w-0 flex-1"><TagSearchInput
         ariaLabel="검색어"
         value={filters.keyword ?? ''}
         onChange={(keyword) => {
@@ -79,7 +81,7 @@ export default function PostFilterPanel({
         suggestions={tagSuggestions}
         placeholder="게시글 검색 또는 #태그"
         className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-4 text-base text-neutral-950 shadow-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200"
-      /></div><button type="submit" disabled={isLoading} className="rounded-md bg-neutral-950 px-4 text-sm font-bold text-white disabled:opacity-50">검색</button></div>
+      /></div><button type="submit" disabled={isLoading} className="rounded-md bg-neutral-950 px-4 text-sm font-bold text-white disabled:opacity-50">검색</button></div> : null}
 
       <div className={advancedOpen ? 'space-y-2.5' : 'hidden'}>
 

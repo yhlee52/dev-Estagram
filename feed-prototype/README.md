@@ -63,6 +63,12 @@ python -m app.services.process_incoming --base-dir C:/feed-data --watch --interv
 
 ### 탐색과 프로필
 
+- 홈 검색창 하나에서 키워드, 후보에서 선택한 `@인물`, 등록 `#태그`,
+  `장소:"서울 숲"`을 조합해 찾습니다. 검색 결과는 `/posts`의 전체 게시글이며
+  필요하면 `내 피드`로 좁힙니다. 인물은 작성·본문 멘션·명시적 태그가 기본이고,
+  인물 chip에서 작성만 또는 태그·멘션만 볼 수 있습니다. 본문의 해시태그만으로는
+  등록 태그 검색에 포함되지 않습니다. [검색 계약과 DB 적용](docs/SMART_HOME_SEARCH_PLAN.md)
+  을 참고하세요.
 - `/posts`에서 게시글과 계정을 탭으로 찾습니다. 게시글의 `상세 조건`은 접고 펼 수
   있으며, 적용된 조건은 URL과 조건 칩에 표시됩니다. `/accounts`도 계정 검색 화면으로
   연결됩니다. 검색어는 완성형 한글 부분 일치와 영문 대소문자 무시를 지원합니다.
@@ -88,6 +94,8 @@ python -m app.services.process_incoming --base-dir C:/feed-data --watch --interv
   `python -m scripts.run_profile_regressions_isolated`,
   `python -m scripts.check_local_asset_serving`,
   `python -m scripts.check_managed_asset_copy`
+- 기존 DB를 v2.2.x로 올린 뒤에는 `python -m scripts.rebuild_post_account_refs --dry-run`
+  으로 범위를 확인하고 `--apply`로 기존 게시글의 멘션 관계를 재계산합니다.
 
 계정 관리 명령은 [ACCOUNT_MANAGEMENT.md](docs/ACCOUNT_MANAGEMENT.md), 전체 문서
 목록은 [docs/README.md](docs/README.md)를 보세요.

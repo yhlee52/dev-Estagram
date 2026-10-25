@@ -1,13 +1,22 @@
 import { useSearchParams } from 'react-router';
 import { filtersFromSearchParams } from '../utils/filterUrl';
+import { useAccountDirectory } from '../hooks/useAccountDirectory';
 
-type Chip = { id: string; label: string; keys: string[] };
+type Chip = { id: string; label: string; keys: string[]; value?: string };
 
-function chipsFromParams(params: URLSearchParams): Chip[] {
+function chipsFromParams(params: URLSearchParams, resolveId: ReturnType<typeof useAccountDirectory>['resolveId']): Chip[] {
   const f = filtersFromSearchParams(params);
   const chips: Chip[] = [];
   if (f.keyword?.trim()) chips.push({ id: 'keyword', label: `검색: ${f.keyword.trim()}`, keys: ['keyword'] });
-  if (f.tag?.trim()) chips.push({ id: 'tag', label: `#${f.tag.trim()}`, keys: ['tag'] });
+  params.getAll('tag').forEach((tag, index) => { if (tag.trim()) chips.push({ id: `tag-${index}`, label: `#${tag.trim()}`, keys: ['tag'], value: tag }); });
+  params.getAll('person').forEach((value, index) => {
+    const [mode, ...idParts] = value.split(':'); const accountId = idParts.join(':');
+    chips.push({ id: `person-${index}`, label: accountId && ['related', 'authored', 'mentioned_tagged'].includes(mode)
+      ? `@${resolveId(accountId)?.handle ?? accountId} · ${{ related: '관련 전체', authored: '작성한 글', mentioned_tagged: '태그·멘션된 글' }[mode]}`
+      : `잘못된 인물 조건: ${value || '(빈 값)'}`, keys: ['person'], value });
+  });
+  if (f.place?.trim()) chips.push({ id: 'place', label: `장소: ${f.place.trim()}`, keys: ['place'] });
+  if (f.scope === 'feed') chips.push({ id: 'scope', label: '내 피드', keys: ['scope'] });
   if (f.metadataKey?.trim()) chips.push({
     id: 'metadata',
     label: `추가 정보: ${f.metadataKey.trim()}${f.metadataValue?.trim() ? ` ${f.metadataMatch === 'exact' ? '=' : '포함'} ${f.metadataValue.trim()}` : ''}`,
@@ -32,12 +41,20 @@ function chipsFromParams(params: URLSearchParams): Chip[] {
 /** The same applied filter summary is visible beside or below results. */
 export default function AppliedFiltersSummary() {
   const [params, setParams] = useSearchParams();
-  const chips = chipsFromParams(params);
+  const { resolveId } = useAccountDirectory();
+  const chips = chipsFromParams(params, resolveId);
   if (chips.length === 0) return null;
 
-  const clear = (keys: string[]) => {
+  const clear = (chip: Chip) => {
     const next = new URLSearchParams(params);
-    keys.forEach((key) => next.delete(key));
+    if (chip.value !== undefined && chip.keys.length === 1) {
+      const key = chip.keys[0]; const values = next.getAll(key); let removed = false;
+      next.delete(key);
+      for (const value of values) {
+        if (!removed && value === chip.value) { removed = true; continue; }
+        next.append(key, value);
+      }
+    } else chip.keys.forEach((key) => next.delete(key));
     setParams(next);
   };
   const clearAll = () => {
@@ -56,7 +73,7 @@ export default function AppliedFiltersSummary() {
       <ul className="flex flex-wrap gap-1.5">
         {chips.map((chip) => (
           <li key={chip.id}>
-            <button type="button" onClick={() => clear(chip.keys)}
+            <button type="button" onClick={() => clear(chip)}
               className="rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 shadow-sm hover:bg-neutral-100"
               aria-label={`${chip.label} 조건 지우기`}>{chip.label} ×</button>
           </li>
