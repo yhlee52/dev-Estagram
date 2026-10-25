@@ -20,4 +20,4 @@
 | 2026-07-11 | /notifications | 비로그인 guard의 "Select an API user / Choose a backend seed user" 문구가 현재 password 로그인 흐름과 맞지 않음 | 문구 현행화 또는 도달 불가 상태 제거 |
 | 2026-07-11 | /, /posts (카드) | 댓글 작성 영역의 "Select an active API user to write comments." 문구가 현재 로그인 흐름과 맞지 않음 | 문구 현행화 |
 | 2026-07-11 | /, /posts (카드) | 댓글 있는 카드마다 `getComments`를 개별 호출(N+1)하고 미리보기 3개를 위해 전체 댓글을 받음. feed 응답에 최근 댓글 2~3개를 additive 필드로 포함하거나 배치 endpoint 도입 후보 | 첫 페이지 로딩 체감 개선. package format 무관(응답 스키마 additive) |
-| 2026-07-11 | 전역 | 비동기 에러/로딩 문구가 일반 `<p>`라 스크린리더에 공지되지 않음(`aria-live` 부재). 협업 표면 전반 a11y audit 후보 | a11y, audit성 MINOR 후보 |
+| 2026-07-11 | 전역 | 비동기 에러/로딩 문구가 일반 `<p>`라 스크린리더에 공지되지 않음(`aria-live` 부재). 협업 표면 전반 a11y audit 후보 | v2.2.2에서 홈·탐색 검색 후보의 로딩·0건·실패와 재시도를 공지하도록 반영. 나머지 화면의 전역 점검은 계속 열어 둠. |

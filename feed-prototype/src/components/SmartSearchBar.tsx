@@ -138,10 +138,10 @@ export default function SmartSearchBar({ filters, initialDraft, onApply, onAdvan
         className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-4 text-sm outline-none focus:ring-2 focus:ring-neutral-300" />
       {open && kind ? <div className="absolute left-0 right-0 top-full z-30 mt-1 rounded-md border bg-white shadow-lg">
         <p className="px-3 py-1 text-xs text-neutral-500" aria-live="polite">{loading ? '후보를 찾는 중...' : suggestionError ? <>후보를 불러오지 못했습니다. <button type="button" className="underline" onClick={() => setRetryTick((value) => value + 1)}>다시 시도</button></> : suggestions.length ? '후보를 선택하면 조건이 추가됩니다.' : '일치하는 후보가 없습니다.'}</p>
-        {suggestions.length > 0 ? <ul id={`${id}-list`} role="listbox" className="max-h-52 overflow-auto">{suggestions.map((item, index) => <li key={item.kind === 'person' ? item.account.id : item.value} id={`${id}-option-${index}`} role="option" aria-selected={active === index} className="flex items-center hover:bg-neutral-100">
-          <button type="button" className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2 text-left text-sm" onMouseDown={(event) => event.preventDefault()} onClick={() => select(item)}>
-            {item.kind === 'person' ? <>{item.account.avatar_url ? <img src={item.account.avatar_url} alt="" className="size-6 rounded-full" /> : null}{item.account.display_name} <span className="text-neutral-500">@{item.account.handle}</span></> : item.kind === 'tag' ? `#${item.value}` : `장소: ${item.value}`}
-          </button>{item.kind === 'person' ? <Link to={`/accounts/${encodeURIComponent(item.account.id)}`} className="shrink-0 px-3 text-xs underline" aria-label={`${item.account.display_name} 프로필 보기`}>프로필</Link> : null}</li>)}</ul> : null}
+        {suggestions.length > 0 ? <ul id={`${id}-list`} role="listbox" className="max-h-52 overflow-auto">{suggestions.map((item, index) => <li key={item.kind === 'person' ? item.account.id : item.value} id={`${id}-option-${index}`} role="option" aria-selected={active === index}
+          className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-100" onMouseDown={(event) => event.preventDefault()} onClick={() => select(item)}>
+          {item.kind === 'person' ? <>{item.account.avatar_url ? <img src={item.account.avatar_url} alt="" className="size-6 rounded-full" /> : null}{item.account.display_name} <span className="text-neutral-500">@{item.account.handle}</span></> : item.kind === 'tag' ? `#${item.value}` : `장소: ${item.value}`}
+        </li>)}</ul> : null}
       </div> : null}
     </div><button type="submit" className="rounded-md bg-neutral-950 px-4 text-sm font-bold text-white">검색</button></div>
     <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -152,6 +152,7 @@ export default function SmartSearchBar({ filters, initialDraft, onApply, onAdvan
     <div className="flex flex-wrap gap-2">
       {people.map((person) => <span key={person.accountId} className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-1 text-xs">
         @{accounts[person.accountId]?.handle ?? person.accountId}
+        <Link to={`/accounts/${encodeURIComponent(person.accountId)}`} className="underline" aria-label={`${accounts[person.accountId]?.display_name ?? person.accountId} 프로필 보기`}>프로필</Link>
         <select aria-label={`${accounts[person.accountId]?.display_name ?? person.accountId} 검색 방식`} value={person.mode} onChange={(event) => setPeople((current) => current.map((item) => item.accountId === person.accountId ? { ...item, mode: event.target.value as Person['mode'] } : item))} className="bg-transparent">
           <option value="related">관련 전체</option><option value="authored">작성한 글</option><option value="mentioned_tagged">태그·멘션된 글</option>
         </select><button type="button" aria-label="인물 조건 삭제" onClick={() => setPeople((current) => current.filter((item) => item.accountId !== person.accountId))}>×</button>
