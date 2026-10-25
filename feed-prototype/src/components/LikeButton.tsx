@@ -12,7 +12,7 @@ export default function LikeButton({ postId, userId }: { postId: string; userId:
     void getLikes(postId).then((value) => {
       if (live) setSummary(value);
     }).catch(() => {
-      if (live) setError('Likes unavailable');
+      if (live) setError('좋아요를 불러올 수 없습니다');
     });
     return () => { live = false; };
   }, [userId, postId]);
@@ -27,7 +27,7 @@ export default function LikeButton({ postId, userId }: { postId: string; userId:
     try {
       setSummary(await (summary.liked_by_me ? removeLike(postId) : addLike(postId)));
     } catch {
-      setError('Could not update like');
+      setError('좋아요를 변경하지 못했습니다');
     } finally {
       setPending(false);
     }
@@ -37,7 +37,7 @@ export default function LikeButton({ postId, userId }: { postId: string; userId:
     <span className="inline-flex items-center gap-1">
       <button
         type="button"
-        aria-label={`${summary?.liked_by_me ? 'Unlike' : 'Like'} post; ${summary?.count ?? 0} likes`}
+        aria-label={`${summary?.liked_by_me ? '좋아요 취소' : '좋아요'}; ${summary?.count ?? 0}개`}
         aria-pressed={summary?.liked_by_me ?? false}
         disabled={!summary || pending}
         onClick={toggle}

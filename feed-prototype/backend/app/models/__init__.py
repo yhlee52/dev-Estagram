@@ -7,6 +7,7 @@ from app.models.follow import Follow
 from app.models.import_batch import ImportBatch
 from app.models.notification_state import NotificationState
 from app.models.post import Post
+from app.models.profile_pin import ProfilePin
 from app.models.user import User
 
 
@@ -18,6 +19,7 @@ __all__ = [
     "ImportBatch",
     "NotificationState",
     "Post",
+    "ProfilePin",
     "PostAsset",
     "User",
     "UserCredential",

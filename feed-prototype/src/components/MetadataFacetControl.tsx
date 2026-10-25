@@ -70,12 +70,12 @@ export default function MetadataFacetControl({
   return (
     <div className="grid gap-2 md:grid-cols-2">
       <select
-        aria-label="Metadata facet key"
+        aria-label="추가 정보 항목"
         value={selectedKey}
         onChange={(event) => handleKeyChange(event.target.value)}
         className={selectClass}
       >
-        <option value="">Pick metadata key…</option>
+        <option value="">추가 정보 항목 선택…</option>
         {keySuggestions.map((item) => (
           <option key={item.key} value={item.key}>
             {item.key} ({item.count})
@@ -83,7 +83,7 @@ export default function MetadataFacetControl({
         ))}
       </select>
       <select
-        aria-label="Metadata facet value"
+        aria-label="추가 정보 값"
         value=""
         disabled={!selectedKey || isLoadingValues}
         onChange={(event) => {
@@ -95,12 +95,12 @@ export default function MetadataFacetControl({
       >
         <option value="">
           {isLoadingValues
-            ? 'Loading values…'
+            ? '값을 불러오는 중…'
             : selectedKey
               ? values.length > 0
-                ? 'Pick value…'
-                : 'No values'
-              : 'Pick a key first'}
+                ? '값 선택…'
+                : '값이 없습니다'
+              : '항목을 먼저 선택하세요'}
         </option>
         {values.map((item) => (
           <option key={item.value} value={item.value}>

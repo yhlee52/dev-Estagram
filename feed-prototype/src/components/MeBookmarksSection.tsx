@@ -19,12 +19,12 @@ const MAX_NOTE_LENGTH = 2000;
 
 function getLoadErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다.`;
   }
   if (error instanceof ApiClientError) {
-    return `Could not load your bookmarks. The backend returned ${error.status}.`;
+    return `저장한 글을 불러오지 못했습니다. (${error.status})`;
   }
-  return 'Could not load your bookmarks.';
+  return '저장한 글을 불러오지 못했습니다.';
 }
 
 /** One bookmarked post: the card plus an inline private-note editor. */
@@ -61,7 +61,7 @@ function BookmarkRow({
       setSavedNote(updated.note ?? '');
       setNote(updated.note ?? '');
     } catch {
-      setError('Could not save the note.');
+      setError('메모를 저장하지 못했습니다.');
     } finally {
       setIsSaving(false);
     }
@@ -72,13 +72,13 @@ function BookmarkRow({
       <FeedCard item={feedItem} />
       <div className="space-y-2 rounded-md border border-neutral-200 bg-neutral-50 p-3">
         <label className="block text-xs font-bold uppercase text-neutral-400">
-          Private note
+          나만 볼 수 있는 메모
         </label>
         <textarea
           className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm leading-6 text-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-neutral-950"
           rows={2}
           maxLength={MAX_NOTE_LENGTH}
-          placeholder="Add a private note..."
+          placeholder="나만 볼 수 있는 메모를 입력하세요..."
           value={note}
           onChange={(event) => setNote(event.target.value)}
         />
@@ -92,7 +92,7 @@ function BookmarkRow({
             disabled={isSaving || note.trim() === savedNote.trim()}
             onClick={handleSave}
           >
-            {isSaving ? 'Saving...' : 'Save note'}
+            {isSaving ? '저장하는 중...' : '메모 저장'}
           </button>
         </div>
       </div>
@@ -110,6 +110,9 @@ export default function MeBookmarksSection({ userId }: MeBookmarksSectionProps) 
   const [items, setItems] = useState<ApiBookmarkedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -121,10 +124,12 @@ export default function MeBookmarksSection({ userId }: MeBookmarksSectionProps) 
         const response = await getUserBookmarks(userId);
         if (isMounted) {
           setItems(response.items);
+          setCursor(response.next_cursor);
         }
       } catch (loadError) {
         if (isMounted) {
           setItems([]);
+          setCursor(null);
           setError(getLoadErrorMessage(loadError));
         }
       } finally {
@@ -139,24 +144,37 @@ export default function MeBookmarksSection({ userId }: MeBookmarksSectionProps) 
     return () => {
       isMounted = false;
     };
-  }, [userId]);
+  }, [userId, retryCount]);
+
+  const loadMore = async () => {
+    if (!cursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const page = await getUserBookmarks(userId, undefined, { cursor });
+      setItems((current) => [...current, ...page.items.filter((item) => !current.some((old) => old.post.id === item.post.id))]);
+      setCursor(page.next_cursor);
+    } catch (loadError) {
+      setError(getLoadErrorMessage(loadError));
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const visibleItems = items.filter((item) => isBookmarked(item.post.id));
 
   return (
     <section className="space-y-3">
       <div className="flex items-end justify-between px-1">
-        <h2 className="text-sm font-bold text-neutral-950">Bookmarks</h2>
-        <span className="text-xs font-medium text-neutral-400">Latest first</span>
+        <h2 className="text-sm font-bold text-neutral-950">저장한 글</h2>
+        <span className="text-xs font-medium text-neutral-400">최신순</span>
       </div>
 
+      {error ? <div role="alert" className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
+        {error} <button type="button" onClick={() => setRetryCount((count) => count + 1)} className="ml-2 underline">다시 시도</button>
+      </div> : null}
       {isLoading ? (
-        <p className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
-          Loading bookmarks...
-        </p>
-      ) : error ? (
-        <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
-          {error}
+        <p role="status" className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
+          저장한 글을 불러오는 중...
         </p>
       ) : visibleItems.length > 0 ? (
         <div className="space-y-4">
@@ -164,12 +182,13 @@ export default function MeBookmarksSection({ userId }: MeBookmarksSectionProps) 
             <BookmarkRow key={item.post.id} item={item} userId={userId} />
           ))}
         </div>
-      ) : (
+      ) : !error ? (
         <EmptyState
-          title="No bookmarks yet"
-          description="Use Save on any post to bookmark it and add a private note."
+          title="저장한 글이 없습니다"
+          description="게시글을 저장하면 여기에 표시되고 나만 볼 수 있는 메모를 남길 수 있습니다."
         />
-      )}
+      ) : null}
+      {cursor && !isLoading ? <button type="button" onClick={() => void loadMore()} disabled={loadingMore} className="w-full rounded-md border bg-white p-2 text-sm font-bold">{loadingMore ? '불러오는 중...' : '더 보기'}</button> : null}
     </section>
   );
 }

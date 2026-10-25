@@ -21,7 +21,7 @@ export default function PinnedMetadataKeysControl({
 
   return (
     <div className="space-y-1">
-      <p className="text-xs font-semibold text-neutral-500">Pin metadata to cards</p>
+      <p className="text-xs font-semibold text-neutral-500">카드에 표시할 추가 정보</p>
       <div className="flex flex-wrap gap-1.5">
         {keySuggestions.map((item) => {
           const isPinned = pinnedKeys.includes(item.key);

@@ -1,16 +1,17 @@
 import { NavLink } from 'react-router';
 import { isApiMode } from '../config/dataSource';
 import { useNotifications } from '../hooks/useNotifications';
+import { ko } from '../i18n/ko';
 
 const navItems = [
-  { to: '/', label: 'Home', end: true },
-  { to: '/posts', label: 'Explore' },
-  { to: '/accounts', label: 'Accounts' },
-  { to: '/me', label: 'Me' },
-  ...(isApiMode() ? [{ to: '/notifications', label: 'Notifications' }] : []),
-  ...(isApiMode() ? [{ to: '/messages', label: 'Messages' }] : []),
+  { to: '/', label: ko.nav.home, end: true },
+  { to: '/posts', label: ko.nav.explore },
+  { to: '/accounts', label: ko.nav.accounts },
+  { to: '/me', label: ko.nav.me },
+  ...(isApiMode() ? [{ to: '/notifications', label: ko.nav.notifications }] : []),
+  ...(isApiMode() ? [{ to: '/messages', label: ko.nav.messages }] : []),
   // Import batch history is API-mode only (mock mode is demo-frozen from v0.3.0).
-  ...(isApiMode() ? [{ to: '/imports', label: 'Imports' }] : []),
+  ...(isApiMode() ? [{ to: '/imports', label: ko.nav.imports }] : []),
 ];
 
 type SideNavProps = {

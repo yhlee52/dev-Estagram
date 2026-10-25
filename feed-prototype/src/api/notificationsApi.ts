@@ -8,6 +8,7 @@ export type NotificationPageOptions = {
   cursor?: string | null;
   limit?: number;
   unreadOnly?: boolean;
+  reason?: 'mention';
 };
 
 const notificationsPath = (userId: string): string =>
@@ -27,6 +28,7 @@ export const getUserNotifications = (
   if (options.unreadOnly) {
     searchParams.set("unread_only", "true");
   }
+  if (options.reason) searchParams.set('reason', options.reason);
   const query = searchParams.toString();
 
   return apiGet<ApiPaginatedNotifications>(

@@ -19,39 +19,39 @@ const dispatchApiFollowsChange = () => {
 
 function getLoadFollowsErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버를 확인해 주세요.`;
   }
 
   if (error instanceof ApiClientError) {
     if (error.status === 404) {
-      return 'The selected API user was not found in the backend database. Switch user and choose an existing backend user.';
+      return '로그인 계정을 찾지 못했습니다. 다시 로그인해 주세요.';
     }
 
-    return `Could not load API follow state. The backend returned ${error.status}.`;
+    return `팔로우 상태를 불러오지 못했습니다. (${error.status})`;
   }
 
-  return 'Could not load API follow state.';
+  return '팔로우 상태를 불러오지 못했습니다.';
 }
 
 function getFollowActionErrorMessage(
   action: 'follow' | 'unfollow',
   error: unknown,
 ): string {
-  const actionLabel = action === 'follow' ? 'follow' : 'unfollow';
+  const actionLabel = action === 'follow' ? '팔로우' : '팔로우 취소';
 
   if (error instanceof ApiNetworkError) {
-    return `Could not ${actionLabel} this account because the backend API is unreachable at ${getApiBaseUrl()}.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없어 ${actionLabel}에 실패했습니다.`;
   }
 
   if (error instanceof ApiClientError) {
     if (error.status === 404) {
-      return `Could not ${actionLabel} this account because the selected API user or account was not found in the backend database.`;
+      return `계정을 찾지 못해 ${actionLabel}에 실패했습니다.`;
     }
 
-    return `Could not ${actionLabel} this account. The backend returned ${error.status}.`;
+    return `${actionLabel}에 실패했습니다. (${error.status})`;
   }
 
-  return `Could not ${actionLabel} this account.`;
+  return `${actionLabel}에 실패했습니다.`;
 }
 
 export function useApiFollows(activeApiUserId: string) {
@@ -134,7 +134,7 @@ export function useApiFollows(activeApiUserId: string) {
   const follow = useCallback(
     async (accountId: string) => {
       if (!activeApiUserId) {
-        setError('Select an API user before changing follow state.');
+        setError('팔로우하려면 로그인해 주세요.');
         return;
       }
 
@@ -159,7 +159,7 @@ export function useApiFollows(activeApiUserId: string) {
   const unfollow = useCallback(
     async (accountId: string) => {
       if (!activeApiUserId) {
-        setError('Select an API user before changing follow state.');
+        setError('팔로우하려면 로그인해 주세요.');
         return;
       }
 

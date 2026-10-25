@@ -12,15 +12,15 @@ import { StatusBadge } from './ImportsPage';
 function getErrorMessage(error: unknown): { message: string; notFound: boolean } {
   if (error instanceof ApiNetworkError) {
     return {
-      message: `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`,
+      message: `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버를 확인해 주세요.`,
       notFound: false,
     };
   }
   if (error instanceof ApiClientError) {
-    return { message: error.message, notFound: error.status === 404 };
+    return { message: `가져오기 기록을 불러오지 못했습니다. (${error.status})`, notFound: error.status === 404 };
   }
   return {
-    message: 'Could not load this import batch. Check the backend server and try again.',
+    message: '가져오기 기록을 불러오지 못했습니다. 다시 시도해 주세요.',
     notFound: false,
   };
 }
@@ -78,7 +78,7 @@ function ApiImportBatchDetailPage({ batchExternalId }: { batchExternalId: string
       to="/imports"
       className="text-sm font-semibold text-neutral-500 transition hover:text-neutral-950"
     >
-      ← All imports
+      ← 가져오기 기록
     </Link>
   );
 
@@ -87,7 +87,7 @@ function ApiImportBatchDetailPage({ batchExternalId }: { batchExternalId: string
       <div className="space-y-4">
         {backLink}
         <p className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
-          Loading import batch...
+          가져오기 기록을 불러오는 중...
         </p>
       </div>
     );
@@ -99,8 +99,8 @@ function ApiImportBatchDetailPage({ batchExternalId }: { batchExternalId: string
         {backLink}
         {notFound ? (
           <EmptyState
-            title="Import batch not found"
-            description={`No batch with id "${batchExternalId}" exists in the backend.`}
+            title="가져오기 기록을 찾지 못했습니다"
+            description={`"${batchExternalId}" 묶음을 찾지 못했습니다.`}
           />
         ) : (
           <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
@@ -124,7 +124,7 @@ function ApiImportBatchDetailPage({ batchExternalId }: { batchExternalId: string
               {batch.external_id}
             </h1>
             <p className="truncate text-sm text-neutral-500">
-              {batch.source ? `Source: ${batch.source}` : 'No source'}
+              {batch.source ? `출처: ${batch.source}` : '출처 없음'}
             </p>
           </div>
           <StatusBadge status={batch.status} />
@@ -137,25 +137,25 @@ function ApiImportBatchDetailPage({ batchExternalId }: { batchExternalId: string
         ) : null}
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <Stat label="Posts created" value={String(batch.posts_created)} />
-          <Stat label="Posts updated" value={String(batch.posts_updated)} />
-          <Stat label="Posts skipped" value={String(batch.posts_skipped)} />
-          <Stat label="Posts now" value={String(batch.post_count)} />
-          <Stat label="Accounts +/~" value={`${batch.accounts_created}/${batch.accounts_updated}`} />
-          <Stat label="Assets created" value={String(batch.assets_created)} />
-          <Stat label="Import count" value={String(batch.import_count)} />
-          <Stat label="Last import" value={formatRelativeTime(batch.last_imported_at)} />
+          <Stat label="생성한 게시글" value={String(batch.posts_created)} />
+          <Stat label="갱신한 게시글" value={String(batch.posts_updated)} />
+          <Stat label="건너뛴 게시글" value={String(batch.posts_skipped)} />
+          <Stat label="현재 게시글" value={String(batch.post_count)} />
+          <Stat label="계정 생성/갱신" value={`${batch.accounts_created}/${batch.accounts_updated}`} />
+          <Stat label="생성한 자료" value={String(batch.assets_created)} />
+          <Stat label="가져온 횟수" value={String(batch.import_count)} />
+          <Stat label="최근 가져옴" value={formatRelativeTime(batch.last_imported_at)} />
         </div>
 
         <p className="text-xs text-neutral-400">
-          First imported {formatDateTime(batch.first_imported_at)} · last imported{' '}
+          처음 가져옴 {formatDateTime(batch.first_imported_at)} · 최근 가져옴{' '}
           {formatDateTime(batch.last_imported_at)}
         </p>
       </section>
 
       <section className="space-y-3">
         <h2 className="px-1 text-sm font-bold text-neutral-950">
-          Posts in this batch ({posts.length})
+          이 묶음의 게시글 ({posts.length})
         </h2>
 
         {posts.length > 0 ? (
@@ -179,8 +179,8 @@ function ApiImportBatchDetailPage({ batchExternalId }: { batchExternalId: string
           </div>
         ) : (
           <EmptyState
-            title="No posts attributed"
-            description="No posts currently belong to this batch. They may have been re-attributed by a later import."
+            title="게시글이 없습니다"
+            description="현재 이 묶음에 속한 게시글이 없습니다. 이후 가져오기에서 다른 묶음으로 옮겨졌을 수 있습니다."
           />
         )}
       </section>
@@ -194,8 +194,8 @@ export default function ImportBatchDetailPage() {
   if (!isApiMode()) {
     return (
       <EmptyState
-        title="API mode only"
-        description="Import batch history is available in API mode. Set VITE_DATA_SOURCE=api and run the backend to view it."
+        title="API 모드에서만 사용할 수 있습니다"
+        description="가져오기 기록을 보려면 API 모드에서 백엔드를 실행해 주세요."
       />
     );
   }
@@ -203,8 +203,8 @@ export default function ImportBatchDetailPage() {
   if (!batchExternalId) {
     return (
       <EmptyState
-        title="Import batch not found"
-        description="No batch id was provided."
+        title="가져오기 기록을 찾지 못했습니다"
+        description="묶음 ID가 없습니다."
       />
     );
   }

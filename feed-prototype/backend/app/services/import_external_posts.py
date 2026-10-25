@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 from sqlmodel import Session, col, create_engine, select
+from sqlalchemy import delete
 
 from app.core.config import Settings, get_settings
 from app.db.session import create_session
@@ -20,6 +21,7 @@ from app.models.comment import Comment
 from app.models.import_batch import ImportBatch
 from app.models.like import PostLike
 from app.models.post import Post
+from app.models.profile_pin import ProfilePin
 from app.models.user import User
 from app.schemas.external_import import (
     ExternalImportAccount,
@@ -307,6 +309,8 @@ def upsert_post(
 
     summary.posts_updated += 1
     if not dry_run:
+        if existing_post.account_id != account.id:
+            session.exec(delete(ProfilePin).where(ProfilePin.post_id == existing_post.id))
         existing_post.account_id = account.id
         existing_post.title = post_input.title
         existing_post.text = post_input.text
@@ -519,6 +523,7 @@ def prune_posts_removed_from_batch(
             session.delete(bookmark)
         for like in session.exec(select(PostLike).where(PostLike.post_id == post.id)).all():
             session.delete(like)
+        session.exec(delete(ProfilePin).where(ProfilePin.post_id == post.id))
         session.delete(post)
     session.flush()
 

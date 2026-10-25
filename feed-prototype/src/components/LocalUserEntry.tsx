@@ -47,7 +47,7 @@ export default function LocalUserEntry() {
     setPendingHandle('');
 
     if (!trimmedValue || !normalizedValue) {
-      setError('Enter a local user id or handle.');
+      setError('아이디를 입력하세요.');
       return;
     }
 
@@ -83,7 +83,7 @@ export default function LocalUserEntry() {
       setError(
         registrationError instanceof Error
           ? registrationError.message
-          : 'Could not create this local user.',
+          : '로컬 계정을 만들지 못했습니다.',
       );
     }
   };
@@ -94,19 +94,19 @@ export default function LocalUserEntry() {
         <section className="w-full rounded-md border border-neutral-200 bg-white p-5 shadow-sm">
           <div className="space-y-2">
             <p className="text-xs font-bold uppercase text-neutral-400">
-              Local User Entry
+              데모 계정
             </p>
             <h1 className="text-2xl font-bold leading-8 text-neutral-950">
-              Enter your local id
+              로컬 아이디 입력
             </h1>
             <p className="text-sm leading-6 text-neutral-600">
-              Use an existing user id or handle, or create a local user for this browser.
+              기존 아이디로 시작하거나 이 브라우저에 새 데모 계정을 만드세요.
             </p>
           </div>
 
           <form className="mt-5 space-y-3" onSubmit={handleSubmit}>
             <label className="block space-y-2">
-              <span className="text-sm font-bold text-neutral-700">User id or handle</span>
+              <span className="text-sm font-bold text-neutral-700">아이디</span>
               <input
                 className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500"
                 value={entryValue}
@@ -118,7 +118,7 @@ export default function LocalUserEntry() {
 
             {normalizedHandle ? (
               <p className="text-xs font-medium text-neutral-500">
-                Normalized handle: @{normalizedHandle}
+                사용할 아이디: @{normalizedHandle}
               </p>
             ) : null}
 
@@ -138,7 +138,7 @@ export default function LocalUserEntry() {
               type="submit"
               className="h-11 w-full rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800"
             >
-              Continue
+              계속
             </button>
           </form>
 
@@ -149,7 +149,7 @@ export default function LocalUserEntry() {
                 className="h-11 w-full rounded-md border border-neutral-200 bg-neutral-50 px-4 text-sm font-bold text-neutral-800 transition hover:bg-neutral-100"
                 onClick={handleRegister}
               >
-                Register @{pendingHandle} locally
+                @{pendingHandle} 계정 만들기
               </button>
             </div>
           ) : null}

@@ -33,6 +33,7 @@ def list_user_notifications(
         default=DEFAULT_NOTIFICATION_LIMIT, ge=1, le=MAX_NOTIFICATION_LIMIT
     ),
     unread_only: bool = Query(default=False),
+    reason: str | None = Query(default=None),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ) -> PaginatedNotifications:
@@ -43,6 +44,7 @@ def list_user_notifications(
         cursor=cursor,
         limit=limit,
         unread_only=unread_only,
+        reason=reason,
     )
 
 

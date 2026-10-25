@@ -23,6 +23,14 @@ const appendStringParam = (
   searchParams.set(key, normalizedValue);
 };
 
+/** Date inputs represent calendar days in Korea, regardless of browser time zone. */
+export const toSeoulDateBound = (value: string | undefined, endOfDay = false): string | undefined => {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+  return `${value}T${endOfDay ? '23:59:59.999999' : '00:00:00'}+09:00`;
+};
+
 export const buildPostFilterQuery = (
   filters?: PostFilters,
   options: BuildPostFilterQueryOptions = {},
@@ -41,8 +49,8 @@ export const buildPostFilterQuery = (
     appendStringParam(searchParams, 'asset_type', filters.assetType);
     appendStringParam(searchParams, 'account_id', filters.accountId);
     appendStringParam(searchParams, 'account_handle', filters.accountHandle);
-    appendStringParam(searchParams, 'created_at_from', filters.createdAtFrom);
-    appendStringParam(searchParams, 'created_at_to', filters.createdAtTo);
+    appendStringParam(searchParams, 'created_at_from', toSeoulDateBound(filters.createdAtFrom));
+    appendStringParam(searchParams, 'created_at_to', toSeoulDateBound(filters.createdAtTo, true));
 
     // Only emit non-default sort to keep query strings clean.
     if (filters.sort && filters.sort !== 'newest') {

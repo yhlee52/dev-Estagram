@@ -56,7 +56,7 @@ export default function AccountCard({
   lastActiveAt,
 }: AccountCardProps) {
   const navigate = useNavigate();
-  const showActivity = recentPostCount !== undefined;
+  const showActivity = recentPostCount !== undefined || lastActiveAt !== undefined;
 
   const goToAccount = () => {
     navigate(`/accounts/${account.id}`);
@@ -82,13 +82,13 @@ export default function AccountCard({
   const isButtonDisabled = isFollowReadOnly || isFollowDisabled;
   const buttonLabel =
     followButtonLabel ??
-    (isFollowReadOnly ? 'Read-only' : isFollowing ? 'Following' : 'Follow');
+    (isFollowReadOnly ? '보기 전용' : isFollowing ? '팔로잉' : '팔로우');
 
   return (
     <article
       tabIndex={0}
       role="link"
-      aria-label={`Open ${account.displayName}`}
+      aria-label={`${account.displayName} 프로필 보기`}
       className="cursor-pointer rounded-md border border-neutral-200 bg-white p-4 shadow-sm transition hover:border-neutral-300 hover:shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
       onClick={goToAccount}
       onKeyDown={handleKeyDown}
@@ -99,7 +99,7 @@ export default function AccountCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 space-y-0.5">
-              <h2 className="truncate text-base font-bold text-neutral-950">
+              <h2 className="break-words text-base font-bold text-neutral-950">
                 {account.displayName}
               </h2>
               <p className="truncate text-xs text-neutral-500">@{account.handle}</p>
@@ -123,30 +123,28 @@ export default function AccountCard({
           </div>
 
           {account.bio ? (
-            <p className="mt-2 text-sm leading-6 text-neutral-600">{account.bio}</p>
+            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-neutral-600">{account.bio}</p>
           ) : null}
 
           {showActivity ? (
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-neutral-500">
               <span className="uppercase text-neutral-400">
-                {postCount} {postCount === 1 ? 'post' : 'posts'}
+                게시글 {postCount.toLocaleString('ko-KR')}개
               </span>
-              <span
-                className={
-                  recentPostCount > 0 ? 'text-neutral-700' : 'text-neutral-400'
-                }
+              {recentPostCount !== undefined ? <span
+                className={recentPostCount > 0 ? 'text-neutral-700' : 'text-neutral-400'}
               >
-                {recentPostCount} in last {recentWindowDays}d
-              </span>
+                최근 {recentWindowDays}일 {recentPostCount}개
+              </span> : null}
               <span className="text-neutral-400">
                 {lastActiveAt
-                  ? `Active ${formatRelativeTime(lastActiveAt)}`
-                  : 'No activity yet'}
+                  ? `최근 활동 ${formatRelativeTime(lastActiveAt)}`
+                  : '아직 활동 없음'}
               </span>
             </div>
           ) : (
             <p className="mt-3 text-xs font-semibold uppercase text-neutral-400">
-              {postCount} {postCount === 1 ? 'post' : 'posts'}
+              게시글 {postCount.toLocaleString('ko-KR')}개
             </p>
           )}
         </div>

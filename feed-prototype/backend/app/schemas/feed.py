@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Any
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -17,6 +18,11 @@ def normalize_optional_text(value: str | None) -> str | None:
 
     normalized_value = value.strip()
     return normalized_value or None
+
+
+def _valid_http_url(value: str) -> bool:
+    parsed = urlparse(value)
+    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
 
 
 class UserRead(BaseModel):
@@ -65,6 +71,8 @@ class AccountRead(BaseModel):
     display_name: str
     bio: str | None = None
     avatar_url: str | None = None
+    cover_url: str | None = None
+    profile_links: list[dict[str, str]] = Field(default_factory=list)
     kind: str
     profile_source: str
     deactivated_at: datetime | None = None
@@ -72,10 +80,66 @@ class AccountRead(BaseModel):
     updated_at: datetime
 
 
+class AccountSearchItem(BaseModel):
+    account: AccountRead
+    post_count: int
+    last_post_at: datetime | None = None
+
+
+class AccountSearchPage(BaseModel):
+    items: list[AccountSearchItem]
+    next_cursor: str | None = None
+    has_more: bool = False
+
+
+class AccountSummary(BaseModel):
+    post_count: int
+    follower_count: int
+    following_count: int
+    last_post_at: datetime | None = None
+
+
+class AccountRelationPage(BaseModel):
+    items: list[AccountRead]
+    next_cursor: str | None = None
+    has_more: bool = False
+
+
+class PinnedPostsUpdate(BaseModel):
+    post_ids: list[str] = Field(max_length=3)
+
+
 class AccountProfileUpdate(BaseModel):
     display_name: str | None = Field(default=None, max_length=120)
     bio: str | None = Field(default=None, max_length=500)
     avatar_url: str | None = Field(default=None, max_length=1000)
+    cover_url: str | None = Field(default=None, max_length=1000)
+    profile_links: list[dict[str, str]] | None = None
+
+    @field_validator("cover_url")
+    @classmethod
+    def validate_cover_url(cls, value: str | None) -> str | None:
+        value = normalize_optional_text(value)
+        if value and not (value.startswith("/assets/") or _valid_http_url(value)):
+            raise ValueError("Cover URL must use /assets/, http://, or https://")
+        return value
+
+    @field_validator("profile_links")
+    @classmethod
+    def validate_profile_links(cls, value: list[dict[str, str]] | None) -> list[dict[str, str]] | None:
+        if value is None:
+            return None
+        if len(value) > 3:
+            raise ValueError("At most three profile links are allowed")
+        normalized = []
+        for link in value:
+            if set(link) != {"label", "url"}:
+                raise ValueError("Profile links need label and url")
+            label, url = link["label"].strip(), link["url"].strip()
+            if not label or len(label) > 40 or len(url) > 1000 or not _valid_http_url(url):
+                raise ValueError("Invalid profile link")
+            normalized.append({"label": label, "url": url})
+        return normalized
 
     @field_validator("display_name")
     @classmethod

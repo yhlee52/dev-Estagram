@@ -53,7 +53,7 @@ function InlineBadge({ label }: { label: string }) {
   );
 }
 
-function MissingAsset({ label = 'Asset preview unavailable' }: { label?: string }) {
+function MissingAsset({ label = '첨부 자료를 미리 볼 수 없습니다' }: { label?: string }) {
   return (
     <div className="flex aspect-[4/3] w-full items-center justify-center rounded-md border border-dashed border-neutral-300 bg-neutral-100 px-4 text-center text-sm font-semibold text-neutral-400">
       {label}
@@ -71,7 +71,7 @@ function JsonBlock({ value }: { value: MetadataValue }) {
 
 function renderContentSummary(content: MetadataValue | undefined) {
   if (content === undefined) {
-    return 'No inline content available.';
+    return '표시할 내용이 없습니다.';
   }
 
   return formatMetadataValue(content);
@@ -79,7 +79,7 @@ function renderContentSummary(content: MetadataValue | undefined) {
 
 function formatAssetUrl(value: string | undefined): string {
   if (!value) {
-    return 'No URL available.';
+    return 'URL이 없습니다.';
   }
 
   try {
@@ -206,7 +206,7 @@ function ChartPreview({
   asset: RenderableAsset;
   variant: 'preview' | 'full';
 }) {
-  const title = asset.title ?? 'chart asset';
+  const title = asset.title ?? '그래프';
   const rows = getChartData(asset.content);
   const visibleRows = variant === 'preview' ? rows?.slice(0, 4) : rows;
   const maxValue = Math.max(...(rows ?? []).map((row) => row.value), 0);
@@ -215,7 +215,7 @@ function ChartPreview({
     return (
       <div className="relative">
         <AssetBadge label={asset.type ?? 'chart'} />
-        <MissingAsset label={`${title} preview unavailable`} />
+        <MissingAsset label={`${title} 미리보기를 사용할 수 없습니다`} />
       </div>
     );
   }
@@ -324,12 +324,12 @@ function CsvPreview({
   const [previewState, setPreviewState] = useState<CsvPreviewState>(
     assetUrl
       ? { status: 'loading' }
-      : { status: 'error', message: 'No table URL is available.' },
+      : { status: 'error', message: '표 URL이 없습니다.' },
   );
 
   useEffect(() => {
     if (!assetUrl) {
-      setPreviewState({ status: 'error', message: 'No table URL is available.' });
+      setPreviewState({ status: 'error', message: '표 URL이 없습니다.' });
       return;
     }
 
@@ -339,7 +339,7 @@ function CsvPreview({
     fetch(assetUrl, { signal: abortController.signal })
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`CSV request failed with ${response.status}.`);
+          throw new Error(`CSV를 불러오지 못했습니다. (${response.status})`);
         }
 
         return response.text();
@@ -356,7 +356,7 @@ function CsvPreview({
 
         setPreviewState({
           status: 'error',
-          message: error instanceof Error ? error.message : 'CSV preview failed.',
+          message: error instanceof Error ? error.message : 'CSV 미리보기를 불러오지 못했습니다.',
         });
       });
 
@@ -371,7 +371,7 @@ function CsvPreview({
             <tr className="border-b border-neutral-200 bg-neutral-50 text-neutral-500">
               {previewState.headers.map((header, index) => (
                 <th key={`${header}-${index}`} className="px-3 py-2 font-bold">
-                  {header || `Column ${index + 1}`}
+                  {header || `${index + 1}열`}
                 </th>
               ))}
             </tr>
@@ -398,7 +398,7 @@ function CsvPreview({
   if (previewState.status === 'error') {
     return (
       <div className="rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-3 py-4">
-        <p className="text-sm font-bold text-neutral-700">CSV preview unavailable</p>
+        <p className="text-sm font-bold text-neutral-700">CSV를 미리 볼 수 없습니다</p>
         <p className="mt-1 text-sm leading-6 text-neutral-500">
           {previewState.message}
         </p>
@@ -408,7 +408,7 @@ function CsvPreview({
 
   return (
     <div className="rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-3 py-4">
-      <p className="text-sm font-bold text-neutral-700">Loading CSV preview...</p>
+      <p className="text-sm font-bold text-neutral-700">CSV 미리보기를 불러오는 중...</p>
     </div>
   );
 }
@@ -420,11 +420,11 @@ export default function AssetRenderer({
   const [hasImageError, setHasImageError] = useState(false);
 
   if (!asset) {
-    return <MissingAsset label="Missing asset" />;
+    return <MissingAsset label="첨부 자료를 찾지 못했습니다" />;
   }
 
   const type = asset.type ?? 'unknown';
-  const title = asset.title ?? `${type} asset`;
+  const title = asset.title ?? '첨부 자료';
   const assetUrl = getAssetUrl(asset);
   const shouldShowFull = variant === 'full';
   const imageLikeTypes = new Set(['image', 'plot', 'chart']);
@@ -457,7 +457,7 @@ export default function AssetRenderer({
     return (
       <div className="relative">
         {type === 'plot' || type === 'chart' ? <AssetBadge label={type} /> : null}
-        <MissingAsset label={`${title} preview unavailable`} />
+        <MissingAsset label={`${title} 미리보기를 사용할 수 없습니다`} />
       </div>
     );
   }
@@ -469,14 +469,14 @@ export default function AssetRenderer({
         title={title}
         description={
           asset.description ??
-          (type === 'link' ? 'External link asset.' : 'File asset.')
+          (type === 'link' ? '외부 링크입니다.' : '파일입니다.')
         }
         assetUrl={assetUrl}
-        actionLabel={type === 'link' ? 'Open link' : 'Open file'}
+        actionLabel={type === 'link' ? '링크 열기' : '파일 열기'}
         fallbackText={
           type === 'link'
-            ? 'No link URL is available.'
-            : 'No file URL is available.'
+            ? '링크 URL이 없습니다.'
+            : '파일 URL이 없습니다.'
         }
       />
     );
@@ -534,7 +534,7 @@ export default function AssetRenderer({
                 target="_blank"
                 onClick={(event) => event.stopPropagation()}
               >
-                Open original
+                원본 열기
               </a>
               <p className="break-all text-xs font-semibold text-neutral-500">
                 {formatAssetUrl(assetUrl)}
@@ -564,7 +564,7 @@ export default function AssetRenderer({
           )}
           {assetUrl ? (
             <p className="break-all text-xs font-medium text-neutral-400">
-              Source: {assetUrl}
+              출처: {assetUrl}
             </p>
           ) : null}
         </div>
@@ -579,7 +579,7 @@ export default function AssetRenderer({
           <CardHeader
             type="html"
             title={title}
-            description={asset.description ?? 'Open the linked report asset.'}
+            description={asset.description ?? '연결된 자료를 엽니다.'}
           />
           {assetUrl ? (
             <a
@@ -589,11 +589,11 @@ export default function AssetRenderer({
               target="_blank"
               onClick={(event) => event.stopPropagation()}
             >
-              Open report
+              자료 열기
             </a>
           ) : (
             <p className="text-sm leading-6 text-neutral-500">
-              No report link is available.
+              자료 링크가 없습니다.
             </p>
           )}
         </div>
@@ -635,11 +635,11 @@ export default function AssetRenderer({
           description={asset.description}
         />
         <p className="text-sm leading-6 text-neutral-500">
-          This asset type is not supported yet.
+          이 첨부 자료 유형은 아직 지원하지 않습니다.
         </p>
         {assetUrl ? (
           <p className="break-all text-xs font-medium text-neutral-400">
-            Source: {assetUrl}
+            출처: {assetUrl}
           </p>
         ) : null}
       </div>

@@ -8,9 +8,9 @@ import { formatRelativeTime } from '../utils/format';
 const PAGE_LIMIT = 20;
 
 const reasonLabels: Record<string, string> = {
-  followed_post: 'Following',
-  own_post_comment: 'Comment',
-  mention: 'Mention',
+  followed_post: '팔로잉',
+  own_post_comment: '댓글',
+  mention: '언급',
 };
 
 function getReasonLabel(reason: string): string {
@@ -19,14 +19,14 @@ function getReasonLabel(reason: string): string {
 
 function getNotificationTitle(item: ApiNotificationItem): string {
   if (item.reasons.includes('own_post_comment')) {
-    return `${item.comment_author?.display_name ?? 'Someone'} commented on your post`;
+    return `${item.comment_author?.display_name ?? '누군가'}님이 내 게시글에 댓글을 남겼습니다`;
   }
   if (item.reasons.includes('mention')) {
     return item.source_type === 'comment'
-      ? `${item.comment_author?.display_name ?? 'Someone'} mentioned you in a comment`
-      : `${item.account.display_name} mentioned you in a post`;
+      ? `${item.comment_author?.display_name ?? '누군가'}님이 댓글에서 나를 언급했습니다`
+      : `${item.account.display_name}님이 게시글에서 나를 언급했습니다`;
   }
-  return `${item.account.display_name} posted`;
+  return `${item.account.display_name}님이 게시글을 올렸습니다`;
 }
 
 function getExcerpt(item: ApiNotificationItem): string {
@@ -37,7 +37,7 @@ function getExcerpt(item: ApiNotificationItem): string {
 function NotificationRow({ item }: { item: ApiNotificationItem }) {
   return (
     <Link
-      to={`/posts/${item.post.id}`}
+      to={`/posts/${item.post.id}${item.source_type === 'comment' ? '#comments' : ''}`}
       className={[
         'block rounded-md border bg-white p-3 shadow-sm transition hover:border-neutral-300',
         item.is_read ? 'border-neutral-200' : 'border-neutral-950',
@@ -96,19 +96,19 @@ export default function NotificationsPage() {
   } = useNotifications({ limit: PAGE_LIMIT, unreadOnly });
   const emptyState = unreadOnly
     ? {
-        title: 'No unread notifications',
-        description: "You're caught up. Switch to All to review earlier updates.",
+        title: '읽지 않은 알림이 없습니다',
+        description: '전체 알림에서 이전 활동을 볼 수 있습니다.',
       }
     : {
-        title: 'No notifications yet',
-        description: 'Follow accounts, comment, and mention people to see updates here.',
+        title: '아직 알림이 없습니다',
+        description: '계정을 팔로우하거나 댓글을 남기면 활동이 표시됩니다.',
       };
 
   if (!activeApiUserId) {
     return (
       <EmptyState
-        title="Select an API user"
-        description="Choose a backend seed user before viewing notifications."
+        title="로그인이 필요합니다"
+        description="로그인한 뒤 알림을 확인할 수 있습니다."
       />
     );
   }
@@ -119,12 +119,12 @@ export default function NotificationsPage() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase text-neutral-400">
-              Notifications
+              알림
             </p>
             <h1 className="mt-1 text-xl font-bold text-neutral-950">
               {unreadCount > 0
-                ? `${unreadCount} unread update${unreadCount === 1 ? '' : 's'}`
-                : 'All caught up'}
+                ? `읽지 않은 알림 ${unreadCount}개`
+                : '모든 알림을 확인했습니다'}
             </h1>
           </div>
           <button
@@ -133,13 +133,13 @@ export default function NotificationsPage() {
             disabled={isLoading || isMarkingRead || unreadCount === 0}
             onClick={markAllRead}
           >
-            {isMarkingRead ? 'Marking...' : 'Mark all read'}
+            {isMarkingRead ? '처리하는 중...' : '모두 읽음'}
           </button>
         </div>
         <div className="mt-4 grid grid-cols-2 rounded-md border border-neutral-200 bg-neutral-100 p-1">
           {[
-            { label: 'All', value: false },
-            { label: 'Unread', value: true },
+            { label: '전체', value: false },
+            { label: '읽지 않음', value: true },
           ].map((option) => {
             const selected = unreadOnly === option.value;
 
@@ -165,7 +165,7 @@ export default function NotificationsPage() {
 
       {isLoading && items.length === 0 ? (
         <p className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
-          Loading notifications...
+          알림을 불러오는 중...
         </p>
       ) : error ? (
         <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
@@ -184,7 +184,7 @@ export default function NotificationsPage() {
               disabled={isLoading}
               onClick={() => void loadMore()}
             >
-              {isLoading ? 'Loading...' : 'Load more'}
+              {isLoading ? '불러오는 중...' : '더 보기'}
             </button>
           ) : null}
         </div>

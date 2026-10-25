@@ -6,7 +6,7 @@ import { useActiveApiUser } from '../auth/apiActiveUser';
 import { isApiMode } from '../config/dataSource';
 import { usePinnedMetadataKeys } from '../hooks/usePinnedMetadataKeys';
 import type { FeedItem } from '../types/feed';
-import { formatDateTime } from '../utils/format';
+import { formatDateTime, formatRelativeTime } from '../utils/format';
 import AssetRenderer from './AssetRenderer';
 import AssetGallery from './AssetGallery';
 import BookmarkButton from './BookmarkButton';
@@ -104,7 +104,7 @@ export default function FeedCard({ item }: FeedCardProps) {
       } catch {
         if (isMounted) {
           setPreviewComments([]);
-          setCommentsLoadError('Could not load comments.');
+          setCommentsLoadError('댓글을 불러오지 못했습니다.');
         }
       }
     };
@@ -155,7 +155,7 @@ export default function FeedCard({ item }: FeedCardProps) {
       setPreviewComments((items) => [created, ...items]);
       setAreAllCommentsShown(false);
     } catch {
-      setCommentError('Could not post your comment.');
+      setCommentError('댓글을 등록하지 못했습니다. 다시 시도해 주세요.');
     } finally {
       setIsSubmittingComment(false);
     }
@@ -187,7 +187,7 @@ export default function FeedCard({ item }: FeedCardProps) {
     <article
       tabIndex={0}
       role="link"
-      aria-label={`Open ${post.title}`}
+      aria-label={`${post.title} 게시글 보기`}
       className="cursor-pointer overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm transition hover:border-neutral-300 hover:shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
       onClick={goToPost}
       onKeyDown={handleKeyDown}
@@ -223,8 +223,7 @@ export default function FeedCard({ item }: FeedCardProps) {
             ))}
             {hiddenAssetCount > 0 ? (
               <p className="rounded-md bg-neutral-50 px-3 py-2 text-xs font-bold text-neutral-500">
-                +{hiddenAssetCount} more asset
-                {hiddenAssetCount === 1 ? '' : 's'}
+                첨부 자료 {hiddenAssetCount}개 더 보기
               </p>
             ) : null}
           </div>
@@ -251,12 +250,12 @@ export default function FeedCard({ item }: FeedCardProps) {
           <MetadataSummary metadata={post.metadata} excludeKeys={pinnedKeys} />
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-neutral-400">
-            <time dateTime={postCreatedAt}>
-              Created: {formatDateTime(postCreatedAt)}
+            <time dateTime={postCreatedAt} title={formatDateTime(postCreatedAt)}>
+              작성: {formatRelativeTime(postCreatedAt)}
             </time>
             {shouldShowUpdatedAt ? (
-              <time dateTime={postUpdatedAt}>
-                Updated: {formatDateTime(postUpdatedAt)}
+              <time dateTime={postUpdatedAt} title={formatDateTime(postUpdatedAt)}>
+                수정: {formatRelativeTime(postUpdatedAt)}
               </time>
             ) : null}
             {isApiDataSource ? (
@@ -267,12 +266,12 @@ export default function FeedCard({ item }: FeedCardProps) {
                 type="button"
                 className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 font-semibold text-neutral-600 transition hover:bg-neutral-200 hover:text-neutral-950"
                 aria-expanded={isCommentComposerOpen}
-                aria-label={`${commentCount} comment${commentCount === 1 ? '' : 's'}. Add a comment.`}
+                aria-label={`댓글 ${commentCount}개. 댓글 쓰기`}
                 onClick={toggleCommentComposer}
               >
                 <span aria-hidden="true">💬</span>
                 {commentCount}
-                <span className="sr-only">Add a comment</span>
+                <span className="sr-only">댓글 쓰기</span>
               </button>
             ) : null}
           </div>
@@ -296,7 +295,7 @@ export default function FeedCard({ item }: FeedCardProps) {
                 </ul>
               ) : (
                 <p className="text-xs font-semibold text-neutral-400">
-                  Loading comments...
+                  댓글을 불러오는 중...
                 </p>
               )}
 
@@ -309,8 +308,7 @@ export default function FeedCard({ item }: FeedCardProps) {
                     setAreAllCommentsShown(true);
                   }}
                 >
-                  Show {hiddenCommentCount} more comment
-                  {hiddenCommentCount === 1 ? '' : 's'}
+                  댓글 {hiddenCommentCount}개 더 보기
                 </button>
               ) : null}
             </div>
@@ -328,7 +326,7 @@ export default function FeedCard({ item }: FeedCardProps) {
                     className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm leading-6 text-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-neutral-950"
                     rows={2}
                     maxLength={MAX_INLINE_COMMENT_LENGTH}
-                    placeholder="Add a comment..."
+                    placeholder="댓글을 입력하세요..."
                     value={commentDraft}
                     onChange={(event) => setCommentDraft(event.target.value)}
                   />
@@ -343,20 +341,20 @@ export default function FeedCard({ item }: FeedCardProps) {
                       className="rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-bold text-neutral-700 transition hover:bg-neutral-100"
                       onClick={goToComments}
                     >
-                      View thread
+                      댓글 전체 보기
                     </button>
                     <button
                       type="submit"
                       className="rounded-md bg-neutral-950 px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
                       disabled={isSubmittingComment || !commentDraft.trim()}
                     >
-                      {isSubmittingComment ? 'Posting...' : 'Post comment'}
+                      {isSubmittingComment ? '등록하는 중...' : '댓글 등록'}
                     </button>
                   </div>
                 </form>
               ) : (
                 <p className="text-xs font-semibold text-neutral-500">
-                  Select an active API user to write comments.
+                  댓글을 쓰려면 로그인해 주세요.
                 </p>
               )}
             </div>

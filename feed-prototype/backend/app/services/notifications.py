@@ -327,7 +327,10 @@ def list_notifications(
     cursor: str | None = None,
     limit: int = DEFAULT_NOTIFICATION_LIMIT,
     unread_only: bool = False,
+    reason: str | None = None,
 ) -> PaginatedNotifications:
+    if reason not in (None, REASON_MENTION):
+        raise HTTPException(status_code=400, detail="Invalid notification reason")
     account = _require_user_account(session, user_id)
     state = get_notification_state(session, user_id)
     last_read_at = state.last_read_at if state is not None else None
@@ -338,6 +341,8 @@ def list_notifications(
     visible_items = [
         item for item in all_items if not _is_read(item, last_read_at)
     ] if unread_only else all_items
+    if reason is not None:
+        visible_items = [item for item in visible_items if reason in item.reasons]
     visible_items = _apply_cursor(visible_items, cursor)
 
     page_items = visible_items[: limit + 1]

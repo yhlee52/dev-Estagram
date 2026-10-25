@@ -1,4 +1,3 @@
-import AppliedFiltersSummary from './AppliedFiltersSummary';
 import FollowShortcuts from './FollowShortcuts';
 
 /**
@@ -11,7 +10,6 @@ import FollowShortcuts from './FollowShortcuts';
 export default function RightRail() {
   return (
     <div className="space-y-5">
-      <AppliedFiltersSummary />
       <FollowShortcuts />
     </div>
   );

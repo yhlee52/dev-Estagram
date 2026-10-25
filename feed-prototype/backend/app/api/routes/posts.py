@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, col, select
+from sqlalchemy import delete
 
 from app.api.deps import get_current_user, get_session
 from app.models.account import Account
@@ -10,6 +11,7 @@ from app.models.bookmark import Bookmark
 from app.models.comment import Comment
 from app.models.like import PostLike
 from app.models.post import Post, utc_now
+from app.models.profile_pin import ProfilePin
 from app.models.user import User
 from app.schemas.feed import (
     AccountRead,
@@ -44,6 +46,8 @@ def list_posts(
     metadata_value: str | None = Query(default=None),
     metadata_match: str | None = Query(default=None),
     asset_type: str | None = Query(default=None),
+    has_assets: bool = Query(default=False),
+    exclude_pinned: bool = Query(default=False),
     account_id: str | None = Query(default=None),
     account_handle: str | None = Query(default=None),
     user_id: str | None = Query(default=None),
@@ -67,6 +71,8 @@ def list_posts(
             metadata_value=metadata_value,
             metadata_match=metadata_match,
             asset_type=asset_type,
+            has_assets=has_assets,
+            exclude_pinned=exclude_pinned,
             account_id=account_id,
             account_handle=account_handle,
             user_id=user_id,
@@ -257,6 +263,8 @@ def delete_post(
 
     for like in session.exec(select(PostLike).where(PostLike.post_id == post_id)).all():
         session.delete(like)
+
+    session.exec(delete(ProfilePin).where(ProfilePin.post_id == post_id))
 
     session.delete(post)
     session.commit()

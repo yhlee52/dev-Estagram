@@ -36,6 +36,7 @@ import {
 } from '../utils/accountActivity';
 import { getPostsByAccountId, joinPostWithAccount } from '../utils/feed';
 import { formatRelativeTime } from '../utils/format';
+import ApiProfilePage from './ApiProfilePage';
 
 const posts = postsData as unknown as Post[];
 
@@ -87,13 +88,13 @@ function getMyActivity(myPosts: Post[], accountId: string): AccountActivity {
 function ActivitySummary({ activity }: { activity: AccountActivity }) {
   return (
     <div className="grid grid-cols-3 gap-2">
-      <SummaryItem label="Posts" value={String(activity.postCount)} />
+      <SummaryItem label="게시글" value={String(activity.postCount)} />
       <SummaryItem
-        label={`Last ${RECENT_ACTIVITY_DAYS}d`}
+        label={`최근 ${RECENT_ACTIVITY_DAYS}일`}
         value={String(activity.recentPostCount)}
       />
       <SummaryItem
-        label="Last active"
+        label="최근 활동"
         value={
           activity.lastActiveAt ? formatRelativeTime(activity.lastActiveAt) : '--'
         }
@@ -104,42 +105,42 @@ function ActivitySummary({ activity }: { activity: AccountActivity }) {
 
 function getProfileErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버 상태를 확인해 주세요.`;
   }
 
   if (error instanceof ApiClientError && error.status === 404) {
-    return 'Your API user or account was not found in the backend database. Switch user and choose a seeded backend user.';
+    return '계정을 찾지 못했습니다. 다시 로그인해 주세요.';
   }
 
-  return 'Could not load your API profile. Check the backend server and try again.';
+  return '프로필을 불러오지 못했습니다.';
 }
 
 function getProfileSaveErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다.`;
   }
 
   if (error instanceof ApiClientError) {
     if (error.status === 403) {
-      return 'Only this account user can edit this profile.';
+      return '내 프로필만 수정할 수 있습니다.';
     }
 
-    return `The backend API returned ${error.status}. ${error.message}`;
+    return `프로필을 저장하지 못했습니다. (${error.status})`;
   }
 
-  return 'Could not save this profile. Check the backend server and try again.';
+  return '프로필을 저장하지 못했습니다.';
 }
 
 function getPasswordChangeErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다.`;
   }
 
   if (error instanceof ApiClientError) {
-    return `The backend API returned ${error.status}. ${error.message}`;
+    return error.status === 400 ? '현재 비밀번호를 확인해 주세요.' : `비밀번호를 변경하지 못했습니다. (${error.status})`;
   }
 
-  return 'Could not change this password. Check the backend server and try again.';
+  return '비밀번호를 변경하지 못했습니다. 다시 시도해 주세요.';
 }
 
 function getAccountUserId(account: Account): string {
@@ -150,21 +151,21 @@ function getAccountUserId(account: Account): string {
 
 function getDeactivateErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다.`;
   }
 
   if (error instanceof ApiClientError) {
     if (error.status === 403) {
-      return 'Only this account user can deactivate it.';
+      return '내 계정만 비활성화할 수 있습니다.';
     }
 
-    return `The backend API returned ${error.status}. ${error.message}`;
+    return `계정을 비활성화하지 못했습니다. (${error.status})`;
   }
 
-  return 'Could not deactivate this account. Check the backend server and try again.';
+  return '계정을 비활성화하지 못했습니다. 다시 시도해 주세요.';
 }
 
-function DeactivateAccountPanel({
+export function DeactivateAccountPanel({
   account,
   onDeactivated,
 }: {
@@ -193,11 +194,10 @@ function DeactivateAccountPanel({
   return (
     <section className="space-y-3 rounded-md border border-red-200 bg-white p-4 shadow-sm">
       <div className="space-y-1">
-        <h2 className="text-sm font-bold text-red-700">Danger zone</h2>
+        <h2 className="text-sm font-bold text-red-700">계정 비활성화</h2>
         <p className="text-xs font-semibold leading-5 text-neutral-500">
-          Deactivating hides your account from others and signs you out. Your posts
-          are preserved. You will not be able to log back in &mdash; an operator must
-          reactivate the account.
+          비활성화하면 다른 사람이 계정을 찾을 수 없고 즉시 로그아웃됩니다.
+          게시글은 보존되며 다시 로그인하려면 운영자가 계정을 재활성화해야 합니다.
         </p>
       </div>
 
@@ -207,7 +207,7 @@ function DeactivateAccountPanel({
         disabled={isDeactivating}
         onClick={() => setIsConfirmOpen(true)}
       >
-        Deactivate account
+        계정 비활성화
       </button>
 
       {error ? (
@@ -216,9 +216,9 @@ function DeactivateAccountPanel({
 
       {isConfirmOpen ? (
         <ConfirmDialog
-          title="Deactivate this account?"
-          description="Your account will be hidden from others and you will be signed out. Your posts are preserved. Reactivation requires an operator."
-          confirmLabel="Deactivate account"
+          title="계정을 비활성화할까요?"
+          description="계정이 검색에서 숨겨지고 즉시 로그아웃됩니다. 게시글은 보존되며 재활성화에는 운영자가 필요합니다."
+          confirmLabel="비활성화"
           danger
           isConfirming={isDeactivating}
           onConfirm={handleConfirm}
@@ -308,7 +308,7 @@ function AccountProfileEditor({
     <section className="space-y-3 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-sm font-bold text-neutral-950">Account Profile</h2>
+          <h2 className="text-sm font-bold text-neutral-950">계정 프로필</h2>
           <p className="truncate text-xs font-semibold text-neutral-500">
             @{account.handle}
           </p>
@@ -333,7 +333,7 @@ function AccountProfileEditor({
         </label>
 
         <label className="block space-y-1">
-          <span className="text-xs font-bold uppercase text-neutral-400">Bio</span>
+          <span className="text-xs font-bold uppercase text-neutral-400">소개</span>
           <textarea
             className="min-h-24 w-full resize-y rounded-md border border-neutral-200 px-3 py-2 text-sm leading-6 text-neutral-900 outline-none transition focus:border-neutral-400"
             value={bio}
@@ -371,7 +371,7 @@ function AccountProfileEditor({
   );
 }
 
-function PasswordChangePanel() {
+export function PasswordChangePanel() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -388,7 +388,7 @@ function PasswordChangePanel() {
     setError('');
 
     if (newPassword.length < 4) {
-      setError('New password must be at least 4 characters.');
+      setError('새 비밀번호는 4자 이상 입력하세요.');
       return;
     }
 
@@ -400,7 +400,7 @@ function PasswordChangePanel() {
       });
       setCurrentPassword('');
       setNewPassword('');
-      setMessage('Password changed.');
+      setMessage('비밀번호를 변경했습니다.');
     } catch (changeError) {
       setError(getPasswordChangeErrorMessage(changeError));
     } finally {
@@ -411,16 +411,16 @@ function PasswordChangePanel() {
   return (
     <section className="space-y-3 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
       <div className="space-y-1">
-        <h2 className="text-sm font-bold text-neutral-950">Password</h2>
+        <h2 className="text-sm font-bold text-neutral-950">비밀번호</h2>
         <p className="text-xs font-semibold leading-5 text-neutral-500">
-          Change the password for this API user.
+          로그인에 사용할 비밀번호를 변경합니다.
         </p>
       </div>
 
       <form className="space-y-3" onSubmit={handleSubmit}>
         <label className="block space-y-1">
           <span className="text-xs font-bold uppercase text-neutral-400">
-            Current password
+            현재 비밀번호
           </span>
           <input
             className="h-10 w-full rounded-md border border-neutral-200 px-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-400"
@@ -437,7 +437,7 @@ function PasswordChangePanel() {
 
         <label className="block space-y-1">
           <span className="text-xs font-bold uppercase text-neutral-400">
-            New password
+            새 비밀번호
           </span>
           <input
             className="h-10 w-full rounded-md border border-neutral-200 px-3 text-sm text-neutral-900 outline-none transition focus:border-neutral-400"
@@ -461,7 +461,7 @@ function PasswordChangePanel() {
             className="h-10 shrink-0 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
             disabled={isSaving || !currentPassword || !newPassword}
           >
-            {isSaving ? 'Saving...' : 'Change Password'}
+            {isSaving ? '저장하는 중...' : '비밀번호 변경'}
           </button>
         </div>
       </form>
@@ -474,7 +474,7 @@ function PasswordChangePanel() {
  * posts so it is no longer empty in API mode, and adds inline post management
  * (New Post, per-post Edit / Delete).
  */
-function ApiMePage() {
+export function ApiMePage() {
   const { activeApiUserId, activeApiUser, clearActiveApiUser } =
     useActiveApiUser();
   const apiFollows = useApiFollows(activeApiUserId);
@@ -686,7 +686,7 @@ function ApiMePage() {
       {account ? (
         <section className="space-y-3">
           <div className="flex items-end justify-between px-1">
-            <h2 className="text-sm font-bold text-neutral-950">My Posts</h2>
+            <h2 className="text-sm font-bold text-neutral-950">내 게시글</h2>
             <NewPostButton size="sm" />
           </div>
 
@@ -730,7 +730,7 @@ function ApiMePage() {
       {account ? (
         <section className="space-y-3">
           <div className="flex items-end justify-between px-1">
-            <h2 className="text-sm font-bold text-neutral-950">Following</h2>
+            <h2 className="text-sm font-bold text-neutral-950">팔로잉</h2>
             <span className="text-xs font-medium text-neutral-400">
               {followedAccounts.length} account
               {followedAccounts.length === 1 ? '' : 's'}
@@ -797,8 +797,8 @@ function MockMePage() {
   if (!activeUser) {
     return (
       <EmptyState
-        title="No active user"
-        description="Choose an active user from the header to see this area."
+        title="선택된 사용자가 없습니다"
+        description="메뉴에서 사용자를 선택해 주세요."
       />
     );
   }
@@ -837,22 +837,21 @@ function MockMePage() {
         {connectedAccount ? <ActivitySummary activity={activity} /> : null}
 
         <div className="grid grid-cols-2 gap-2">
-          <SummaryItem label="Following" value={String(followingIds.length)} />
+          <SummaryItem label="팔로잉" value={String(followingIds.length)} />
           <SummaryItem
-            label="Account"
-            value={connectedAccount ? `@${connectedAccount.handle}` : 'Not linked'}
+            label="계정"
+            value={connectedAccount ? `@${connectedAccount.handle}` : '연결되지 않음'}
           />
         </div>
 
         <p className="rounded-md bg-neutral-50 px-3 py-2 text-xs font-semibold leading-5 text-neutral-500">
-          Mock mode is read-only. Creating, editing, and deleting posts is
-          available in API mode.
+          데모 모드에서는 게시글을 읽을 수 있습니다. 작성·수정·삭제는 API 모드에서 사용할 수 있습니다.
         </p>
       </section>
 
       <section className="space-y-3">
         <div className="flex items-end justify-between px-1">
-          <h2 className="text-sm font-bold text-neutral-950">Connected Account</h2>
+          <h2 className="text-sm font-bold text-neutral-950">연결된 계정</h2>
         </div>
 
         {connectedAccount ? (
@@ -876,16 +875,16 @@ function MockMePage() {
           </Link>
         ) : (
           <EmptyState
-            title="No connected account"
-            description="This local user does not have a connected account yet."
+            title="연결된 계정이 없습니다"
+            description="이 사용자에게 연결된 계정이 없습니다."
           />
         )}
       </section>
 
       <section className="space-y-3">
         <div className="flex items-end justify-between px-1">
-          <h2 className="text-sm font-bold text-neutral-950">My Posts</h2>
-          <span className="text-xs font-medium text-neutral-400">Latest first</span>
+          <h2 className="text-sm font-bold text-neutral-950">내 게시글</h2>
+          <span className="text-xs font-medium text-neutral-400">최신순</span>
         </div>
 
         {connectedAccount && userPosts.length > 0 ? (
@@ -896,11 +895,11 @@ function MockMePage() {
           </div>
         ) : (
           <EmptyState
-            title="No posts yet"
+            title="게시글이 없습니다"
             description={
               connectedAccount
-                ? 'Posts from your connected account will appear here.'
-                : 'Connect this user to an account to show personal posts.'
+                ? '연결된 계정의 게시글이 여기에 표시됩니다.'
+                : '계정을 연결하면 게시글을 볼 수 있습니다.'
             }
           />
         )}
@@ -910,5 +909,5 @@ function MockMePage() {
 }
 
 export default function MePage() {
-  return isApiMode() ? <ApiMePage /> : <MockMePage />;
+  return isApiMode() ? <ApiProfilePage /> : <MockMePage />;
 }

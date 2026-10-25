@@ -32,30 +32,30 @@ const isApiDataSource = getDataSourceMode() === 'api';
 
 function getPostDetailErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버를 확인해 주세요.`;
   }
 
   if (error instanceof ApiClientError && error.status === 404) {
-    return 'This post or account was not found in the backend database.';
+    return '게시글 또는 계정을 찾지 못했습니다.';
   }
 
-  return 'Could not load this API post. Check the backend server and try again.';
+  return '게시글을 불러오지 못했습니다. 다시 시도해 주세요.';
 }
 
 function getDeletePostErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버를 확인해 주세요.`;
   }
 
   if (error instanceof ApiClientError) {
     if (error.status === 403) {
-      return 'Only the account that wrote this post can delete it.';
+      return '내 게시글만 삭제할 수 있습니다.';
     }
 
-    return `The backend API returned ${error.status}. ${error.message}`;
+    return `게시글을 삭제하지 못했습니다. (${error.status})`;
   }
 
-  return 'Could not delete this post. Check the backend server and try again.';
+  return '게시글을 삭제하지 못했습니다. 다시 시도해 주세요.';
 }
 
 function AccountAvatar({ account }: { account: Account }) {
@@ -186,7 +186,7 @@ export default function PostDetail() {
   if (isLoading) {
     return (
       <p className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
-        Loading API post...
+        게시글을 불러오는 중...
       </p>
     );
   }
@@ -200,10 +200,10 @@ export default function PostDetail() {
             className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
             onClick={() => navigate(-1)}
           >
-            Back
+            뒤로
           </button>
           <Link className="rounded-md bg-neutral-950 px-3 py-2 text-sm font-bold text-white" to="/">
-            Home
+            홈
           </Link>
         </nav>
         <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
@@ -222,18 +222,18 @@ export default function PostDetail() {
             className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
             onClick={() => navigate(-1)}
           >
-            Back
+            뒤로
           </button>
           <Link className="rounded-md bg-neutral-950 px-3 py-2 text-sm font-bold text-white" to="/">
-            Home
+            홈
           </Link>
         </nav>
         <EmptyState
-          title="Post not found"
+          title="게시글을 찾지 못했습니다"
           description={
             postId
-              ? `We could not find a post for ${postId}.`
-              : 'Choose a post from the home feed.'
+              ? `게시글 ${postId}을(를) 찾지 못했습니다.`
+              : '홈에서 게시글을 선택해 주세요.'
           }
         />
       </div>
@@ -248,7 +248,7 @@ export default function PostDetail() {
           className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
           onClick={() => navigate(-1)}
         >
-          Back
+          뒤로
         </button>
         <div className="flex items-center gap-2">
           {isOwnApiPost ? (
@@ -257,7 +257,7 @@ export default function PostDetail() {
                 className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700 transition hover:bg-neutral-100"
                 to={`/posts/${post.id}/edit`}
               >
-                Edit
+                수정
               </Link>
               <button
                 type="button"
@@ -265,7 +265,7 @@ export default function PostDetail() {
                 disabled={isDeleting}
                 onClick={() => setIsConfirmOpen(true)}
               >
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? '삭제하는 중...' : '삭제'}
               </button>
             </>
           ) : null}
@@ -273,18 +273,18 @@ export default function PostDetail() {
             className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
             to={`/accounts/${account.id}`}
           >
-            Account
+            계정
           </Link>
           {isApiDataSource ? (
             <Link
               className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
               to="#comments"
             >
-              Comments
+              댓글
             </Link>
           ) : null}
           <Link className="rounded-md bg-neutral-950 px-3 py-2 text-sm font-bold text-white" to="/">
-            Home
+            홈
           </Link>
         </div>
       </nav>
@@ -297,9 +297,9 @@ export default function PostDetail() {
 
       {isConfirmOpen ? (
         <ConfirmDialog
-          title="Delete post?"
-          description="This post will be permanently deleted. This cannot be undone."
-          confirmLabel="Delete"
+          title="게시글을 삭제할까요?"
+          description="삭제한 게시글은 복구할 수 없습니다."
+          confirmLabel="삭제"
           danger
           isConfirming={isDeleting}
           onConfirm={handleConfirmDelete}
@@ -350,7 +350,7 @@ export default function PostDetail() {
         ) : null}
 
         <div className="rounded-md bg-neutral-50 px-3 py-2">
-          <p className="text-xs font-bold uppercase text-neutral-400">Created</p>
+          <p className="text-xs font-bold uppercase text-neutral-400">작성</p>
           <time className="mt-1 block text-sm font-semibold text-neutral-700" dateTime={postCreatedAt}>
             {formatDateTime(postCreatedAt)}
           </time>
@@ -358,7 +358,7 @@ export default function PostDetail() {
 
         {shouldShowUpdatedAt ? (
           <div className="rounded-md bg-neutral-50 px-3 py-2">
-            <p className="text-xs font-bold uppercase text-neutral-400">Updated</p>
+            <p className="text-xs font-bold uppercase text-neutral-400">수정</p>
             <time
               className="mt-1 block text-sm font-semibold text-neutral-700"
               dateTime={postUpdatedAt}
@@ -370,7 +370,7 @@ export default function PostDetail() {
 
         {postImportedAt ? (
           <div className="rounded-md bg-neutral-50 px-3 py-2">
-            <p className="text-xs font-bold uppercase text-neutral-400">Imported</p>
+            <p className="text-xs font-bold uppercase text-neutral-400">가져옴</p>
             <time
               className="mt-1 block text-sm font-semibold text-neutral-700"
               dateTime={postImportedAt}
@@ -390,7 +390,7 @@ export default function PostDetail() {
           {nonVisualAssets.length > 0 ? (
             <section className="space-y-3">
               <div className="flex items-end justify-between px-1">
-                <h2 className="text-sm font-bold text-neutral-950">Other assets</h2>
+                <h2 className="text-sm font-bold text-neutral-950">다른 첨부 자료</h2>
                 <span className="text-xs font-medium text-neutral-400">
                   {nonVisualAssets.length} item
                   {nonVisualAssets.length === 1 ? '' : 's'}

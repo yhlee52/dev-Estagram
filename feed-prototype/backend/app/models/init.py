@@ -9,6 +9,7 @@ from app.models.like import PostLike
 from app.models.message import DirectMessage
 from app.models.notification_state import NotificationState
 from app.models.post import Post
+from app.models.profile_pin import ProfilePin
 from app.models.user import User
 
 
@@ -22,6 +23,7 @@ __all__ = [
     "PostLike",
     "NotificationState",
     "Post",
+    "ProfilePin",
     "PostAsset",
     "User",
     "UserCredential",

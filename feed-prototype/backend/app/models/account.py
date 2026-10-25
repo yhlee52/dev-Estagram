@@ -2,6 +2,8 @@ from datetime import datetime, timezone
 from typing import ClassVar
 
 from sqlmodel import Field, SQLModel
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 def utc_now() -> datetime:
@@ -18,6 +20,8 @@ class Account(SQLModel, table=True):
     display_name: str
     bio: str | None = None
     avatar_url: str | None = None
+    cover_url: str | None = None
+    profile_links: list[dict[str, str]] = Field(default_factory=list, sa_column=Column(JSONB, nullable=False))
     kind: str = "person"
     profile_source: str = "user"
     # v0.6.4 account lifecycle: null = active. When set, the paired user cannot
