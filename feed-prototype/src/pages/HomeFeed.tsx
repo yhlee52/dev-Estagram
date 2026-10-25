@@ -4,6 +4,7 @@ import { ApiClientError, ApiNetworkError } from '../api/client';
 import EmptyState from '../components/EmptyState';
 import FeedCard from '../components/FeedCard';
 import PostFilterPanel from '../components/PostFilterPanel';
+import AppliedFiltersSummary from '../components/AppliedFiltersSummary';
 import {
   emptyPostFilters,
   getPostFilterValidationError,
@@ -33,30 +34,30 @@ const FACET_KEY_LIMIT = 50;
 
 function getFeedErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and reload the feed.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버를 확인하고 새로고침해 주세요.`;
   }
 
   if (error instanceof ApiClientError) {
     if (error.status === 404) {
-      return 'The selected API user was not found in the backend database. Switch user and choose a seeded backend user.';
+      return '계정을 찾을 수 없습니다. 다시 로그인해 주세요.';
     }
 
-    return `The backend API returned ${error.status}. ${error.message}`;
+    return `피드를 불러오지 못했습니다. (${error.status})`;
   }
 
-  return 'Could not load the API feed. Check the backend server and try again.';
+  return '피드를 불러오지 못했습니다. 다시 시도해 주세요.';
 }
 
 function getFeedRefreshErrorMessage(error: unknown): string {
-  return `Feed refresh failed after the follow change. ${getFeedErrorMessage(error)}`;
+  return `팔로우 변경 후 피드 갱신에 실패했습니다. ${getFeedErrorMessage(error)}`;
 }
 
 const feedScopeOptions: Array<{
   value: FeedScope;
   label: string;
 }> = [
-  { value: 'following', label: 'Following' },
-  { value: 'all', label: 'All' },
+  { value: 'following', label: '팔로잉' },
+  { value: 'all', label: '전체' },
 ];
 
 export default function HomeFeed() {
@@ -188,7 +189,7 @@ export default function HomeFeed() {
               ? apiFollowRefreshKey > 0
                 ? getFeedRefreshErrorMessage(feedError)
                 : getFeedErrorMessage(feedError)
-              : 'Could not load the feed.',
+              : '피드를 불러오지 못했습니다.',
           );
         }
       } finally {
@@ -263,15 +264,15 @@ export default function HomeFeed() {
   const emptyState =
     isApiDataSource && hasAppliedFilters ? (
       <EmptyState
-        title="No posts match these filters"
-        description="Try resetting filters or changing the search terms."
+        title="검색 결과가 없습니다"
+        description="검색어를 바꾸거나 상세 조건을 초기화해 보세요."
         action={
           <button
             type="button"
             className="h-9 rounded-md border border-neutral-200 bg-white px-4 text-sm font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100"
             onClick={resetFilters}
           >
-            Reset filters
+            조건 초기화
           </button>
         }
       />
@@ -281,27 +282,27 @@ export default function HomeFeed() {
           --
         </div>
         <h2 className="text-base font-semibold text-neutral-950">
-          No followed accounts yet
+          아직 팔로우한 계정이 없습니다
         </h2>
         <p className="mx-auto mt-2 max-w-[280px] text-sm leading-6 text-neutral-500">
-          Follow accounts to fill this API feed, or create a post and view it from your account profile.
+          계정을 팔로우하면 이곳에서 새 글을 볼 수 있습니다.
         </p>
         <Link
           to="/accounts"
           className="mt-4 inline-flex h-10 items-center rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800"
         >
-          Browse Accounts
+          계정 찾기
         </Link>
       </section>
     ) : feedScope === 'following' ? (
       <EmptyState
-        title="Your feed is empty"
-        description="Follow an account from Explore to see its latest posts here."
+        title="아직 팔로잉 피드가 비어 있습니다"
+        description="탐색에서 계정을 팔로우하면 새 게시글이 여기에 표시됩니다."
       />
     ) : (
       <EmptyState
-        title="No posts available"
-        description="Static post data will appear here once it is added."
+        title="게시글이 없습니다"
+        description="게시글이 추가되면 여기에 표시됩니다."
       />
     );
 
@@ -309,14 +310,14 @@ export default function HomeFeed() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-white px-3 py-2 shadow-sm">
         <p className="text-xs font-bold uppercase text-neutral-400">
-          Data source: {isApiDataSource ? 'API' : 'Mock'}
+          홈 피드 · 팔로잉
         </p>
         {isApiDataSource && activeApiUserId ? (
           <Link
             to="/posts/new"
             className="h-8 shrink-0 rounded-md bg-neutral-950 px-3 py-2 text-xs font-bold leading-4 text-white shadow-sm transition hover:bg-neutral-800"
           >
-            New Post
+            글쓰기
           </Link>
         ) : null}
       </div>
@@ -327,11 +328,10 @@ export default function HomeFeed() {
           className="flex items-center justify-between gap-3 rounded-md border border-neutral-950 bg-white px-3 py-2 shadow-sm transition hover:bg-neutral-100"
         >
           <span className="text-sm font-bold text-neutral-950">
-            {notifications.unreadCount} unread update
-            {notifications.unreadCount === 1 ? '' : 's'}
+            읽지 않은 알림 {notifications.unreadCount}개
           </span>
           <span className="text-xs font-bold uppercase text-neutral-500">
-            Open
+            보기
           </span>
         </Link>
       ) : null}
@@ -340,7 +340,7 @@ export default function HomeFeed() {
         <div className="space-y-3 rounded-md border border-neutral-200 bg-neutral-100 p-3">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs font-semibold leading-5 text-neutral-600">
-              API mode feed reflects backend follow state.
+              팔로우한 계정의 새 게시글을 확인하세요.
             </p>
             <button
               type="button"
@@ -350,7 +350,7 @@ export default function HomeFeed() {
                 setApiFollowRefreshKey((currentKey) => currentKey + 1);
               }}
             >
-              Refresh feed
+              새로고침
             </button>
           </div>
 
@@ -409,18 +409,22 @@ export default function HomeFeed() {
         </div>
       )}
 
+      <AppliedFiltersSummary />
+
+      {error && feedItems.length > 0 ? <p role="alert" className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">{error}</p> : null}
+
       {isApiDataSource && !activeApiUserId ? (
         <EmptyState
-          title="Select an API user"
-          description="Choose a backend seed user before loading the API feed."
+          title="로그인이 필요합니다"
+          description="로그인한 뒤 피드를 볼 수 있습니다."
         />
       ) : isLoading ? (
-        <p className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
-          {isApiDataSource ? 'Loading API feed...' : 'Loading feed...'}
+        <p role="status" className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
+          피드를 불러오는 중...
         </p>
-      ) : error ? (
-        <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
-          {error}
+      ) : error && feedItems.length === 0 ? (
+        <p role="alert" className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
+          {error} <button type="button" className="ml-2 underline" onClick={() => window.location.reload()}>다시 시도</button>
         </p>
       ) : feedItems.length === 0 ? (
         emptyState
@@ -437,7 +441,7 @@ export default function HomeFeed() {
               disabled={isLoadingMore}
               onClick={handleLoadMore}
             >
-              {isLoadingMore ? 'Loading...' : 'Load more'}
+              {isLoadingMore ? '불러오는 중...' : '더 보기'}
             </button>
           ) : null}
         </div>

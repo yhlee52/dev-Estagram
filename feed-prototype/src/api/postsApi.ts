@@ -14,6 +14,8 @@ export type PostPageOptions = {
   cursor?: string;
   limit?: number;
   activeUserId?: string;
+  hasAssets?: boolean;
+  excludePinned?: boolean;
 };
 
 export const getPosts = (
@@ -26,6 +28,8 @@ export const getPosts = (
     cursor: options.cursor,
     limit: options.limit,
   });
+  if (options.hasAssets) searchParams.set('has_assets', 'true');
+  if (options.excludePinned) searchParams.set('exclude_pinned', 'true');
   const queryString = searchParams.toString();
 
   return apiGet<ApiPaginatedPosts>(

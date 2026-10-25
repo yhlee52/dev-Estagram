@@ -45,6 +45,8 @@ class PostFilters:
     metadata_value: str | None = None
     metadata_match: str | None = None
     asset_type: str | None = None
+    has_assets: bool = False
+    exclude_pinned: bool = False
     account_id: str | None = None
     account_handle: str | None = None
     user_id: str | None = None
@@ -89,6 +91,8 @@ def normalize_post_filters(filters: PostFilters) -> PostFilters:
             else None
         ),
         asset_type=normalize_filter_value(filters.asset_type),
+        has_assets=filters.has_assets,
+        exclude_pinned=filters.exclude_pinned,
         account_id=normalize_filter_value(filters.account_id),
         account_handle=normalize_filter_value(filters.account_handle),
         user_id=normalize_filter_value(filters.user_id),
@@ -249,7 +253,14 @@ def parse_date_bound(value: str, *, field_name: str) -> tuple[datetime, bool]:
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=timezone.utc)
 
-    return parsed, is_date_only
+    return parsed.astimezone(timezone.utc), is_date_only
+
+
+def _date_bound_for_db(session: Session, bound: datetime) -> datetime:
+    """SQLite's fixture stores naive timestamps; PostgreSQL uses timestamptz."""
+    if session.bind is not None and session.bind.dialect.name == "sqlite":
+        return bound.replace(tzinfo=None)
+    return bound
 
 
 def validate_post_filters(session: Session, filters: PostFilters) -> PostFilters:
@@ -481,20 +492,31 @@ def apply_filters_to_select(
             ).bindparams(asset_type=normalized.asset_type)
         )
 
+    if normalized.has_assets:
+        statement = statement.where(text("EXISTS (SELECT 1 FROM post_assets pa WHERE pa.post_id = posts.id)"))
+
+    if normalized.exclude_pinned:
+        if effective_account_id is None:
+            raise HTTPException(status_code=400, detail="account_id is required for exclude_pinned")
+        statement = statement.where(
+            text("NOT EXISTS (SELECT 1 FROM profile_pins pp WHERE pp.post_id = posts.id AND pp.account_id = :pin_account_id)")
+            .bindparams(pin_account_id=effective_account_id)
+        )
+
     if normalized.created_at_from is not None:
         bound_from, _ = parse_date_bound(
             normalized.created_at_from, field_name="created_at_from"
         )
-        statement = statement.where(Post.created_at >= bound_from)
+        statement = statement.where(Post.created_at >= _date_bound_for_db(session, bound_from))
 
     if normalized.created_at_to is not None:
         bound_to, is_date_only = parse_date_bound(
             normalized.created_at_to, field_name="created_at_to"
         )
         if is_date_only:
-            statement = statement.where(Post.created_at < bound_to + timedelta(days=1))
+            statement = statement.where(Post.created_at < _date_bound_for_db(session, bound_to + timedelta(days=1)))
         else:
-            statement = statement.where(Post.created_at <= bound_to)
+            statement = statement.where(Post.created_at <= _date_bound_for_db(session, bound_to))
 
     return statement, normalized
 

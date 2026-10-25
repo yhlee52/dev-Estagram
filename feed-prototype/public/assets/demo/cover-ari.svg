@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="따뜻한 산책길 풍경">
+  <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#f8d2bb"/><stop offset="1" stop-color="#fff0dc"/></linearGradient></defs>
+  <path fill="url(#sky)" d="M0 0h1200v360H0z"/><circle cx="960" cy="90" r="58" fill="#ffdf9b"/>
+  <path d="M0 260q230-120 500-24t700-28v152H0" fill="#b6cfa8"/>
+  <path d="M0 305q300-95 600-13t600-35v103H0" fill="#7fac89"/>
+  <path d="M540 360q90-105 124-131 44-33 83-40" fill="none" stroke="#f5dfbf" stroke-width="68"/>
+  <path d="M160 234v-125m-59 113q59-146 119 0" fill="#638f72" stroke="#705e49" stroke-width="12"/>
+  <path d="M1020 238V94m-74 130q74-171 148 0" fill="#638f72" stroke="#705e49" stroke-width="13"/>
+</svg>

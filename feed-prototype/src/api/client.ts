@@ -164,5 +164,12 @@ export const apiPatch = async <T>(
         }),
   });
 
+export const apiPut = async <T>(path: string, body: unknown): Promise<T> =>
+  apiRequest<T>(path, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+    headers: { 'Content-Type': 'application/json' },
+  });
+
 export const apiDelete = async <T>(path: string): Promise<T> =>
   apiRequest<T>(path, { method: "DELETE" });

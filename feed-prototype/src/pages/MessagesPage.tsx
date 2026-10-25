@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { getAccounts } from '../api/accountsApi';
 import { getConversations, getThread, sendMessage, type Conversation, type DirectMessage } from '../api/messagesApi';
@@ -16,6 +16,7 @@ export default function MessagesPage() {
   const [draftState, setDraftState] = useState({ key: '', text: '' });
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const isComposing = useRef(false);
   const threadKey = `${activeApiUserId}:${accountId ?? ''}`;
   const loading = Boolean(accountId && thread?.key !== threadKey);
   const messages = thread?.key === threadKey ? thread.items : [];
@@ -28,7 +29,7 @@ export default function MessagesPage() {
       if (!live) return;
       setAccounts(allAccounts.filter((account) => account.user_id !== activeApiUserId));
       setConversations(threads);
-    }).catch(() => { if (live) setError('Could not load conversations.'); });
+    }).catch(() => { if (live) setError('대화 목록을 불러오지 못했습니다.'); });
     return () => { live = false; };
   }, [activeApiUserId]);
 
@@ -38,7 +39,7 @@ export default function MessagesPage() {
     void getThread(accountId).then((items) => {
       if (live) { setThread({ key: threadKey, items }); setError(''); }
     }).catch(() => {
-      if (live) { setThread({ key: threadKey, items: [] }); setError('Could not load this conversation.'); }
+      if (live) { setThread({ key: threadKey, items: [] }); setError('이 대화를 불러오지 못했습니다.'); }
     });
     return () => { live = false; };
   }, [accountId, activeApiUserId, threadKey]);
@@ -60,6 +61,7 @@ export default function MessagesPage() {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isComposing.current) return;
     const text = draft.trim();
     if (!accountId || !text || sending) return;
     setSending(true);
@@ -72,7 +74,7 @@ export default function MessagesPage() {
       setDraftState((previous) => previous.key === threadKey ? { key: threadKey, text: '' } : previous);
       void getConversations().then(setConversations).catch(() => {});
     } catch {
-      setError('Could not send message.');
+      setError('메시지를 보내지 못했습니다. 다시 시도해 주세요.');
     } finally {
       setSending(false);
     }
@@ -81,12 +83,12 @@ export default function MessagesPage() {
   return (
     <div className="space-y-4">
       <header className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
-        <h1 className="text-xl font-bold text-neutral-950">Messages</h1>
-        <p className="mt-1 text-sm text-neutral-500">Choose an account to start a private conversation.</p>
+        <h1 className="text-xl font-bold text-neutral-950">메시지</h1>
+        <p className="mt-1 text-sm text-neutral-500">대화할 계정을 선택하세요.</p>
       </header>
       <div className="grid gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <aside className="max-h-[36rem] space-y-1 overflow-y-auto rounded-md border border-neutral-200 bg-white p-2 shadow-sm" aria-label="Conversations and accounts">
-          {orderedAccounts.length === 0 ? <p className="p-2 text-sm text-neutral-500">No other accounts yet.</p> : null}
+        <aside className="max-h-[36rem] space-y-1 overflow-y-auto rounded-md border border-neutral-200 bg-white p-2 shadow-sm" aria-label="대화 및 계정 목록">
+          {orderedAccounts.length === 0 ? <p className="p-2 text-sm text-neutral-500">대화할 계정이 없습니다.</p> : null}
           {orderedAccounts.map((account) => {
             const recent = conversations.find((item) => item.account.id === account.id);
             return (
@@ -94,13 +96,13 @@ export default function MessagesPage() {
                 className={`w-full rounded-md p-2 text-left hover:bg-neutral-100 ${accountId === account.id ? 'bg-neutral-100' : ''}`}>
                 <span className="block truncate text-sm font-bold text-neutral-900">{account.display_name}</span>
                 <span className="block truncate text-xs text-neutral-500">@{account.handle}</span>
-                {account.deactivated_at ? <span className="block text-xs text-neutral-400">Deactivated</span> : null}
+                {account.deactivated_at ? <span className="block text-xs text-neutral-400">비활성 계정</span> : null}
                 {recent ? <span className="mt-1 block truncate text-xs text-neutral-500">{recent.last_message.text}</span> : null}
               </button>
             );
           })}
         </aside>
-        <section className="flex min-h-96 flex-col rounded-md border border-neutral-200 bg-white p-4 shadow-sm" aria-label="Message thread">
+        <section className="flex min-h-96 flex-col rounded-md border border-neutral-200 bg-white p-4 shadow-sm" aria-label="메시지 대화">
           {peer ? (
             <>
               <div className="border-b border-neutral-200 pb-3">
@@ -108,8 +110,8 @@ export default function MessagesPage() {
                 <p className="text-xs text-neutral-500">@{peer.handle}</p>
               </div>
               <div className="flex-1 space-y-3 py-4">
-                {loading ? <p className="text-sm text-neutral-500">Loading messages...</p> : null}
-                {!loading && messages.length === 0 ? <p className="text-sm text-neutral-500">No messages yet. Say hello.</p> : null}
+                {loading ? <p className="text-sm text-neutral-500">메시지를 불러오는 중...</p> : null}
+                {!loading && messages.length === 0 ? <p className="text-sm text-neutral-500">아직 메시지가 없습니다. 먼저 인사해 보세요.</p> : null}
                 {!loading && messages.map((message) => (
                   <div key={message.id} className={`flex ${message.sender_user_id === activeApiUserId ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[85%] rounded-lg px-3 py-2 ${message.sender_user_id === activeApiUserId ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-900'}`}>
@@ -121,17 +123,20 @@ export default function MessagesPage() {
               </div>
               {error && !loading ? <p role="alert" className="mb-2 text-sm text-red-700">{error}</p> : null}
               {peer.deactivated_at ? (
-                <p className="border-t border-neutral-200 pt-3 text-sm text-neutral-500">This account is deactivated. Previous messages remain available.</p>
+                <p className="border-t border-neutral-200 pt-3 text-sm text-neutral-500">비활성 계정입니다. 이전 메시지는 계속 볼 수 있습니다.</p>
               ) : (
                 <form onSubmit={submit} className="flex gap-2 border-t border-neutral-200 pt-3">
-                  <input aria-label="Message text" value={draft} onChange={(event) => setDraftState({ key: threadKey, text: event.target.value })} maxLength={2000}
-                    placeholder="Write a message..." className="min-w-0 flex-1 rounded-md border border-neutral-200 px-3 py-2 text-sm" />
+                  <input aria-label="메시지 내용" value={draft} onChange={(event) => setDraftState({ key: threadKey, text: event.target.value })} maxLength={2000}
+                    onCompositionStart={() => { isComposing.current = true; }}
+                    onCompositionEnd={() => { isComposing.current = false; }}
+                    onKeyDown={(event) => { if (event.key === 'Enter' && (isComposing.current || event.nativeEvent.isComposing || event.keyCode === 229)) event.preventDefault(); }}
+                    placeholder="메시지를 입력하세요..." className="min-w-0 flex-1 rounded-md border border-neutral-200 px-3 py-2 text-sm" />
                   <button disabled={sending || !draft.trim() || loading} type="submit"
-                    className="rounded-md bg-neutral-950 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">Send</button>
+                    className="rounded-md bg-neutral-950 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">보내기</button>
                 </form>
               )}
             </>
-          ) : <p className="text-sm text-neutral-500">Select an account to see your messages.</p>}
+          ) : <p className="text-sm text-neutral-500">대화를 보려면 계정을 선택하세요.</p>}
         </section>
       </div>
     </div>

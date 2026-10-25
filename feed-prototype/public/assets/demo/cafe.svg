@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="창가에 놓인 커피와 책">
+  <rect width="1200" height="800" fill="#f3e5d4"/><rect x="88" y="70" width="1024" height="510" rx="12" fill="#d4e4dd"/>
+  <path d="M600 70v510M88 420h1024" stroke="#bd9a7a" stroke-width="24"/><circle cx="900" cy="195" r="72" fill="#f9d29c"/>
+  <path d="M0 580h1200v220H0" fill="#b68063"/><path d="M0 615h1200" stroke="#925f49" stroke-width="18"/>
+  <ellipse cx="610" cy="665" rx="235" ry="35" fill="#825c4d" opacity=".35"/>
+  <path d="M415 510h265v130q0 50-65 50H480q-65 0-65-50Z" fill="#fffaf0"/><path d="M680 535q95-20 85 50-7 52-85 55" fill="none" stroke="#fffaf0" stroke-width="27"/>
+  <path d="M462 490q-24-25 0-50m75 50q-24-25 0-50m75 50q-24-25 0-50" fill="none" stroke="#fffaf0" stroke-width="12" stroke-linecap="round"/>
+  <path d="M750 650 1060 615l25 70-310 36Z" fill="#fff7e5"/><path d="M780 663 1040 636" stroke="#c6b5a2" stroke-width="4"/>
+</svg>

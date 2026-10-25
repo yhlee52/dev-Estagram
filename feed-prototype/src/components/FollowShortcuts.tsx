@@ -41,11 +41,11 @@ function FollowShortcutList({ accountIds }: { accountIds: string[] }) {
   return (
     <section className="space-y-2">
       <h2 className="px-1 text-xs font-bold uppercase tracking-wide text-neutral-400">
-        Following
+        팔로잉
       </h2>
       {accounts.length === 0 ? (
         <p className="rounded-md border border-dashed border-neutral-200 bg-white px-3 py-3 text-xs font-semibold leading-5 text-neutral-500">
-          Follow accounts to pin quick links here.
+          계정을 팔로우하면 바로 가기가 여기에 표시됩니다.
         </p>
       ) : (
         <>

@@ -48,23 +48,23 @@ export default function ExploreTags({
     <section className="space-y-4 rounded-md border border-neutral-200 bg-neutral-100 p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-bold text-neutral-950">Discover</h2>
+          <h2 className="text-sm font-bold text-neutral-950">발견하기</h2>
           <p className="text-xs font-semibold text-neutral-500">
-            Jump in by tag, or browse accounts.
+            태그나 계정을 통해 관심 있는 글을 찾아보세요.
           </p>
         </div>
         <Link
           to="/accounts"
           className="shrink-0 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-xs font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-50 hover:text-neutral-950"
         >
-          Browse accounts →
+          계정 찾기 →
         </Link>
       </div>
 
       {hasPopular ? (
         <div className="space-y-2">
           <h3 className="text-xs font-bold uppercase tracking-wide text-neutral-400">
-            Popular tags
+            인기 태그
           </h3>
           <ul className="flex flex-wrap gap-2">
             {popularTags.map((item) => (
@@ -77,7 +77,7 @@ export default function ExploreTags({
       {hasRecent ? (
         <div className="space-y-2">
           <h3 className="text-xs font-bold uppercase tracking-wide text-neutral-400">
-            Recent tags
+            최근 태그
           </h3>
           <ul className="flex flex-wrap gap-2">
             {recentTags.map((tag) => (
@@ -89,7 +89,7 @@ export default function ExploreTags({
 
       {!hasPopular && !hasRecent ? (
         <p className="rounded-md border border-dashed border-neutral-200 bg-white px-3 py-3 text-xs font-semibold leading-5 text-neutral-500">
-          No tags yet. Tags will appear here as posts are added.
+          아직 태그가 없습니다. 게시글이 추가되면 여기에 표시됩니다.
         </p>
       ) : null}
     </section>

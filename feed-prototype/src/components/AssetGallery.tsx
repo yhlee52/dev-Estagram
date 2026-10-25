@@ -23,13 +23,13 @@ function VisualAssetThumbnail({
 }) {
   const [hasImageError, setHasImageError] = useState(false);
   const assetUrl = getAssetUrl(asset);
-  const title = asset.title ?? `${asset.type} asset`;
+  const title = asset.title ?? '첨부 이미지';
   const alt = asset.alt ?? asset.title ?? asset.description ?? title;
 
   return (
     <button
       type="button"
-      aria-label={`Open visual asset ${index + 1} of ${total}`}
+      aria-label={`첨부 이미지 ${index + 1}/${total} 확대`}
       className={[
         'group relative block w-full overflow-hidden rounded-md border border-neutral-200 bg-neutral-100 text-left transition hover:border-neutral-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950',
         variant === 'compact' ? 'aspect-[4/3]' : 'aspect-[4/3]',
@@ -49,11 +49,11 @@ function VisualAssetThumbnail({
         />
       ) : (
         <div className="flex size-full items-center justify-center border border-dashed border-neutral-300 px-4 text-center text-sm font-semibold text-neutral-400">
-          Preview unavailable
+          미리보기를 사용할 수 없습니다
         </div>
       )}
       <span className="absolute left-3 top-3 rounded-full bg-neutral-950/80 px-2.5 py-1 text-xs font-bold uppercase text-white">
-        {asset.type}
+        {asset.type === 'plot' ? '그래프' : '사진'}
       </span>
       <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-bold text-neutral-700">
         {index + 1} / {total}
@@ -116,7 +116,7 @@ export default function AssetGallery({
     <>
       <section className="space-y-3">
         <div className="flex items-end justify-between px-1">
-          <h2 className="text-sm font-bold text-neutral-950">Visual assets</h2>
+          <h2 className="text-sm font-bold text-neutral-950">사진·그래프</h2>
           <span className="text-xs font-medium text-neutral-400">
             {visualAssets.length} item{visualAssets.length === 1 ? '' : 's'}
           </span>

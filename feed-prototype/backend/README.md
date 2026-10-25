@@ -36,8 +36,17 @@ HTTP `POST /api/imports`도 지원하지만 로컬 파일 복사는 하지 않�
 
 ```powershell
 python -m scripts.check_social_interactions
+python -m scripts.check_profile_ux
+python -m scripts.run_profile_regressions_isolated
 python -m scripts.check_local_asset_serving
 python -m scripts.check_managed_asset_copy
 ```
 
 상세 실행 순서는 [로컬 실행 가이드](../docs/QUICK_RUN_GUIDE_LOCAL.md)에 있습니다.
+
+프로필 검색·요약·관계·고정 게시글과 계정 편집 필드는
+[UX 개선 계획](../docs/UX_IMPROVEMENT_PLAN.md)에 정리했습니다. 기존
+`GET /api/accounts`와 `GET /api/accounts/{id}/posts` 배열 응답은 유지합니다.
+`run_profile_regressions_isolated`는 설정된 PostgreSQL 서버에 임시 DB를
+만들어 마이그레이션과 기존 회귀를 실행한 후 삭제합니다. 설정된 앱 DB는 변경하지
+않으며 PostgreSQL 사용자에게 DB 생성 권한이 필요합니다.

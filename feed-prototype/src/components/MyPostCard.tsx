@@ -15,18 +15,18 @@ type MyPostCardProps = {
 
 function getDeletePostErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다.`;
   }
 
   if (error instanceof ApiClientError) {
     if (error.status === 403) {
-      return 'Only the account that wrote this post can delete it.';
+      return '내 게시글만 삭제할 수 있습니다.';
     }
 
-    return `The backend API returned ${error.status}. ${error.message}`;
+    return `게시글을 삭제하지 못했습니다. (${error.status})`;
   }
 
-  return 'Could not delete this post. Check the backend server and try again.';
+  return '게시글을 삭제하지 못했습니다. 다시 시도해 주세요.';
 }
 
 /**
@@ -67,7 +67,7 @@ export default function MyPostCard({ item, onDeleted }: MyPostCardProps) {
           to={`/posts/${post.id}/edit`}
           className="rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-xs font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-100"
         >
-          Edit
+          수정
         </Link>
         <button
           type="button"
@@ -75,7 +75,7 @@ export default function MyPostCard({ item, onDeleted }: MyPostCardProps) {
           disabled={isDeleting}
           onClick={() => setIsConfirmOpen(true)}
         >
-          {isDeleting ? 'Deleting...' : 'Delete'}
+          {isDeleting ? '삭제하는 중...' : '삭제'}
         </button>
       </div>
 
@@ -87,9 +87,9 @@ export default function MyPostCard({ item, onDeleted }: MyPostCardProps) {
 
       {isConfirmOpen ? (
         <ConfirmDialog
-          title="Delete post?"
-          description={`"${post.title}" will be permanently deleted. This cannot be undone.`}
-          confirmLabel="Delete"
+          title="게시글을 삭제할까요?"
+          description={`“${post.title}” 게시글이 영구 삭제됩니다.`}
+          confirmLabel="삭제"
           danger
           isConfirming={isDeleting}
           onConfirm={handleConfirmDelete}

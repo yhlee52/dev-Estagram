@@ -64,6 +64,10 @@ export default function TagSearchInput({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.nativeEvent.isComposing || event.keyCode === 229) {
+      if (event.key === 'Enter') event.preventDefault();
+      return;
+    }
     if (event.key === 'ArrowDown' && matches.length > 0) {
       event.preventDefault();
       setIsOpen(true);

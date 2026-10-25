@@ -63,7 +63,7 @@ export default function MeMentionsSection({ userId }: MeMentionsSectionProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-end justify-between px-1">
-        <h2 className="text-sm font-bold text-neutral-950">Mentions</h2>
+        <h2 className="text-sm font-bold text-neutral-950">언급</h2>
         <Link
           to="/notifications"
           className="text-xs font-bold text-neutral-500 transition hover:text-neutral-950"

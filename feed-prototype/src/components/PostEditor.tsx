@@ -101,15 +101,15 @@ export default function PostEditor({
   });
   const [localError, setLocalError] = useState('');
 
-  const submitLabel = mode === 'create' ? 'Publish Post' : 'Save Changes';
-  const pendingLabel = mode === 'create' ? 'Publishing...' : 'Saving...';
+  const submitLabel = mode === 'create' ? '게시하기' : '변경 사항 저장';
+  const pendingLabel = mode === 'create' ? '게시하는 중...' : '저장하는 중...';
   const tags = useMemo(() => parseTags(tagsInput), [tagsInput]);
 
   const addAsset = () => {
     const url = assetDraft.url.trim();
 
     if (!url) {
-      setLocalError('Asset url is required.');
+      setLocalError('첨부 자료 URL을 입력해 주세요.');
       return;
     }
 
@@ -137,7 +137,7 @@ export default function PostEditor({
     const key = metadataDraft.key.trim();
 
     if (!key) {
-      setLocalError('Metadata key is required.');
+      setLocalError('추가 정보 항목을 입력해 주세요.');
       return;
     }
 
@@ -173,7 +173,7 @@ export default function PostEditor({
     const trimmedTitle = title.trim();
 
     if (!trimmedTitle) {
-      setLocalError('Title is required.');
+      setLocalError('제목을 입력해 주세요.');
       return;
     }
 
@@ -184,12 +184,12 @@ export default function PostEditor({
         assetDraft.description,
       )
     ) {
-      setLocalError('Add or clear the pending asset before saving.');
+      setLocalError('입력 중인 첨부 자료를 추가하거나 지워 주세요.');
       return;
     }
 
     if (hasDraftInput(metadataDraft.key, metadataDraft.value)) {
-      setLocalError('Add or clear the pending metadata before saving.');
+      setLocalError('입력 중인 추가 정보를 추가하거나 지워 주세요.');
       return;
     }
 
@@ -202,7 +202,7 @@ export default function PostEditor({
     );
 
     if (duplicateMetadataKey) {
-      setLocalError(`Metadata key "${duplicateMetadataKey}" is duplicated.`);
+      setLocalError(`추가 정보 항목 "${duplicateMetadataKey}"이(가) 중복되었습니다.`);
       return;
     }
 
@@ -237,7 +237,7 @@ export default function PostEditor({
           className="block text-xs font-bold uppercase text-neutral-400"
           htmlFor="post-title"
         >
-          Title
+          제목
         </label>
         <input
           id="post-title"
@@ -255,7 +255,7 @@ export default function PostEditor({
           className="block text-xs font-bold uppercase text-neutral-400"
           htmlFor="post-text"
         >
-          Text
+          본문
         </label>
         <textarea
           id="post-text"
@@ -266,7 +266,7 @@ export default function PostEditor({
         />
         <p className="text-xs font-medium text-neutral-400">{text.length}/5000</p>
         <p className="text-xs leading-5 text-neutral-400">
-          Text can be empty in MVP9; title is the only required text field.
+          본문은 비워 둘 수 있습니다. 제목만 필수입니다.
         </p>
       </div>
 
@@ -275,7 +275,7 @@ export default function PostEditor({
           className="block text-xs font-bold uppercase text-neutral-400"
           htmlFor="post-tags"
         >
-          Tags
+          태그
         </label>
         <input
           id="post-tags"
@@ -285,13 +285,13 @@ export default function PostEditor({
           placeholder="daily-report, temperature"
         />
         <p className="text-xs leading-5 text-neutral-400">
-          Comma-separated tags are trimmed; empty tags and duplicates are removed.
+          쉼표로 태그를 구분하세요. 빈 태그와 중복 태그는 제외됩니다.
         </p>
       </div>
 
       <section className="space-y-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-bold text-neutral-950">Assets</h2>
+          <h2 className="text-sm font-bold text-neutral-950">첨부 자료</h2>
           <span className="text-xs font-semibold text-neutral-400">
             {assetDrafts.length}
           </span>
@@ -310,7 +310,7 @@ export default function PostEditor({
           >
             {assetTypes.map((assetType) => (
               <option key={assetType} value={assetType}>
-                {assetType}
+                {({ image: '사진', plot: '그래프', table: '표', file: '파일', link: '링크' } as Record<ApiAssetType, string>)[assetType]}
               </option>
             ))}
           </select>
@@ -320,7 +320,7 @@ export default function PostEditor({
             onChange={(event) =>
               setAssetDraft((draft) => ({ ...draft, url: event.target.value }))
             }
-            placeholder="/assets/sample.png or https://..."
+            placeholder="/assets/sample.png 또는 https://..."
           />
           <input
             className="h-10 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition focus:border-neutral-400"
@@ -328,7 +328,7 @@ export default function PostEditor({
             onChange={(event) =>
               setAssetDraft((draft) => ({ ...draft, title: event.target.value }))
             }
-            placeholder="Asset title"
+            placeholder="첨부 자료 제목"
           />
           <input
             className="h-10 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition focus:border-neutral-400"
@@ -339,18 +339,18 @@ export default function PostEditor({
                 description: event.target.value,
               }))
             }
-            placeholder="Asset description"
+            placeholder="첨부 자료 설명"
           />
           <button
             type="button"
             className="h-10 rounded-md border border-neutral-300 bg-white px-3 text-sm font-bold text-neutral-800"
             onClick={addAsset}
           >
-            Add asset
+            첨부 자료 추가
           </button>
         </div>
         <p className="text-xs leading-5 text-neutral-400">
-          Asset type and URL are required. MVP9 stores URL or local path strings only.
+          유형과 URL을 입력해 주세요. 파일 업로드 대신 URL이나 로컬 자산 경로를 저장합니다.
         </p>
 
         {assetDrafts.length > 0 ? (
@@ -363,7 +363,7 @@ export default function PostEditor({
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold text-neutral-950">
-                      {draft.title || `${draft.type} asset`}
+                      {draft.title || '첨부 자료'}
                     </p>
                     <p className="break-all text-xs font-medium text-neutral-500">
                       {draft.url}
@@ -378,7 +378,7 @@ export default function PostEditor({
                       )
                     }
                   >
-                    Remove
+                    제거
                   </button>
                 </div>
               </div>
@@ -389,7 +389,7 @@ export default function PostEditor({
 
       <section className="space-y-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-bold text-neutral-950">Metadata</h2>
+          <h2 className="text-sm font-bold text-neutral-950">추가 정보</h2>
           <span className="text-xs font-semibold text-neutral-400">
             {metadataDrafts.length}
           </span>
@@ -402,7 +402,7 @@ export default function PostEditor({
             onChange={(event) =>
               setMetadataDraft((draft) => ({ ...draft, key: event.target.value }))
             }
-            placeholder="Key"
+            placeholder="항목"
           />
           <input
             className="h-10 rounded-md border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition focus:border-neutral-400"
@@ -410,18 +410,18 @@ export default function PostEditor({
             onChange={(event) =>
               setMetadataDraft((draft) => ({ ...draft, value: event.target.value }))
             }
-            placeholder="Value"
+            placeholder="값"
           />
           <button
             type="button"
             className="h-10 rounded-md border border-neutral-300 bg-white px-3 text-sm font-bold text-neutral-800 sm:col-span-2"
             onClick={addMetadata}
           >
-            Add metadata
+            추가 정보 넣기
           </button>
         </div>
         <p className="text-xs leading-5 text-neutral-400">
-          Metadata keys are required. Adding the same key replaces the existing draft.
+          항목은 필수입니다. 같은 항목을 다시 추가하면 입력 중인 값을 교체합니다.
         </p>
 
         {metadataDrafts.length > 0 ? (
@@ -466,7 +466,7 @@ export default function PostEditor({
                     )
                   }
                 >
-                  Remove
+                  제거
                 </button>
               </div>
             ))}
@@ -487,7 +487,7 @@ export default function PostEditor({
           disabled={isSubmitting}
           onClick={onCancel}
         >
-          Cancel
+          취소
         </button>
         <button
           type="submit"

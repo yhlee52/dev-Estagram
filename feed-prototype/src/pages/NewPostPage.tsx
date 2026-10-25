@@ -10,14 +10,14 @@ import PostEditor, { type PostEditorValues } from '../components/PostEditor';
 
 function getCreatePostErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버를 확인해 주세요.`;
   }
 
   if (error instanceof ApiClientError) {
-    return `The backend API returned ${error.status}. ${error.message}`;
+    return `게시글을 작성하지 못했습니다. (${error.status})`;
   }
 
-  return 'Could not create this post. Check the backend server and try again.';
+  return '게시글을 작성하지 못했습니다. 다시 시도해 주세요.';
 }
 
 export default function NewPostPage() {
@@ -29,8 +29,8 @@ export default function NewPostPage() {
   if (!isApiMode()) {
     return (
       <EmptyState
-        title="API mode only"
-        description="Post creation is available only when the app is using the backend API data source."
+        title="API 모드에서만 사용할 수 있습니다"
+        description="게시글 작성은 API 모드에서 사용할 수 있습니다."
       />
     );
   }
@@ -38,8 +38,8 @@ export default function NewPostPage() {
   if (!activeApiUserId) {
     return (
       <EmptyState
-        title="Select an API user"
-        description="Choose or register an API user before writing a post."
+        title="로그인이 필요합니다"
+        description="게시글을 작성하려면 로그인해 주세요."
       />
     );
   }
@@ -76,10 +76,10 @@ export default function NewPostPage() {
           className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
           to="/"
         >
-          Cancel
+          취소
         </Link>
         <p className="text-xs font-bold uppercase text-neutral-400">
-          API post
+          새 게시글
         </p>
       </nav>
 

@@ -26,6 +26,7 @@ Windows PowerShell 기준 전체 순서는 [로컬 실행 가이드](feed-protot
 - 비밀번호 로그인과 세션, 1:1 User/Account, 프로필 및 팔로우
 - 게시글·자산·댓글·북마크·알림, 좋아요와 1:1 텍스트 메시지
 - 검색·필터·페이지네이션과 로컬 폴더/HTTP/CLI 게시글 import
+- 한국어 UI와 서울 시간 표시, 게시글·계정 탐색, 관계·고정 글이 있는 프로필
 - 정적 mock 모드(UI 데모)와 PostgreSQL API 모드
 
 현재 화면의 릴리즈 라벨은 [appVersion.ts](feed-prototype/src/config/appVersion.ts)의

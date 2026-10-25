@@ -15,7 +15,7 @@ export default function MetadataTable({ metadata }: MetadataTableProps) {
   return (
     <section className="overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
       <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3">
-        <h2 className="text-sm font-bold text-neutral-950">Metadata</h2>
+        <h2 className="text-sm font-bold text-neutral-950">추가 정보</h2>
         <p className="mt-1 text-xs leading-5 text-neutral-500">
           Additional fields attached to this post.
         </p>

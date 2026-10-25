@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { ko } from '../i18n/ko';
 
 type ConfirmDialogProps = {
   /** Heading shown at the top of the dialog. */
@@ -28,8 +29,8 @@ type ConfirmDialogProps = {
 export default function ConfirmDialog({
   title,
   description,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel = '확인',
+  cancelLabel = '취소',
   danger = false,
   isConfirming = false,
   onConfirm,
@@ -107,7 +108,7 @@ export default function ConfirmDialog({
             disabled={isConfirming}
             onClick={onConfirm}
           >
-            {isConfirming ? 'Working...' : confirmLabel}
+            {isConfirming ? ko.working : confirmLabel}
           </button>
         </div>
       </div>

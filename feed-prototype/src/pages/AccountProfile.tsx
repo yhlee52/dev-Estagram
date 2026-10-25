@@ -17,6 +17,7 @@ import { useEffectiveAccounts } from '../hooks/useEffectiveData';
 import { useFollowState } from '../hooks/useFollowState';
 import type { Account, FeedItem, Post } from '../types/feed';
 import { formatDateTime } from '../utils/format';
+import ApiProfilePage from './ApiProfilePage';
 import { getPostsByAccountId, joinPostWithAccount } from '../utils/feed';
 
 const posts = postsData as unknown as Post[];
@@ -24,14 +25,14 @@ const isApiDataSource = getDataSourceMode() === 'api';
 
 function getProfileErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버를 확인해 주세요.`;
   }
 
   if (error instanceof ApiClientError && error.status === 404) {
-    return 'This account was not found in the backend database.';
+    return '계정을 찾지 못했습니다.';
   }
 
-  return 'Could not load this API account. Check the backend server and try again.';
+  return '계정을 불러오지 못했습니다. 다시 시도해 주세요.';
 }
 
 function AccountAvatar({ account }: { account: Account }) {
@@ -75,7 +76,7 @@ function isAccountDeactivated(account: Account): boolean {
   return Boolean(account.metadata?.deactivated_at);
 }
 
-export default function AccountProfile() {
+function LegacyAccountProfile() {
   const { accountId } = useParams();
   const accounts = useEffectiveAccounts();
   const { isFollowing: isMockFollowing, toggleFollow: toggleMockFollow } =
@@ -140,7 +141,7 @@ export default function AccountProfile() {
   if (isLoading) {
     return (
       <p className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
-        Loading API account...
+        계정을 불러오는 중...
       </p>
     );
   }
@@ -152,7 +153,7 @@ export default function AccountProfile() {
           {error}
         </p>
         <Link className="block text-sm font-semibold text-neutral-950" to="/accounts">
-          Browse Accounts
+          계정 찾기
         </Link>
       </div>
     );
@@ -162,15 +163,15 @@ export default function AccountProfile() {
     return (
       <div className="space-y-4">
         <EmptyState
-          title="Account not found"
+          title="계정을 찾지 못했습니다"
           description={
             accountId
-              ? `We could not find an account for ${accountId}.`
-              : 'Choose an account from Explore.'
+              ? `${accountId} 계정을 찾지 못했습니다.`
+              : '탐색에서 계정을 선택해 주세요.'
           }
         />
         <Link className="block text-sm font-semibold text-neutral-950" to="/accounts">
-          Browse Accounts
+          계정 찾기
         </Link>
       </div>
     );
@@ -196,22 +197,11 @@ export default function AccountProfile() {
   const latestPost = accountPosts[0]?.post;
   const latestPostDate = latestPost
     ? formatDateTime(latestPost.createdAt)
-    : 'No posts yet';
+    : '게시글이 없습니다';
 
   return (
     <div className="space-y-4">
       <section className="space-y-4 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-bold uppercase text-neutral-400">
-            Data source: {isApiDataSource ? 'API' : 'Mock'}
-          </p>
-          {isApiDataSource ? (
-            <p className="text-right text-xs font-semibold text-neutral-500">
-              Follow changes sync to API
-            </p>
-          ) : null}
-        </div>
-
         <div className="flex items-start gap-4">
           <AccountAvatar account={account} />
           <div className="min-w-0 flex-1">
@@ -221,7 +211,7 @@ export default function AccountProfile() {
               </h1>
               {isDeactivated ? (
                 <span className="shrink-0 rounded bg-neutral-200 px-2 py-0.5 text-xs font-bold text-neutral-600">
-                  Deactivated
+                  비활성
                 </span>
               ) : null}
             </div>
@@ -233,19 +223,19 @@ export default function AccountProfile() {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <SummaryItem label="Posts" value={String(accountPosts.length)} />
-          <SummaryItem label="Latest" value={latestPostDate} />
+          <SummaryItem label="게시글" value={String(accountPosts.length)} />
+          <SummaryItem label="최근 게시글" value={latestPostDate} />
           <SummaryItem
-            label="Follow"
+            label="팔로우"
             value={
               isOwnApiAccount
-                ? 'This is your account'
+                ? '내 계정'
                 : following
-                ? 'Following'
-                : 'Not following'
+                ? '팔로잉'
+                : '팔로우하지 않음'
             }
           />
-          <SummaryItem label="Handle" value={`@${account.handle}`} />
+          <SummaryItem label="아이디" value={`@${account.handle}`} />
         </div>
 
         {isApiDataSource && apiFollows.error ? (
@@ -259,7 +249,7 @@ export default function AccountProfile() {
             to={`/messages/${account.id}`}
             className="flex h-11 w-full items-center justify-center rounded-md border border-neutral-200 bg-white px-4 text-sm font-bold text-neutral-800 transition hover:bg-neutral-100"
           >
-            Message
+            메시지
           </Link>
         ) : null}
 
@@ -268,7 +258,7 @@ export default function AccountProfile() {
             to="/posts/new"
             className="flex h-11 w-full items-center justify-center rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800"
           >
-            New Post
+            새 게시글
           </Link>
         ) : (
           <button
@@ -292,21 +282,21 @@ export default function AccountProfile() {
             }}
           >
             {apiFollows.isLoading
-              ? 'Loading...'
+              ? '불러오는 중...'
               : isPendingApiAccount
-              ? 'Saving...'
+              ? '저장하는 중...'
               : following
-              ? 'Unfollow'
-              : 'Follow'}
+              ? '팔로우 취소'
+              : '팔로우'}
           </button>
         )}
       </section>
 
       <section className="space-y-3">
         <div className="flex items-end justify-between px-1">
-          <h2 className="text-sm font-bold text-neutral-950">Posts</h2>
+          <h2 className="text-sm font-bold text-neutral-950">게시글</h2>
           <span className="text-xs font-medium text-neutral-400">
-            Latest first
+            최신순
           </span>
         </div>
 
@@ -318,17 +308,21 @@ export default function AccountProfile() {
           </div>
         ) : (
           <EmptyState
-            title="No posts yet"
+            title="게시글이 없습니다"
             description={
               isApiDataSource
                 ? isOwnApiAccount
-                  ? 'Create a post and it will appear here.'
-                  : 'Posts from this account will appear here.'
-                : 'Posts from this account will appear here.'
+                  ? '게시글을 작성하면 여기에 표시됩니다.'
+                  : '이 계정의 게시글이 여기에 표시됩니다.'
+                : '이 계정의 게시글이 여기에 표시됩니다.'
             }
           />
         )}
       </section>
     </div>
   );
+}
+
+export default function AccountProfile() {
+  return isApiDataSource ? <ApiProfilePage /> : <LegacyAccountProfile />;
 }

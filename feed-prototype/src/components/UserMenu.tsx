@@ -35,7 +35,7 @@ export default function UserMenu({
   secondaryLabel,
   meta,
   onClear,
-  clearLabel = 'Switch user',
+  clearLabel = '계정 전환',
 }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -75,7 +75,7 @@ export default function UserMenu({
         type="button"
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        aria-label="Account menu"
+        aria-label="계정 메뉴"
         onClick={() => setIsOpen((open) => !open)}
         className="flex shrink-0 items-center gap-2 rounded-full border border-neutral-200 bg-white py-0.5 pl-0.5 pr-2 shadow-sm transition hover:bg-neutral-100"
       >

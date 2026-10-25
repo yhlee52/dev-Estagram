@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="보라색 요약 카드와 별">
+  <rect width="1200" height="360" fill="#48417f"/>
+  <circle cx="150" cy="75" r="6" fill="#f5cb83"/><circle cx="1000" cy="110" r="8" fill="#f5cb83"/><circle cx="1110" cy="280" r="5" fill="#f5cb83"/>
+  <rect x="270" y="54" width="660" height="252" rx="24" fill="#7167b1"/>
+  <rect x="320" y="105" width="210" height="145" rx="15" fill="#ddd8fb"/>
+  <path d="M565 125h290M565 164h250M565 203h280M565 242h195" stroke="#ddd8fb" stroke-width="15" stroke-linecap="round"/>
+  <path d="m425 126 14 25 27 4-20 20 4 28-25-13-25 13 4-28-20-20 27-4Z" fill="#f5cb83"/>
+</svg>

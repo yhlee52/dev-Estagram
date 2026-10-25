@@ -22,15 +22,15 @@ const MAX_COMMENT_LENGTH = 2000;
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버를 확인해 주세요.`;
   }
 
   if (error instanceof ApiClientError) {
     if (error.status === 403) {
-      return 'Only the author can change this comment.';
+      return '내 댓글만 변경할 수 있습니다.';
     }
 
-    return error.message;
+    return `${fallback} (${error.status})`;
   }
 
   return fallback;
@@ -96,7 +96,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
       } catch (error) {
         if (isMounted) {
           setComments([]);
-          setLoadError(getErrorMessage(error, 'Could not load comments.'));
+          setLoadError(getErrorMessage(error, '댓글을 불러오지 못했습니다.'));
         }
       } finally {
         if (isMounted) {
@@ -127,7 +127,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
       setDraft('');
       reload();
     } catch (error) {
-      setSubmitError(getErrorMessage(error, 'Could not post your comment.'));
+      setSubmitError(getErrorMessage(error, '댓글을 등록하지 못했습니다.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -159,7 +159,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
       cancelEdit();
       reload();
     } catch (error) {
-      setEditError(getErrorMessage(error, 'Could not save your changes.'));
+      setEditError(getErrorMessage(error, '댓글을 저장하지 못했습니다.'));
     } finally {
       setIsSavingEdit(false);
     }
@@ -178,7 +178,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
       setPendingDeleteId(null);
       reload();
     } catch (error) {
-      setActionError(getErrorMessage(error, 'Could not delete the comment.'));
+      setActionError(getErrorMessage(error, '댓글을 삭제하지 못했습니다.'));
       setPendingDeleteId(null);
     } finally {
       setIsDeleting(false);
@@ -192,20 +192,20 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-bold text-neutral-950">
-          Comments
+          댓글
           {comments.length > 0 ? (
             <span className="ml-1 text-neutral-400">({comments.length})</span>
           ) : null}
         </h2>
         <label className="flex items-center gap-2 text-xs font-semibold text-neutral-500">
-          Sort
+          정렬
           <select
             className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700"
             value={sort}
             onChange={(event) => setSort(event.target.value as CommentSort)}
           >
-            <option value="oldest">Oldest first</option>
-            <option value="newest">Newest first</option>
+            <option value="oldest">오래된순</option>
+            <option value="newest">최신순</option>
           </select>
         </label>
       </div>
@@ -216,7 +216,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
             className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm leading-6 text-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-neutral-950"
             rows={3}
             maxLength={MAX_COMMENT_LENGTH}
-            placeholder="Add a comment..."
+            placeholder="댓글을 입력하세요..."
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
           />
@@ -231,13 +231,13 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
               className="rounded-md bg-neutral-950 px-3 py-2 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
               disabled={isSubmitting || !draft.trim()}
             >
-              {isSubmitting ? 'Posting...' : 'Post comment'}
+              {isSubmitting ? '등록하는 중...' : '댓글 등록'}
             </button>
           </div>
         </form>
       ) : (
         <p className="rounded-md bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-500">
-          Select an active API user to write comments.
+          댓글을 쓰려면 로그인해 주세요.
         </p>
       )}
 
@@ -248,8 +248,8 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
       ) : null}
 
       {isLoading ? (
-        <p className="px-1 py-4 text-center text-sm font-semibold text-neutral-500">
-          Loading comments...
+        <p role="status" className="px-1 py-4 text-center text-sm font-semibold text-neutral-500">
+          댓글을 불러오는 중...
         </p>
       ) : loadError ? (
         <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
@@ -257,7 +257,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
         </p>
       ) : comments.length === 0 ? (
         <p className="px-1 py-4 text-center text-sm font-medium text-neutral-400">
-          No comments yet. Be the first to add one.
+          아직 댓글이 없습니다. 첫 댓글을 남겨 보세요.
         </p>
       ) : (
         <ul className="space-y-3">
@@ -287,7 +287,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                         dateTime={comment.created_at}
                       >
                         {formatDateTime(comment.created_at)}
-                        {wasEdited ? ' (edited)' : ''}
+                        {wasEdited ? ' (수정됨)' : ''}
                       </time>
                     </div>
 
@@ -312,7 +312,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                             onClick={cancelEdit}
                             disabled={isSavingEdit}
                           >
-                            Cancel
+                            취소
                           </button>
                           <button
                             type="button"
@@ -320,7 +320,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                             onClick={() => handleSaveEdit(comment.id)}
                             disabled={isSavingEdit || !editDraft.trim()}
                           >
-                            {isSavingEdit ? 'Saving...' : 'Save'}
+                            {isSavingEdit ? '저장하는 중...' : '저장'}
                           </button>
                         </div>
                       </div>
@@ -340,14 +340,14 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                       className="rounded-md border border-neutral-200 bg-white px-2.5 py-1 text-xs font-bold text-neutral-700 transition hover:bg-neutral-100"
                       onClick={() => startEdit(item)}
                     >
-                      Edit
+                      수정
                     </button>
                     <button
                       type="button"
                       className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-bold text-red-700 transition hover:bg-red-100"
                       onClick={() => setPendingDeleteId(comment.id)}
                     >
-                      Delete
+                      삭제
                     </button>
                   </div>
                 ) : null}
@@ -359,9 +359,9 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
 
       {pendingDeleteId ? (
         <ConfirmDialog
-          title="Delete comment?"
-          description="This comment will be permanently deleted. This cannot be undone."
-          confirmLabel="Delete"
+          title="댓글을 삭제할까요?"
+          description="삭제한 댓글은 복구할 수 없습니다."
+          confirmLabel="삭제"
           danger
           isConfirming={isDeleting}
           onConfirm={handleConfirmDelete}

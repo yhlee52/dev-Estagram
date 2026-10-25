@@ -13,6 +13,7 @@ import NewPostPage from './pages/NewPostPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PostDetail from './pages/PostDetail';
 import PostsBrowsePage from './pages/PostsBrowsePage';
+import SettingsPage from './pages/SettingsPage';
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
         path: 'me',
         element: <MePage />,
       },
+      { path: 'settings', element: <SettingsPage /> },
       {
         path: 'notifications',
         element: <NotificationsPage />,

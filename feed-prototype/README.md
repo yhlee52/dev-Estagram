@@ -12,6 +12,11 @@ Vite + React + TypeScript, backend는 FastAPI + PostgreSQL입니다. 현재 릴�
   동작 검증에는 사용하지 않습니다.
 
 설치와 순서는 [로컬 실행 가이드](docs/QUICK_RUN_GUIDE_LOCAL.md)를 따르세요.
+새 DB의 API 데모 계정 `ari`·`mika`·`nova`에는 한국어 프로필, 고정 글과 실제
+로컬 자산이 포함됩니다. 이미 seed한 DB의 데모 내용을 갱신하려면
+`python -m app.services.seed --refresh-demo`를 명시적으로 실행합니다.
+이 명령은 비밀번호와 다른 계정 데이터는 유지하며 데모 프로필의 수정 사항과
+고정 글 순서는 갱신합니다. Mock 모드의 정적 데이터는 별도 UI 데모입니다.
 
 ## 로컬 데이터 위치
 
@@ -56,6 +61,20 @@ python -m app.services.process_incoming --base-dir C:/feed-data --watch --interv
 1:1 텍스트 메시지, 태그·metadata 검색/필터, 자산 미리보기, import 이력이
 있습니다. API write 요청은 로그인 세션의 사용자를 기준으로 처리합니다.
 
+### 탐색과 프로필
+
+- `/posts`에서 게시글과 계정을 탭으로 찾습니다. 게시글의 `상세 조건`은 접고 펼 수
+  있으며, 적용된 조건은 URL과 조건 칩에 표시됩니다. `/accounts`도 계정 검색 화면으로
+  연결됩니다. 검색어는 완성형 한글 부분 일치와 영문 대소문자 무시를 지원합니다.
+- `/me`에서 자기 소개, 게시글·팔로워·팔로잉 수와 고정 게시글을 봅니다. 게시글,
+  사진·첨부 자료, 관계, 저장한 글과 언급은 필요한 탭을 열 때 페이지 단위로 읽습니다.
+  저장한 글과 언급은 본인 프로필에서만 보입니다.
+- 프로필 편집에서 커버 이미지 URL과 이름이 붙은 외부 링크 최대 3개를 설정합니다.
+  게시글 최대 3개를 고정하고 순서를 바꿀 수 있습니다. 비밀번호 변경과 계정
+  비활성화는 `/settings`에 있습니다.
+- 화면 시각은 서울 시간으로 표시하고 날짜 검색은 한국 날짜의 시작과 끝으로
+  변환합니다. 공유 URL의 날짜 형식은 `YYYY-MM-DD`입니다.
+
 ## 설정과 검증
 
 - Backend: `backend/.env.example`을 `backend/.env`로 복사하고 `DATABASE_URL`,
@@ -65,6 +84,8 @@ python -m app.services.process_incoming --base-dir C:/feed-data --watch --interv
   브라우저의 `localhost`/`127.0.0.1` 호스트 이름에 API 주소를 맞춥니다.
 - frontend 검증: `npm.cmd run build`
 - backend 기능 검증: `python -m scripts.check_social_interactions`,
+  `python -m scripts.check_profile_ux`,
+  `python -m scripts.run_profile_regressions_isolated`,
   `python -m scripts.check_local_asset_serving`,
   `python -m scripts.check_managed_asset_copy`
 

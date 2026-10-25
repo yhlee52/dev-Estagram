@@ -13,12 +13,12 @@ const MAX_NOTE_LENGTH = 2000;
 
 function getNoteErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다.`;
   }
   if (error instanceof ApiClientError) {
-    return error.message;
+    return `메모를 저장하지 못했습니다. (${error.status})`;
   }
-  return 'Could not save the note.';
+  return '메모를 저장하지 못했습니다.';
 }
 
 /**
@@ -102,20 +102,20 @@ export default function BookmarkPanel({ postId }: BookmarkPanelProps) {
   return (
     <section className="space-y-3 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-bold text-neutral-950">Bookmark</h2>
+        <h2 className="text-sm font-bold text-neutral-950">저장한 글</h2>
         <BookmarkButton postId={postId} />
       </div>
 
       {bookmarked ? (
         <div className="space-y-2">
           <label className="block text-xs font-bold uppercase text-neutral-400">
-            Private note
+            나만 볼 수 있는 메모
           </label>
           <textarea
             className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm leading-6 text-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-neutral-950"
             rows={3}
             maxLength={MAX_NOTE_LENGTH}
-            placeholder="Add a private note (only you can see this)..."
+            placeholder="나만 볼 수 있는 메모를 입력하세요..."
             value={note}
             onChange={(event) => setNote(event.target.value)}
           />
@@ -131,13 +131,13 @@ export default function BookmarkPanel({ postId }: BookmarkPanelProps) {
               disabled={isSaving || note.trim() === savedNote.trim()}
               onClick={handleSaveNote}
             >
-              {isSaving ? 'Saving...' : 'Save note'}
+              {isSaving ? '저장하는 중...' : '메모 저장'}
             </button>
           </div>
         </div>
       ) : (
         <p className="text-xs font-medium text-neutral-400">
-          Bookmark this post to save it and add a private note.
+          게시글을 저장하면 나만 볼 수 있는 메모를 남길 수 있습니다.
         </p>
       )}
     </section>

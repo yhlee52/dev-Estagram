@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Outlet } from 'react-router';
 import { useActiveApiUser } from '../auth/apiActiveUser';
-import { APP_RELEASE_LABEL } from '../config/appVersion';
+import { ko } from '../i18n/ko';
 import { isApiMode } from '../config/dataSource';
 import { useActiveUser } from '../hooks/useActiveUser';
 import ApiUserEntry from './ApiUserEntry';
@@ -38,7 +38,7 @@ function DesktopShell({ userMenu }: DesktopShellProps) {
         <header className="sticky top-0 z-20 border-b border-neutral-200 bg-neutral-50/95 backdrop-blur">
           <div className="flex h-14 items-center justify-between gap-3 px-4">
             <h1 className="shrink-0 text-lg font-bold tracking-normal">
-              Local Feed
+              {ko.appName}
             </h1>
 
             {userMenu}
@@ -80,7 +80,7 @@ function ApiModeAppShell() {
       <div className="min-h-screen bg-neutral-200 text-neutral-950">
         <main className="mx-auto flex min-h-screen max-w-[430px] items-center justify-center bg-neutral-50 px-5 py-8 shadow-sm">
           <p className="rounded-md border border-neutral-200 bg-white px-4 py-3 text-sm font-bold text-neutral-500 shadow-sm">
-            Checking session...
+            {ko.sessionChecking}
           </p>
         </main>
       </div>
@@ -104,14 +104,10 @@ function ApiModeAppShell() {
             </div>
           }
           primaryLabel={`@${activeApiUser.handle}`}
-          secondaryLabel="API mode"
-          meta={[
-            { label: 'User id', value: activeApiUser.id },
-            { label: 'Mode', value: 'API' },
-            { label: 'Version', value: APP_RELEASE_LABEL },
-          ]}
+          secondaryLabel=""
+          meta={[]}
           onClear={clearActiveApiUser}
-          clearLabel="Logout"
+          clearLabel={ko.logout}
         />
       }
     />
@@ -149,11 +145,7 @@ function MockModeAppShell() {
           avatar={avatarNode}
           primaryLabel={activeUser.display_name}
           secondaryLabel={`@${activeUser.handle}`}
-          meta={[
-            { label: 'User id', value: activeUser.id },
-            { label: 'Mode', value: 'Mock' },
-            { label: 'Version', value: APP_RELEASE_LABEL },
-          ]}
+          meta={[]}
           onClear={clearActiveUser}
         />
       }

@@ -1,0 +1,26 @@
+/** Shared Korean interface copy. Content supplied by users or imports stays unchanged. */
+export const ko = {
+  appName: '로컬 피드',
+  nav: {
+    home: '홈',
+    explore: '탐색',
+    accounts: '계정 찾기',
+    me: '내 프로필',
+    notifications: '알림',
+    messages: '메시지',
+    imports: '가져오기 기록',
+  },
+  sessionChecking: '로그인 상태를 확인하는 중...',
+  logout: '로그아웃',
+  loading: '불러오는 중...',
+  working: '처리하는 중...',
+  retry: '다시 시도',
+  dataSource: '실행 정보',
+  created: '작성',
+  updated: '수정',
+  justNow: '방금 전',
+  minutesAgo: (count: number) => `${count}분 전`,
+  hoursAgo: (count: number) => `${count}시간 전`,
+  daysAgo: (count: number) => `${count}일 전`,
+  weeksAgo: (count: number) => `${count}주 전`,
+} as const;

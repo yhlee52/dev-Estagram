@@ -19,7 +19,7 @@ interface RegistrationFormState {
 
 const API_HANDLE_PATTERN = /^[a-z0-9_-]{3,32}$/;
 const API_HANDLE_REQUIREMENTS =
-  'Use 3-32 lowercase letters, numbers, underscores, or hyphens.';
+  '아이디는 영문 소문자, 숫자, 밑줄(_), 하이픈(-)을 사용해 3~32자로 입력하세요.';
 
 function normalizeApiHandleCandidate(input: string): string {
   return input.trim().toLowerCase();
@@ -27,11 +27,11 @@ function normalizeApiHandleCandidate(input: string): string {
 
 function getApiHandleValidationError(handle: string): string {
   if (!handle) {
-    return 'Handle is required.';
+    return '아이디를 입력하세요.';
   }
 
   if (!API_HANDLE_PATTERN.test(handle)) {
-    return 'Handle must be 3-32 characters and use only lowercase letters, numbers, underscores, or hyphens.';
+    return API_HANDLE_REQUIREMENTS;
   }
 
   return '';
@@ -54,26 +54,26 @@ function getDisplayNameFromHandle(handle: string): string {
 
 function getRegistrationErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버 실행 상태를 확인해 주세요.`;
   }
 
   if (error instanceof ApiClientError) {
-    return error.message;
+    return error.status === 409 ? '이미 사용 중인 아이디입니다.' : `가입하지 못했습니다. 입력 내용과 서버 상태를 확인해 주세요. (${error.status})`;
   }
 
-  return 'Could not register this API user. Check the API server and try again.';
+  return '가입하지 못했습니다. 잠시 후 다시 시도해 주세요.';
 }
 
 function getLoginErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버 실행 상태를 확인해 주세요.`;
   }
 
   if (error instanceof ApiClientError) {
-    return error.message;
+    return error.status === 401 ? '아이디 또는 비밀번호가 맞지 않습니다.' : `로그인하지 못했습니다. 잠시 후 다시 시도해 주세요. (${error.status})`;
   }
 
-  return 'Could not log in. Check the API server and try again.';
+  return '로그인하지 못했습니다. 잠시 후 다시 시도해 주세요.';
 }
 
 export default function ApiUserEntry() {
@@ -107,12 +107,12 @@ export default function ApiUserEntry() {
     setError('');
 
     if (!trimmedValue) {
-      setError('Enter a backend user id or handle.');
+      setError('아이디를 입력하세요.');
       return;
     }
 
     if (!password) {
-      setError('Enter your password.');
+      setError('비밀번호를 입력하세요.');
       return;
     }
 
@@ -186,7 +186,7 @@ export default function ApiUserEntry() {
     }
 
     if (password.length < 4) {
-      setRegistrationError('Password must be at least 4 characters.');
+      setRegistrationError('비밀번호는 4자 이상 입력하세요.');
       return;
     }
 
@@ -233,19 +233,19 @@ export default function ApiUserEntry() {
           <section className="w-full rounded-md border border-neutral-200 bg-white p-5 shadow-sm">
             <div className="space-y-2">
               <p className="text-xs font-bold uppercase text-neutral-400">
-                API Local Registration
+                새 계정 만들기
               </p>
               <h1 className="text-2xl font-bold leading-8 text-neutral-950">
-                Register API user
+                회원가입
               </h1>
               <p className="text-sm leading-6 text-neutral-600">
-                Create a backend user, matching account, and password for API mode.
+                이 PC에서 사용할 계정과 비밀번호를 만듭니다.
               </p>
             </div>
 
             <form className="mt-5 space-y-3" onSubmit={handleRegistrationSubmit}>
               <label className="block space-y-2">
-                <span className="text-sm font-bold text-neutral-700">Handle</span>
+                <span className="text-sm font-bold text-neutral-700">아이디</span>
                 <input
                   className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
                   value={registrationForm.handle}
@@ -269,7 +269,7 @@ export default function ApiUserEntry() {
               </p>
 
               <label className="block space-y-2">
-                <span className="text-sm font-bold text-neutral-700">Password</span>
+                <span className="text-sm font-bold text-neutral-700">비밀번호</span>
                 <input
                   className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
                   value={registrationForm.password}
@@ -284,12 +284,12 @@ export default function ApiUserEntry() {
 
               <label className="block space-y-2">
                 <span className="text-sm font-bold text-neutral-700">
-                  Display name
+                  표시 이름
                 </span>
                 <input
                   className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
                   value={registrationForm.displayName}
-                  placeholder={normalizedRegistrationHandle || 'Display name'}
+                  placeholder={normalizedRegistrationHandle || '표시 이름'}
                   autoComplete="off"
                   disabled={isRegistering || Boolean(registrationResult)}
                   onChange={(event) =>
@@ -300,12 +300,12 @@ export default function ApiUserEntry() {
 
               <label className="block space-y-2">
                 <span className="text-sm font-bold text-neutral-700">
-                  Bio optional
+                  소개 (선택)
                 </span>
                 <textarea
                   className="min-h-20 w-full resize-none rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-medium leading-6 text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
                   value={registrationForm.bio}
-                  placeholder="Short profile note"
+                  placeholder="나를 소개해 주세요"
                   disabled={isRegistering || Boolean(registrationResult)}
                   onChange={(event) =>
                     handleRegistrationChange('bio', event.target.value)
@@ -321,7 +321,7 @@ export default function ApiUserEntry() {
 
               {registrationResult ? (
                 <div className="rounded-md bg-green-50 px-3 py-2 text-sm font-semibold text-green-800">
-                  Created @{registrationResult.user.handle} and matching account.
+                  @{registrationResult.user.handle} 계정을 만들었습니다.
                 </div>
               ) : null}
 
@@ -330,7 +330,7 @@ export default function ApiUserEntry() {
                 className="h-11 w-full rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-400"
                 disabled={isRegistrationSubmitDisabled || Boolean(registrationResult)}
               >
-                {isRegistering ? 'Registering...' : 'Register API user'}
+                {isRegistering ? '가입하는 중...' : '회원가입'}
               </button>
             </form>
 
@@ -339,7 +339,7 @@ export default function ApiUserEntry() {
               className="mt-4 h-11 w-full rounded-md border border-neutral-200 bg-neutral-50 px-4 text-sm font-bold text-neutral-800 transition hover:bg-neutral-100"
               onClick={handleBackToEntry}
             >
-              Back to user entry
+              로그인으로 돌아가기
             </button>
           </section>
         </main>
@@ -353,19 +353,19 @@ export default function ApiUserEntry() {
         <section className="w-full rounded-md border border-neutral-200 bg-white p-5 shadow-sm">
           <div className="space-y-2">
             <p className="text-xs font-bold uppercase text-neutral-400">
-              API Login
+              로컬 피드
             </p>
             <h1 className="text-2xl font-bold leading-8 text-neutral-950">
-              Log in
+              로그인
             </h1>
             <p className="text-sm leading-6 text-neutral-600">
-              Enter a backend user id or handle and password. Seed users use their handle as the initial password.
+              아이디와 비밀번호를 입력하세요. 데모 계정은 처음에 아이디와 같은 비밀번호를 사용합니다.
             </p>
           </div>
 
           <form className="mt-5 space-y-3" onSubmit={handleSubmit}>
             <label className="block space-y-2">
-              <span className="text-sm font-bold text-neutral-700">User id or handle</span>
+              <span className="text-sm font-bold text-neutral-700">아이디</span>
               <input
                 className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
                 value={entryValue}
@@ -380,7 +380,7 @@ export default function ApiUserEntry() {
             </label>
 
             <label className="block space-y-2">
-              <span className="text-sm font-bold text-neutral-700">Password</span>
+              <span className="text-sm font-bold text-neutral-700">비밀번호</span>
               <input
                 className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 text-base font-semibold text-neutral-950 outline-none transition focus:border-neutral-500 disabled:bg-neutral-100"
                 value={password}
@@ -406,7 +406,7 @@ export default function ApiUserEntry() {
               className="h-11 w-full rounded-md bg-neutral-950 px-4 text-sm font-bold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-400"
               disabled={isSubmitting}
             >
-                {isSubmitting ? 'Checking...' : 'Continue'}
+                {isSubmitting ? '로그인하는 중...' : '로그인'}
             </button>
           </form>
 
@@ -415,7 +415,7 @@ export default function ApiUserEntry() {
             className="mt-3 h-10 w-full rounded-md border border-neutral-200 bg-neutral-50 px-4 text-sm font-bold text-neutral-800 transition hover:bg-neutral-100"
             onClick={handleStartRegistration}
           >
-            Register new API user
+            새 계정 만들기
           </button>
         </section>
       </main>

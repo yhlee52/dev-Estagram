@@ -10,12 +10,12 @@ import { formatRelativeTime } from '../utils/format';
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버를 확인해 주세요.`;
   }
   if (error instanceof ApiClientError) {
-    return error.message;
+    return `가져오기 기록을 불러오지 못했습니다. (${error.status})`;
   }
-  return 'Could not load import batches. Check the backend server and try again.';
+  return '가져오기 기록을 불러오지 못했습니다. 다시 시도해 주세요.';
 }
 
 export function StatusBadge({ status }: { status: string }) {
@@ -29,7 +29,7 @@ export function StatusBadge({ status }: { status: string }) {
           : 'bg-emerald-50 text-emerald-700',
       ].join(' ')}
     >
-      {status}
+      {status === 'failed' ? '실패' : status === 'success' ? '완료' : status}
     </span>
   );
 }
@@ -55,19 +55,19 @@ function BatchRow({ batch }: { batch: ApiImportBatchSummary }) {
             {batch.external_id}
           </h3>
           <p className="truncate text-xs text-neutral-500">
-            {batch.source ? `Source: ${batch.source}` : 'No source'} ·{' '}
+            {batch.source ? `출처: ${batch.source}` : '출처 없음'} ·{' '}
             {formatRelativeTime(batch.last_imported_at)}
-            {batch.import_count > 1 ? ` · imported ${batch.import_count}×` : ''}
+            {batch.import_count > 1 ? ` · ${batch.import_count}회 가져옴` : ''}
           </p>
         </div>
         <StatusBadge status={batch.status} />
       </div>
 
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <CountPill label="created" value={batch.posts_created} />
-        <CountPill label="updated" value={batch.posts_updated} />
-        <CountPill label="skipped" value={batch.posts_skipped} />
-        <CountPill label="posts now" value={batch.post_count} />
+        <CountPill label="생성" value={batch.posts_created} />
+        <CountPill label="갱신" value={batch.posts_updated} />
+        <CountPill label="건너뜀" value={batch.posts_skipped} />
+        <CountPill label="현재 게시글" value={batch.post_count} />
       </div>
     </Link>
   );
@@ -111,15 +111,15 @@ function ApiImportsPage() {
   return (
     <div className="space-y-4">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold leading-7 text-neutral-950">Imports</h1>
+        <h1 className="text-xl font-bold leading-7 text-neutral-950">가져오기 기록</h1>
         <p className="text-sm text-neutral-500">
-          External post batches imported over CLI or HTTP. Newest first.
+          명령줄 또는 HTTP로 가져온 외부 게시글 묶음입니다. 최신순으로 표시합니다.
         </p>
       </header>
 
       {isLoading ? (
         <p className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
-          Loading import batches...
+          가져오기 기록을 불러오는 중...
         </p>
       ) : error ? (
         <p className="rounded-md bg-red-50 px-3 py-3 text-sm font-semibold text-red-700">
@@ -133,8 +133,8 @@ function ApiImportsPage() {
         </div>
       ) : (
         <EmptyState
-          title="No imports yet"
-          description="Import an external post package (CLI or POST /api/imports) and the batch will appear here."
+          title="가져오기 기록이 없습니다"
+          description="외부 게시글 패키지를 가져오면 이곳에 기록됩니다."
         />
       )}
     </div>
@@ -145,8 +145,8 @@ export default function ImportsPage() {
   if (!isApiMode()) {
     return (
       <EmptyState
-        title="API mode only"
-        description="Import batch history is available in API mode. Set VITE_DATA_SOURCE=api and run the backend to view it."
+        title="API 모드에서만 사용할 수 있습니다"
+        description="가져오기 기록을 보려면 API 모드에서 백엔드를 실행해 주세요."
       />
     );
   }

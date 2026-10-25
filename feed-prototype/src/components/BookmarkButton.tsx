@@ -49,7 +49,7 @@ export default function BookmarkButton({ postId, className }: BookmarkButtonProp
     <button
       type="button"
       aria-pressed={bookmarked}
-      aria-label={bookmarked ? 'Remove bookmark' : 'Add bookmark'}
+      aria-label={bookmarked ? '저장 취소' : '게시글 저장'}
       disabled={isPending}
       onClick={handleClick}
       onKeyDown={(event: KeyboardEvent) => event.stopPropagation()}
@@ -62,7 +62,7 @@ export default function BookmarkButton({ postId, className }: BookmarkButtonProp
       ].join(' ')}
     >
       <BookmarkIcon filled={bookmarked} />
-      {bookmarked ? 'Saved' : 'Save'}
+      {bookmarked ? '저장됨' : '저장'}
     </button>
   );
 }

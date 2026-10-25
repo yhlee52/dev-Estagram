@@ -27,6 +27,8 @@ export interface ApiAccount {
   display_name: string;
   bio: string | null;
   avatar_url: string | null;
+  cover_url?: string | null;
+  profile_links?: Array<{ label: string; url: string }>;
   kind: string;
   profile_source: string;
   // v0.6.4: null = active. When set, the paired user cannot log in and the
@@ -36,10 +38,31 @@ export interface ApiAccount {
   updated_at: string;
 }
 
+export interface ApiAccountSearchPage {
+  items: Array<{ account: ApiAccount; post_count: number; last_post_at: string | null }>;
+  next_cursor: string | null;
+  has_more: boolean;
+}
+
 export interface ApiAccountProfileUpdatePayload {
   display_name?: string | null;
   bio?: string | null;
   avatar_url?: string | null;
+  cover_url?: string | null;
+  profile_links?: Array<{ label: string; url: string }>;
+}
+
+export interface ApiAccountSummary {
+  post_count: number;
+  follower_count: number;
+  following_count: number;
+  last_post_at: string | null;
+}
+
+export interface ApiAccountRelationPage {
+  items: ApiAccount[];
+  next_cursor: string | null;
+  has_more: boolean;
 }
 
 export interface ApiUserRegistrationResponse {

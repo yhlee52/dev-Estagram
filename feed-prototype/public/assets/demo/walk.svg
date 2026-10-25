@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="햇살이 비치는 공원 산책길">
+  <rect width="1200" height="800" fill="#fbe8cf"/><circle cx="875" cy="174" r="95" fill="#f7c781"/>
+  <path d="M0 490q205-112 420-34t780-43v387H0" fill="#bad6b0"/><path d="M0 580q220-92 505-4t695-65v289H0" fill="#8eb99b"/>
+  <path d="M405 800q60-154 210-232 86-44 168-81" fill="none" stroke="#f3d6ae" stroke-width="165"/>
+  <path d="M160 540V212m-102 263q84-231 204 0" fill="#5f916f" stroke="#735848" stroke-width="28"/>
+  <path d="M1055 520V155m-110 315q100-245 222 0" fill="#638d70" stroke="#735848" stroke-width="30"/>
+  <path d="M480 570q30-30 60 0m180-52q25-25 50 0" fill="none" stroke="#fff5db" stroke-width="10" stroke-linecap="round"/>
+</svg>

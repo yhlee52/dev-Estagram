@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="미카의 일러스트 아바타">
+  <rect width="128" height="128" rx="64" fill="#dbeef0"/>
+  <circle cx="64" cy="72" r="36" fill="#dca582"/>
+  <path d="M28 66q-3-48 36-48 37 0 36 48l-9-9q-8-24-27-20-22 0-29 29Z" fill="#293c4b"/>
+  <path d="M44 73h18m4 0h18" stroke="#34495d" stroke-width="3"/>
+  <circle cx="52" cy="74" r="9" fill="none" stroke="#34495d" stroke-width="3"/>
+  <circle cx="76" cy="74" r="9" fill="none" stroke="#34495d" stroke-width="3"/>
+  <path d="M57 92q7 5 14 0" fill="none" stroke="#94574a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M22 128q4-31 42-31t42 31" fill="#488997"/>
+</svg>

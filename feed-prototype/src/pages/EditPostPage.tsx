@@ -16,22 +16,22 @@ import type { Account, Post } from '../types/feed';
 
 function getEditPostErrorMessage(error: unknown): string {
   if (error instanceof ApiNetworkError) {
-    return `Cannot connect to the backend API at ${getApiBaseUrl()}. Start the FastAPI server and try again.`;
+    return `서버(${getApiBaseUrl()})에 연결할 수 없습니다. 서버를 확인해 주세요.`;
   }
 
   if (error instanceof ApiClientError) {
     if (error.status === 403) {
-      return 'Only the account that wrote this post can edit it.';
+      return '내 게시글만 수정할 수 있습니다.';
     }
 
     if (error.status === 404) {
-      return 'This post or account was not found in the backend database.';
+      return '게시글 또는 계정을 찾지 못했습니다.';
     }
 
-    return `The backend API returned ${error.status}. ${error.message}`;
+    return `게시글을 저장하지 못했습니다. (${error.status})`;
   }
 
-  return 'Could not save this post. Check the backend server and try again.';
+  return '게시글을 저장하지 못했습니다. 다시 시도해 주세요.';
 }
 
 function getAccountUserId(account: Account): string {
@@ -93,8 +93,8 @@ export default function EditPostPage() {
   if (!isApiMode()) {
     return (
       <EmptyState
-        title="API mode only"
-        description="Post editing is available only when the app is using the backend API data source."
+        title="API 모드에서만 사용할 수 있습니다"
+        description="게시글 수정은 API 모드에서 사용할 수 있습니다."
       />
     );
   }
@@ -102,8 +102,8 @@ export default function EditPostPage() {
   if (!activeApiUserId) {
     return (
       <EmptyState
-        title="Select an API user"
-        description="Choose or register an API user before editing a post."
+        title="로그인이 필요합니다"
+        description="게시글을 수정하려면 로그인해 주세요."
       />
     );
   }
@@ -111,7 +111,7 @@ export default function EditPostPage() {
   if (isLoading) {
     return (
       <p className="rounded-md border border-neutral-200 bg-white px-3 py-6 text-center text-sm font-semibold text-neutral-500 shadow-sm">
-        Loading API post...
+        게시글을 불러오는 중...
       </p>
     );
   }
@@ -123,7 +123,7 @@ export default function EditPostPage() {
           {error}
         </p>
         <Link className="block text-sm font-semibold text-neutral-950" to="/">
-          Home
+          홈
         </Link>
       </div>
     );
@@ -132,8 +132,8 @@ export default function EditPostPage() {
   if (!post || !account || !postId) {
     return (
       <EmptyState
-        title="Post not found"
-        description="Choose a post from the home feed before editing."
+        title="게시글을 찾지 못했습니다"
+        description="홈에서 수정할 게시글을 선택해 주세요."
       />
     );
   }
@@ -144,14 +144,14 @@ export default function EditPostPage() {
     return (
       <div className="space-y-4">
         <EmptyState
-          title="Edit unavailable"
-          description="Only the account that wrote this post can edit it."
+          title="수정할 수 없습니다"
+          description="내 게시글만 수정할 수 있습니다."
         />
         <Link
           className="block rounded-md bg-neutral-950 px-3 py-2 text-center text-sm font-bold text-white"
           to={`/posts/${postId}`}
         >
-          Back to Post
+          게시글로 돌아가기
         </Link>
       </div>
     );
@@ -189,9 +189,9 @@ export default function EditPostPage() {
           className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-bold text-neutral-700"
           to={`/posts/${postId}`}
         >
-          Back
+          뒤로
         </Link>
-        <p className="text-xs font-bold uppercase text-neutral-400">Edit post</p>
+        <p className="text-xs font-bold uppercase text-neutral-400">게시글 수정</p>
       </nav>
 
       <PostEditor
