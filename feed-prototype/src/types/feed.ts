@@ -70,6 +70,8 @@ export interface Post {
   metadata_json?: PostMetadata;
   metadata?: PostMetadata;
   commentCount?: number;
+  taggedAccountIds?: string[];
+  searchMatches?: Array<{ accountId: string; accountHandle?: string; reasons: string[] }>;
 }
 
 export interface FollowState {

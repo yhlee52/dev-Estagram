@@ -21,8 +21,10 @@ from app.models.comment import Comment
 from app.models.import_batch import ImportBatch
 from app.models.like import PostLike
 from app.models.post import Post
+from app.models.post_account_ref import PostAccountRef
 from app.models.profile_pin import ProfilePin
 from app.models.user import User
+from app.services.post_account_refs import rebuild_mentions_for_handles, replace_post_tags, sync_post_mentions
 from app.schemas.external_import import (
     ExternalImportAccount,
     ExternalImportBatch,
@@ -524,6 +526,7 @@ def prune_posts_removed_from_batch(
         for like in session.exec(select(PostLike).where(PostLike.post_id == post.id)).all():
             session.delete(like)
         session.exec(delete(ProfilePin).where(ProfilePin.post_id == post.id))
+        session.exec(delete(PostAccountRef).where(PostAccountRef.post_id == post.id))
         session.delete(post)
     session.flush()
 
@@ -548,8 +551,14 @@ def import_payload(
     settings = get_settings()
     summary = ImportSummary()
     accounts_by_external_id: dict[str, Account] = {}
+    changed_handles: set[str] = set()
 
     for account_input in payload.accounts:
+        previous = get_account_by_external_id(session, account_input.external_id)
+        if previous is None or previous.handle != account_input.handle:
+            changed_handles.add(account_input.handle)
+            if previous is not None:
+                changed_handles.add(previous.handle)
         account = upsert_account(session, account_input, dry_run=dry_run, summary=summary)
         if account is not None:
             accounts_by_external_id[account.external_id or account_input.external_id] = account
@@ -567,6 +576,14 @@ def import_payload(
             post_input.account_external_id,
             accounts_by_external_id,
         )
+        tagged_ids: list[str] | None = None
+        if post_input.tagged_account_external_ids is not None:
+            if len(set(post_input.tagged_account_external_ids)) != len(post_input.tagged_account_external_ids):
+                raise ImportErrorWithMessage("Duplicate tagged account external ID")
+            tagged_ids = []
+            for external_id in post_input.tagged_account_external_ids:
+                tagged_account = resolve_account_for_post(session, external_id, accounts_by_external_id)
+                tagged_ids.append(tagged_account.id)
 
         if dry_run:
             existing_post = get_post_by_external_id(session, post_input.external_id)
@@ -589,6 +606,9 @@ def import_payload(
             summary.posts_skipped += 1
             continue
         session.flush()
+        sync_post_mentions(session, post)
+        if tagged_ids is not None:
+            replace_post_tags(session, post.id, tagged_ids, allow_inactive=True)
         replace_assets_for_post(
             session,
             post,
@@ -599,6 +619,10 @@ def import_payload(
             asset_source_dir=asset_source_dir,
             settings=settings,
         )
+
+    if not dry_run and changed_handles:
+        session.flush()
+        rebuild_mentions_for_handles(session, changed_handles)
 
     # The manifest is the batch's full post list, so anything it dropped since
     # the last import is no longer part of the batch and must go.

@@ -1,5 +1,6 @@
-import { useMemo, useState, type FormEvent } from 'react';
-import type { ApiAssetType, ApiMetadata, ApiPostAssetPayload } from '../api/types';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { getAccount, searchAccounts } from '../api/accountsApi';
+import type { ApiAccount, ApiAssetType, ApiMetadata, ApiPostAssetPayload } from '../api/types';
 import type { Post } from '../types/feed';
 
 export type PostEditorValues = {
@@ -8,6 +9,7 @@ export type PostEditorValues = {
   tags: string[];
   metadata_json: ApiMetadata | null;
   assets: ApiPostAssetPayload[];
+  tagged_account_ids: string[];
 };
 
 type MetadataDraft = {
@@ -48,12 +50,14 @@ const parseTags = (value: string): string[] =>
     ),
   );
 
+const metadataDisplayValue = (value: unknown): string =>
+  typeof value === 'string' ? value : value === null ? '' : JSON.stringify(value);
+
 const metadataToDrafts = (metadata: Post['metadata']): MetadataDraft[] =>
-  Object.entries(metadata ?? {}).map(([key, value]) => ({
+  Object.entries(metadata ?? {}).filter(([key]) => key !== 'location').map(([key, value]) => ({
     id: createDraftId('metadata'),
     key,
-    value:
-      typeof value === 'string' ? value : value === null ? '' : JSON.stringify(value),
+    value: metadataDisplayValue(value),
   }));
 
 const hasDraftInput = (...values: string[]): boolean =>
@@ -81,6 +85,14 @@ export default function PostEditor({
   const [title, setTitle] = useState(initialPost?.title ?? '');
   const [text, setText] = useState(initialPost?.text ?? initialPost?.caption ?? '');
   const [tagsInput, setTagsInput] = useState((initialPost?.tags ?? []).join(', '));
+  const originalLocation = (initialPost?.metadata_json ?? initialPost?.metadata)?.location;
+  const [location, setLocation] = useState(typeof originalLocation === 'string' ? originalLocation : '');
+  const [locationTouched, setLocationTouched] = useState(false);
+  const [taggedAccountIds, setTaggedAccountIds] = useState<string[]>(initialPost?.taggedAccountIds ?? []);
+  const [taggedAccounts, setTaggedAccounts] = useState<Record<string, ApiAccount>>({});
+  const [personQuery, setPersonQuery] = useState('');
+  const [personMatches, setPersonMatches] = useState<ApiAccount[]>([]);
+  const [personSearch, setPersonSearch] = useState<{ query: string; state: 'loading' | 'ready' | 'error' }>({ query: '', state: 'ready' });
   const [assetDrafts, setAssetDrafts] = useState<AssetDraft[]>(
     postAssetsToDrafts(initialPost),
   );
@@ -104,6 +116,27 @@ export default function PostEditor({
   const submitLabel = mode === 'create' ? '게시하기' : '변경 사항 저장';
   const pendingLabel = mode === 'create' ? '게시하는 중...' : '저장하는 중...';
   const tags = useMemo(() => parseTags(tagsInput), [tagsInput]);
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all(taggedAccountIds.map((id) => getAccount(id).catch(() => null))).then((accounts) => {
+      if (active) setTaggedAccounts(Object.fromEntries(accounts.filter((account): account is ApiAccount => account !== null).map((account) => [account.id, account])));
+    });
+    return () => { active = false; };
+  }, [taggedAccountIds]);
+
+  useEffect(() => {
+    let active = true;
+    const query = personQuery.trim();
+    if (!query) return;
+    const timer = window.setTimeout(() => {
+      setPersonSearch({ query, state: 'loading' });
+      void searchAccounts({ keyword: query, limit: 8 }).then((page) => {
+        if (active) { setPersonMatches(page.items.map((item) => item.account)); setPersonSearch({ query, state: 'ready' }); }
+      }).catch(() => { if (active) { setPersonMatches([]); setPersonSearch({ query, state: 'error' }); } });
+    }, 250);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [personQuery]);
 
   const addAsset = () => {
     const url = assetDraft.url.trim();
@@ -138,6 +171,10 @@ export default function PostEditor({
 
     if (!key) {
       setLocalError('추가 정보 항목을 입력해 주세요.');
+      return;
+    }
+    if (key === 'location') {
+      setLocalError('장소는 위의 장소 입력칸에서 설정해 주세요.');
       return;
     }
 
@@ -176,6 +213,10 @@ export default function PostEditor({
       setLocalError('제목을 입력해 주세요.');
       return;
     }
+    if (personQuery.trim()) {
+      setLocalError('입력 중인 인물은 후보에서 선택하거나 지워 주세요.');
+      return;
+    }
 
     if (
       hasDraftInput(
@@ -197,6 +238,10 @@ export default function PostEditor({
       .map((draft) => [draft.key.trim(), draft.value.trim()] as const)
       .filter(([key]) => key);
     const metadataKeys = metadataEntries.map(([key]) => key);
+    if (metadataKeys.includes('location')) {
+      setLocalError('장소는 장소 입력칸에서 설정해 주세요.');
+      return;
+    }
     const duplicateMetadataKey = metadataKeys.find(
       (key, index) => metadataKeys.indexOf(key) !== index,
     );
@@ -206,8 +251,13 @@ export default function PostEditor({
       return;
     }
 
-    const metadata_json =
-      metadataEntries.length > 0 ? Object.fromEntries(metadataEntries) : null;
+    const originalMetadata = initialPost?.metadata_json ?? initialPost?.metadata ?? {};
+    const metadata_json = Object.fromEntries(metadataEntries.map(([key, value]) => [key,
+      Object.prototype.hasOwnProperty.call(originalMetadata, key) && metadataDisplayValue(originalMetadata[key]) === value
+        ? originalMetadata[key] : value,
+    ])) as ApiMetadata;
+    if (location.trim()) metadata_json.location = location.trim();
+    else if (!locationTouched && originalLocation !== undefined) metadata_json.location = originalLocation;
     const assets = assetDrafts
       .map((draft) => ({
         type: draft.type,
@@ -222,8 +272,9 @@ export default function PostEditor({
       title: trimmedTitle,
       text: text.trim(),
       tags,
-      metadata_json,
+      metadata_json: Object.keys(metadata_json).length ? metadata_json : null,
       assets,
+      tagged_account_ids: taggedAccountIds,
     });
   };
 
@@ -285,9 +336,33 @@ export default function PostEditor({
           placeholder="daily-report, temperature"
         />
         <p className="text-xs leading-5 text-neutral-400">
-          쉼표로 태그를 구분하세요. 빈 태그와 중복 태그는 제외됩니다.
+          쉼표로 등록 태그를 구분하세요. 본문의 #태그는 자동으로 등록되지 않습니다.
         </p>
       </div>
+
+      <div className="space-y-2">
+        <label htmlFor="post-location" className="block text-xs font-bold text-neutral-600">장소</label>
+        <input id="post-location" value={location} maxLength={120} onChange={(event) => { setLocation(event.target.value); setLocationTouched(true); }}
+          placeholder="예: 서울숲" className="h-10 w-full rounded-md border border-neutral-200 bg-white px-3 text-sm" />
+        {originalLocation !== undefined && typeof originalLocation !== 'string' ? <p className="text-xs text-amber-700">기존 장소 값이 문자열이 아닙니다. 장소를 바꾸지 않으면 원값을 유지합니다.</p> : null}
+      </div>
+
+      <section className="space-y-2" aria-label="인물 태그">
+        <label htmlFor="post-person-tag" className="block text-xs font-bold text-neutral-600">인물 태그 (최대 5명)</label>
+        <input id="post-person-tag" value={personQuery} onChange={(event) => setPersonQuery(event.target.value)} placeholder="표시 이름 또는 @아이디로 찾기"
+          className="h-10 w-full rounded-md border border-neutral-200 bg-white px-3 text-sm" />
+        {personQuery.trim() && personSearch.query === personQuery.trim() && personSearch.state === 'ready' && personMatches.length > 0 ? <ul className="max-h-40 overflow-auto rounded-md border bg-white">
+          {personMatches.map((account) => <li key={account.id}><button type="button" className="w-full px-3 py-2 text-left text-sm hover:bg-neutral-100" onClick={() => {
+            if (taggedAccountIds.includes(account.id)) { setLocalError('이미 태그한 인물입니다.'); return; }
+            if (taggedAccountIds.length >= 5) { setLocalError('인물은 최대 5명까지 태그할 수 있습니다.'); return; }
+            setTaggedAccountIds((ids) => [...ids, account.id]); setPersonQuery(''); setPersonMatches([]); setLocalError('');
+          }}>{account.display_name} · @{account.handle}</button></li>)}
+        </ul> : null}
+        {personQuery.trim() ? <p className="text-xs text-neutral-500" aria-live="polite">{personSearch.query !== personQuery.trim() || personSearch.state === 'loading' ? '인물 후보를 찾는 중...' : personSearch.state === 'error' ? '인물 후보를 불러오지 못했습니다. 다시 입력해 주세요.' : personMatches.length === 0 ? '일치하는 인물이 없습니다.' : '후보를 선택하면 태그에 추가됩니다.'}</p> : null}
+        <ul className="flex flex-wrap gap-2">{taggedAccountIds.map((id) => <li key={id} className="rounded-full bg-neutral-100 px-3 py-1 text-xs">
+          {taggedAccounts[id]?.display_name ?? id} <button type="button" aria-label={`${taggedAccounts[id]?.display_name ?? id} 태그 제거`} onClick={() => setTaggedAccountIds((ids) => ids.filter((value) => value !== id))}>×</button>
+        </li>)}</ul>
+      </section>
 
       <section className="space-y-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
         <div className="flex items-center justify-between gap-3">

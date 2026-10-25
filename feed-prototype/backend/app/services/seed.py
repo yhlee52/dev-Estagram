@@ -17,6 +17,7 @@ from app.models.post import Post
 from app.models.profile_pin import ProfilePin
 from app.models.user import User
 from app.services.auth import ensure_user_password
+from app.services.post_account_refs import sync_post_mentions
 
 
 ModelT = TypeVar("ModelT", bound=SQLModel)
@@ -98,7 +99,7 @@ POSTS = [
         "title": "오늘의 산책 사진",
         "text": "퇴근길 공원에서 빛이 예뻐 잠깐 멈췄어요. 사진 한 장으로 남겨 둡니다. #산책 #사진",
         "tags": ["산책", "사진", "일상"],
-        "metadata_json": {"기분": "차분함", "장소": "동네 공원"},
+        "metadata_json": {"기분": "차분함", "장소": "동네 공원", "location": "동네 공원"},
         "age_days": 1,
     },
     {
@@ -143,7 +144,7 @@ POSTS = [
         "title": "이번 주말 계획",
         "text": "오전에는 카페에서 책을 읽고, 오후에는 새로 생긴 산책길을 걸어 보려고 해요. #주말 #계획",
         "tags": ["주말", "계획", "일상"],
-        "metadata_json": {"장소": "동네", "예상 시간": "오후"},
+        "metadata_json": {"장소": "동네", "location": "동네", "예상 시간": "오후"},
         "age_days": 0,
     },
     {
@@ -152,7 +153,7 @@ POSTS = [
         "title": "골목 카페에서 발견한 작은 쉼표",
         "text": "창가 자리에서 한 시간 쉬었습니다. 커피 향이 좋아서 다음에도 들르고 싶어요. #카페 #일상",
         "tags": ["카페", "일상", "사진"],
-        "metadata_json": {"장소": "골목 카페", "기분": "여유"},
+        "metadata_json": {"장소": "골목 카페", "location": "골목 카페", "기분": "여유"},
         "age_days": 3,
     },
     {
@@ -388,6 +389,11 @@ def seed_database(refresh_demo: bool = False) -> dict[str, int]:
             if refresh_demo and not inserted:
                 counts["refreshed"] += refresh_fields(session, Post, post_values, ("title", "text", "tags", "metadata_json"), ("account_id",))
         session.flush()
+        if refresh_demo or counts["accounts"] == len(ACCOUNTS):
+            for values in POSTS:
+                post = session.get(Post, values["id"])
+                if post is not None and post.account_id == values["account_id"]:
+                    sync_post_mentions(session, post)
 
         for values in ASSETS:
             inserted = add_if_missing(session, PostAsset, values)

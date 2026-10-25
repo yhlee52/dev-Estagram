@@ -246,6 +246,12 @@ class PostRead(BaseModel):
     comment_count: int = 0
 
 
+class PostSearchMatch(BaseModel):
+    account_id: str
+    account_handle: str | None = None
+    reasons: list[str]
+
+
 class PostAssetCreate(BaseModel):
     type: str
     url: str
@@ -284,6 +290,7 @@ class PostCreate(BaseModel):
     tags: list[str] = Field(default_factory=list)
     metadata_json: dict[str, Any] | None = None
     assets: list[PostAssetCreate] = Field(default_factory=list)
+    tagged_account_ids: list[str] = Field(default_factory=list, max_length=5)
 
     @field_validator("title", "text")
     @classmethod
@@ -310,6 +317,7 @@ class PostUpdate(BaseModel):
     tags: list[str] | None = None
     metadata_json: dict[str, Any] | None = None
     assets: list[PostAssetCreate] | None = None
+    tagged_account_ids: list[str] | None = Field(default=None, max_length=5)
 
     @field_validator("title", "text")
     @classmethod
@@ -338,6 +346,9 @@ class PostUpdate(BaseModel):
 
 class PostWithAssets(PostRead):
     assets: list[PostAssetRead] = Field(default_factory=list)
+    account: AccountRead | None = None
+    tagged_account_ids: list[str] = Field(default_factory=list)
+    search_matches: list[PostSearchMatch] = Field(default_factory=list)
 
 
 class PaginatedPosts(BaseModel):

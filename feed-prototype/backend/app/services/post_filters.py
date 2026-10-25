@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable
 
 from fastapi import HTTPException
-from sqlalchemy import and_, or_, text
+from sqlalchemy import and_, exists, or_, text
 from sqlmodel import Session, col, select
 from sqlmodel.sql.expression import SelectOfScalar
 
@@ -15,6 +15,7 @@ from app.models.account import Account
 from app.models.asset import PostAsset
 from app.models.bookmark import Bookmark
 from app.models.post import Post
+from app.models.post_account_ref import PostAccountRef
 from app.models.user import User
 from app.schemas.feed import MetadataKeyCount, MetadataValueCount, TagCount
 
@@ -41,6 +42,9 @@ _DATE_ONLY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 class PostFilters:
     keyword: str | None = None
     tag: str | None = None
+    tags: tuple[str, ...] = ()
+    people: tuple[tuple[str, str], ...] = ()
+    place: str | None = None
     metadata_key: str | None = None
     metadata_value: str | None = None
     metadata_match: str | None = None
@@ -83,6 +87,9 @@ def normalize_post_filters(filters: PostFilters) -> PostFilters:
     return PostFilters(
         keyword=normalize_filter_value(filters.keyword),
         tag=normalize_filter_value(filters.tag),
+        tags=tuple(value.strip() for value in filters.tags),
+        people=filters.people,
+        place=normalize_filter_value(filters.place),
         metadata_key=normalize_filter_value(filters.metadata_key),
         metadata_value=normalize_filter_value(filters.metadata_value),
         metadata_match=(
@@ -163,7 +170,7 @@ def get_user_account_id(session: Session, user_id: str) -> str:
     return account.id
 
 
-def get_top_tags(session: Session, *, limit: int = DEFAULT_TAG_LIMIT) -> list[TagCount]:
+def get_top_tags(session: Session, *, limit: int = DEFAULT_TAG_LIMIT, prefix: str | None = None) -> list[TagCount]:
     """Return the most-used post tags, highest count first.
 
     Tags are grouped case-insensitively to match the `tag` filter semantics
@@ -171,14 +178,17 @@ def get_top_tags(session: Session, *, limit: int = DEFAULT_TAG_LIMIT) -> list[Ta
     as one tag and are returned in lowercase. Posts with empty tag arrays do not
     contribute any rows.
     """
+    normalized_prefix = (prefix or "").strip().lower()
+    escaped_prefix = normalized_prefix.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     rows = session.execute(
         text(
-            "SELECT lower(tag_elem) AS tag, count(*) AS usage_count"
+            "SELECT lower(trim(tag_elem)) AS tag, count(*) AS usage_count"
             " FROM posts, json_array_elements_text(posts.tags) AS tag_elem"
-            " GROUP BY lower(tag_elem)"
+            " WHERE lower(trim(tag_elem)) LIKE :prefix ESCAPE '\\' AND trim(tag_elem) <> ''"
+            " GROUP BY lower(trim(tag_elem))"
             " ORDER BY usage_count DESC, tag ASC"
             " LIMIT :limit"
-        ).bindparams(limit=limit)
+        ).bindparams(limit=limit, prefix=f"{escaped_prefix}%")
     ).all()
 
     return [TagCount(tag=row.tag, count=row.usage_count) for row in rows]
@@ -265,6 +275,14 @@ def _date_bound_for_db(session: Session, bound: datetime) -> datetime:
 
 def validate_post_filters(session: Session, filters: PostFilters) -> PostFilters:
     normalized_filters = normalize_post_filters(filters)
+    tags = [tag for tag in (normalized_filters.tag, *normalized_filters.tags) if tag]
+    if len(tags) > 5 or len({tag.casefold() for tag in tags}) != len(tags):
+        raise HTTPException(status_code=400, detail="Select at most five different tags")
+    if len(normalized_filters.people) > 5 or len({account_id for account_id, _ in normalized_filters.people}) != len(normalized_filters.people):
+        raise HTTPException(status_code=400, detail="Select at most five different people")
+    for account_id, mode in normalized_filters.people:
+        if mode not in {"related", "authored", "mentioned_tagged"} or session.get(Account, account_id) is None:
+            raise HTTPException(status_code=400, detail="Invalid person condition")
 
     if (
         normalized_filters.asset_type is not None
@@ -449,13 +467,30 @@ def apply_filters_to_select(
             )
         )
 
-    if normalized.tag is not None:
-        statement = statement.where(
-            text(
-                "EXISTS (SELECT 1 FROM json_array_elements_text(posts.tags) AS tag_elem"
-                " WHERE lower(tag_elem) = lower(:tag_value))"
-            ).bindparams(tag_value=normalized.tag)
+    for index, tag in enumerate([value for value in (normalized.tag, *normalized.tags) if value]):
+        statement = statement.where(text(
+            "EXISTS (SELECT 1 FROM json_array_elements_text(posts.tags) AS tag_elem"
+            f" WHERE lower(trim(tag_elem)) = lower(:tag_value_{index}))"
+        ).bindparams(**{f"tag_value_{index}": tag}))
+
+    for account_id, mode in normalized.people:
+        mention_or_tag = exists().where(
+            PostAccountRef.post_id == Post.id,
+            PostAccountRef.account_id == account_id,
+            PostAccountRef.kind.in_(["mention", "tag"]),
         )
+        if mode == "related":
+            statement = statement.where(or_(Post.account_id == account_id, mention_or_tag))
+        elif mode == "authored":
+            statement = statement.where(Post.account_id == account_id)
+        else:
+            statement = statement.where(mention_or_tag)
+
+    if normalized.place is not None:
+        statement = statement.where(text(
+            "jsonb_typeof(posts.metadata_json -> 'location') = 'string'"
+            " AND posts.metadata_json ->> 'location' = :place_value"
+        ).bindparams(place_value=normalized.place))
 
     if normalized.metadata_key is not None:
         statement = statement.where(

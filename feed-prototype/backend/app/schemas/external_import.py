@@ -102,6 +102,7 @@ class ExternalImportPost(BaseModel):
     created_at: datetime | None = None
     tags: list[str] = Field(default_factory=list)
     metadata_json: dict[str, Any] | None = None
+    tagged_account_external_ids: list[str] | None = Field(default=None, max_length=5)
     assets: list[ExternalImportAsset] = Field(default_factory=list)
 
     @field_validator("external_id")

@@ -23,7 +23,7 @@ export type RichTextSegment =
 const MENTION_PATTERN = '@([a-zA-Z0-9_]+(?:[.-][a-zA-Z0-9_]+)*)';
 const HASHTAG_PATTERN = '#([a-zA-Z][a-zA-Z0-9_]*(?:[.-][a-zA-Z0-9_]+)*)';
 const TOKEN_PATTERN = new RegExp(`(?:${MENTION_PATTERN})|(?:${HASHTAG_PATTERN})`, 'g');
-const WORD_CHAR = /[a-zA-Z0-9_]/;
+const WORD_CHAR = /[\p{L}\p{N}_]/u;
 
 export function parseRichTextSegments(text: string): RichTextSegment[] {
   const segments: RichTextSegment[] = [];
@@ -45,6 +45,8 @@ export function parseRichTextSegments(text: string): RichTextSegment[] {
 
     const raw = match[0];
     if (raw[0] === '@') {
+      const followingChar = text[matchStart + raw.length] ?? '';
+      if (/[a-zA-Z0-9_.-]/.test(followingChar)) continue;
       segments.push({ type: 'mention', handle: match[1], raw });
     } else {
       segments.push({ type: 'hashtag', tag: match[2], raw });
