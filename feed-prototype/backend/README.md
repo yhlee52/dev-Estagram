@@ -36,6 +36,7 @@ HTTP `POST /api/imports`도 지원하지만 로컬 파일 복사는 하지 않�
 
 ```powershell
 python -m scripts.check_social_interactions
+python -m scripts.check_message_room_migration
 python -m scripts.check_profile_ux
 python -m scripts.run_profile_regressions_isolated
 python -m scripts.check_local_asset_serving
@@ -57,3 +58,7 @@ v2.2.x 스마트 검색은 `GET /api/posts`에 반복 가능한 `person`, `tag`�
 `run_profile_regressions_isolated`는 설정된 PostgreSQL 서버에 임시 DB를
 만들어 마이그레이션과 기존 회귀를 실행한 후 삭제합니다. 설정된 앱 DB는 변경하지
 않으며 PostgreSQL 사용자에게 DB 생성 권한이 필요합니다.
+
+## 메시지 이미지 저장
+
+메시지 이미지는 기본적으로 `feed-prototype/data/message_images/`에 저장됩니다. `backend/.env`의 `MESSAGE_IMAGES_DIR`로 다른 로컬 디렉터리를 지정할 수 있습니다. 이미지는 방 참여자에게만 세션 인증을 거쳐 제공되며, 5MB 이하의 JPEG·PNG·GIF·WebP만 받습니다. `python -m alembic upgrade head`는 기존 1:1 메시지를 방으로 이전합니다.

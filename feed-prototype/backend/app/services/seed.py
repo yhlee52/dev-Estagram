@@ -12,7 +12,7 @@ from app.models.bookmark import Bookmark
 from app.models.comment import Comment
 from app.models.follow import Follow
 from app.models.like import PostLike
-from app.models.message import DirectMessage
+from app.models.message import DirectMessage, MessageRoom, MessageRoomMember
 from app.models.post import Post
 from app.models.profile_pin import ProfilePin
 from app.models.user import User
@@ -428,6 +428,21 @@ def seed_database(refresh_demo: bool = False) -> dict[str, int]:
                 counts["bookmarks"] += int(add_pair_if_missing(session, Bookmark, values, "user_id", "post_id"))
             for values in MESSAGES:
                 counts["direct_messages"] += int(add_if_missing(session, DirectMessage, values))
+            # Fresh demo messages need a room; migrations handle existing rows.
+            demo_messages = [session.get(DirectMessage, values["id"]) for values in MESSAGES]
+            if all(demo_messages) and any(message.room_id is None for message in demo_messages):
+                room_id = next((message.room_id for message in demo_messages if message.room_id),
+                               "demo-room-ari-mika")
+                if session.get(MessageRoom, room_id) is None:
+                    first_at = min(message.created_at for message in demo_messages)
+                    session.add(MessageRoom(id=room_id, kind="direct", created_at=first_at))
+                    for user_id in {message.sender_user_id for message in demo_messages}:
+                        session.add(MessageRoomMember(id=f"demo-member-{user_id}", room_id=room_id,
+                                                      user_id=user_id, joined_at=first_at))
+                    session.flush()
+                for message in demo_messages:
+                    message.room_id = room_id
+                    session.add(message)
 
         session.commit()
 

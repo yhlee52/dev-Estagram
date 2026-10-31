@@ -4,6 +4,10 @@
 Vite + React + TypeScript, backend는 FastAPI + PostgreSQL입니다. 현재 릴리즈 라벨은
 `src/config/appVersion.ts`를 따릅니다.
 
+## 메시지 대화방 (v2.3.1)
+
+API 모드에서 1:1·그룹 대화방을 만들고, 참여자를 초대하거나 방에서 나갈 수 있습니다. 새 대화를 시작하거나 기존 방에 새 사람을 초대할 때는 내가 대상 계정을 팔로우해야 합니다. 한 번 방에 참여하면 이후 팔로우를 취소해도 그 방에서 메시지와 이미지를 보낼 수 있습니다. JPEG, PNG, GIF, WebP 이미지를 5MB까지 전송할 수 있고, 대화창에서는 작게 표시한 뒤 클릭해서 확대합니다. 기존 1:1 메시지는 `0019_message_rooms` migration에서 대화방으로 이전합니다.
+
 ## 실행 모드
 
 - **API**: 로그인, 게시글·댓글·좋아요·메시지 등 실제 기능을 확인합니다. PostgreSQL과
@@ -58,7 +62,7 @@ python -m app.services.process_incoming --base-dir C:/feed-data --watch --interv
 ## 주요 기능
 
 계정별 피드·팔로우, 게시글 작성/수정/삭제, 댓글, 북마크, 좋아요, 앱 내 알림,
-1:1 텍스트 메시지, 태그·metadata 검색/필터, 자산 미리보기, import 이력이
+1:1·그룹 메시지와 이미지 전송, 태그·metadata 검색/필터, 자산 미리보기, import 이력이
 있습니다. API write 요청은 로그인 세션의 사용자를 기준으로 처리합니다.
 
 ### 탐색과 프로필

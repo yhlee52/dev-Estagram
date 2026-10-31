@@ -32,6 +32,7 @@ data/external_posts/archive/*
 data/external_posts/failed/*
 !data/external_posts/failed/.gitkeep
 data/external_posts/assets/
+data/message_images/
 
 # Existing public asset folders may still contain manually generated files.
 public/assets/managed/*

@@ -6,7 +6,7 @@ from app.models.comment import Comment
 from app.models.follow import Follow
 from app.models.import_batch import ImportBatch
 from app.models.like import PostLike
-from app.models.message import DirectMessage
+from app.models.message import DirectMessage, MessageRoom, MessageRoomMember
 from app.models.notification_state import NotificationState
 from app.models.post import Post
 from app.models.post_account_ref import PostAccountRef
@@ -21,6 +21,8 @@ __all__ = [
     "Follow",
     "ImportBatch",
     "DirectMessage",
+    "MessageRoom",
+    "MessageRoomMember",
     "PostLike",
     "NotificationState",
     "Post",
