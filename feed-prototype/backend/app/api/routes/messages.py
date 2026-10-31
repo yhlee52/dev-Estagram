@@ -2,13 +2,14 @@
 
 import base64
 import binascii
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import func, or_
 from sqlmodel import Session, select
 
 from app.api.deps import get_current_user, get_session
@@ -66,6 +67,7 @@ class RoomRead(BaseModel):
     name: str | None
     members: list[AccountRead]
     last_message: MessageRead | None
+    unread_count: int
     created_at: datetime
 
 
@@ -77,6 +79,14 @@ class RoomDetail(BaseModel):
 class ConversationRead(BaseModel):
     account: AccountRead
     last_message: MessageRead
+
+
+class ReadBody(BaseModel):
+    message_id: str
+
+
+class UnreadCountRead(BaseModel):
+    unread_count: int
 
 
 def _message_read(message: DirectMessage) -> MessageRead:
@@ -167,12 +177,24 @@ def _recent_messages(session: Session, room_id: str, joined_at: datetime, limit:
     return list(reversed(items))
 
 
+def _unread_count(session: Session, member: MessageRoomMember) -> int:
+    statement = select(func.count(DirectMessage.id)).where(
+        DirectMessage.room_id == member.room_id,
+        DirectMessage.sender_user_id != member.user_id,
+        DirectMessage.created_at >= member.joined_at,
+    )
+    if member.last_read_at is not None:
+        statement = statement.where(DirectMessage.created_at > member.last_read_at)
+    return int(session.exec(statement).one())
+
+
 def _room_read(session: Session, room: MessageRoom, member: MessageRoomMember) -> RoomRead:
     latest = _recent_messages(session, room.id, member.joined_at, 1)
     return RoomRead(id=room.id, kind=room.kind, name=room.name,
                     members=[AccountRead.model_validate(account)
                              for account in _member_accounts(session, room.id)],
                     last_message=_message_read(latest[-1]) if latest else None,
+                    unread_count=_unread_count(session, member),
                     created_at=room.created_at)
 
 
@@ -209,6 +231,41 @@ def list_rooms(session: Session = Depends(get_session),
     return sorted(rooms, key=lambda room: (
         room.last_message.created_at if room.last_message else room.created_at, room.id,
     ), reverse=True)
+
+
+@router.get("/unread-count", response_model=UnreadCountRead)
+def get_unread_count(session: Session = Depends(get_session),
+                     current_user: User = Depends(get_current_user)) -> UnreadCountRead:
+    count = session.exec(select(func.count(DirectMessage.id))
+                         .join(MessageRoomMember, MessageRoomMember.room_id == DirectMessage.room_id)
+                         .where(MessageRoomMember.user_id == current_user.id,
+                                DirectMessage.sender_user_id != current_user.id,
+                                DirectMessage.created_at >= MessageRoomMember.joined_at,
+                                or_(MessageRoomMember.last_read_at == None,
+                                    DirectMessage.created_at > MessageRoomMember.last_read_at))).one()
+    return UnreadCountRead(unread_count=int(count))
+
+
+@router.post("/rooms/{room_id}/read", response_model=UnreadCountRead)
+def mark_room_read(room_id: str, body: ReadBody,
+                   session: Session = Depends(get_session),
+                   current_user: User = Depends(get_current_user)) -> UnreadCountRead:
+    member = session.exec(select(MessageRoomMember).where(
+        MessageRoomMember.room_id == room_id,
+        MessageRoomMember.user_id == current_user.id,
+    ).with_for_update()).first()
+    if member is None:
+        raise HTTPException(status_code=404, detail="Room not found")
+    message = session.get(DirectMessage, body.message_id)
+    if message is None or message.room_id != room_id or message.created_at < member.joined_at:
+        raise HTTPException(status_code=404, detail="Message not found")
+    def as_utc(value: datetime) -> datetime:
+        return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
+    if member.last_read_at is None or as_utc(message.created_at) > as_utc(member.last_read_at):
+        member.last_read_at = message.created_at
+        session.add(member)
+        session.commit()
+    return UnreadCountRead(unread_count=_unread_count(session, member))
 
 
 @router.post("/direct/{account_id}", response_model=RoomRead, status_code=201)

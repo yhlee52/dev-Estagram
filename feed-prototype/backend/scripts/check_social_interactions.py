@@ -99,12 +99,19 @@ assert len(client.get("/api/messages/with/account-bob").json()) == 1
 assert client.get("/api/messages/conversations").json()[0]["account"]["id"] == "account-bob"
 active_user[0] = "bob"
 assert client.get("/api/messages/with/account-alice").json()[0]["text"] == "Hello"
+bob_room = client.get("/api/messages/rooms").json()[0]
+assert bob_room["unread_count"] == 1
+assert client.get("/api/messages/unread-count").json()["unread_count"] == 1
+assert client.post(f"/api/messages/rooms/{bob_room['id']}/read", json={"message_id": sent.json()["id"]}).json()["unread_count"] == 0
+assert client.get("/api/messages/unread-count").json()["unread_count"] == 0
 reply = client.post("/api/messages/with/account-alice", json={"text": "Hi"})
 assert reply.status_code == 201
 
 active_user[0] = "alice"
+assert client.get("/api/messages/unread-count").json()["unread_count"] == 1
 direct_room_id = next(room["id"] for room in client.get("/api/messages/rooms").json()
                       if any(member["id"] == "account-bob" for member in room["members"]))
+assert client.post(f"/api/messages/rooms/{direct_room_id}/read", json={"message_id": reply.json()["id"]}).json()["unread_count"] == 0
 with Session(engine) as db:
     db.delete(db.get(Follow, "follow-alice-bob"))
     db.commit()
@@ -120,10 +127,13 @@ invited = client.post(f"/api/messages/rooms/{direct_room_id}/members", json={"ac
 assert invited.status_code == 200 and invited.json()["kind"] == "group"
 active_user[0] = "carol"
 assert client.get(f"/api/messages/rooms/{direct_room_id}").json()["messages"] == []
+assert client.get(f"/api/messages/rooms/{direct_room_id}").json()["room"]["unread_count"] == 0
+assert client.post(f"/api/messages/rooms/{direct_room_id}/read", json={"message_id": sent.json()["id"]}).status_code == 404
 active_user[0] = "alice"
 assert client.post(f"/api/messages/rooms/{direct_room_id}/messages", json={"text": "Welcome"}).status_code == 201
 active_user[0] = "carol"
 assert [item["text"] for item in client.get(f"/api/messages/rooms/{direct_room_id}").json()["messages"]] == ["Welcome"]
+assert client.get(f"/api/messages/rooms/{direct_room_id}").json()["room"]["unread_count"] == 1
 active_user[0] = "alice"
 group = client.post("/api/messages/rooms", json={"account_ids": ["account-bob", "account-carol"], "name": "Team"})
 assert group.status_code == 201 and group.json()["kind"] == "group"
@@ -151,6 +161,10 @@ assert client.post(f"/api/messages/rooms/{room_id}/images", json={"data_base64":
 
 active_user[0] = "bob"
 assert client.get(f"/api/messages/rooms/{room_id}").json()["messages"][-1]["text"] == "Photo"
+assert client.get(f"/api/messages/rooms/{room_id}").json()["room"]["unread_count"] == 2
+assert client.post(f"/api/messages/rooms/{room_id}/read", json={"message_id": sent.json()["id"]}).status_code == 404
+assert client.post(f"/api/messages/rooms/{room_id}/read", json={"message_id": image.json()["id"]}).json()["unread_count"] == 0
+assert client.post(f"/api/messages/rooms/{room_id}/read", json={"message_id": posted.json()["id"]}).json()["unread_count"] == 0
 assert client.get(image_url).status_code == 200
 assert client.post(f"/api/messages/rooms/{room_id}/messages", json={"text": "No follows needed"}).status_code == 201
 assert client.post(f"/api/messages/rooms/{room_id}/images", json={"data_base64": png}).status_code == 201
