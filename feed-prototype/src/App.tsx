@@ -42,6 +42,7 @@ const router = createBrowserRouter([
         element: <NotificationsPage />,
       },
       { path: 'messages', element: <MessagesPage /> },
+      { path: 'messages/rooms/:roomId', element: <MessagesPage /> },
       { path: 'messages/:accountId', element: <MessagesPage /> },
       {
         path: 'imports',
