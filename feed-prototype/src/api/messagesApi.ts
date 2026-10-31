@@ -18,7 +18,12 @@ export interface MessageRoom {
   name: string | null;
   members: ApiAccount[];
   last_message: DirectMessage | null;
+  unread_count: number;
   created_at: string;
+}
+
+export interface MessageUnreadCount {
+  unread_count: number;
 }
 
 export interface RoomDetail {
@@ -29,7 +34,10 @@ export interface RoomDetail {
 const roomPath = (roomId: string) => `/api/messages/rooms/${encodeURIComponent(roomId)}`;
 
 export const getRooms = () => apiGet<MessageRoom[]>('/api/messages/rooms');
+export const getMessageUnreadCount = () => apiGet<MessageUnreadCount>('/api/messages/unread-count');
 export const getRoom = (roomId: string) => apiGet<RoomDetail>(roomPath(roomId));
+export const markRoomRead = (roomId: string, messageId: string) =>
+  apiPost<MessageUnreadCount>(`${roomPath(roomId)}/read`, { message_id: messageId });
 export const openDirectRoom = (accountId: string) =>
   apiPost<MessageRoom>(`/api/messages/direct/${encodeURIComponent(accountId)}`);
 export const createRoom = (accountIds: string[], name: string) =>

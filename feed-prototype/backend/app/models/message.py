@@ -22,6 +22,7 @@ class MessageRoomMember(SQLModel, table=True):
     room_id: str = Field(foreign_key="message_rooms.id", ondelete="CASCADE", index=True)
     user_id: str = Field(foreign_key="users.id", index=True)
     joined_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    last_read_at: datetime | None = None
 
 
 class DirectMessage(SQLModel, table=True):

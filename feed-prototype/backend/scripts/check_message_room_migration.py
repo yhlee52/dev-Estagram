@@ -65,6 +65,9 @@ def main() -> None:
                 ), {"room_id": room_id}).scalars().all()
                 assert members == ["alice", "bob"]
                 assert connection.execute(text(
+                    "SELECT count(*) FROM message_room_members WHERE room_id = :room_id AND last_read_at IS NOT NULL"
+                ), {"room_id": room_id}).scalar_one() == 2
+                assert connection.execute(text(
                     "SELECT kind FROM message_rooms WHERE id = :room_id"
                 ), {"room_id": room_id}).scalar_one() == "direct"
         finally:

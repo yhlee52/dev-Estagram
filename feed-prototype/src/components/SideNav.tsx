@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router';
 import { isApiMode } from '../config/dataSource';
 import { useNotifications } from '../hooks/useNotifications';
+import { useMessageUnread } from '../hooks/useMessageUnread';
 import { ko } from '../i18n/ko';
 
 const navItems = [
@@ -37,6 +38,17 @@ function NotificationBadge() {
   );
 }
 
+function MessageBadge() {
+  const unreadCount = useMessageUnread();
+  if (unreadCount === 0) return null;
+  return (
+    <span aria-label={`읽지 않은 메시지 ${unreadCount}개`}
+      className="ml-2 rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-4 text-white">
+      {unreadCount > 99 ? '99+' : unreadCount}
+    </span>
+  );
+}
+
 export default function SideNav({ orientation = 'vertical' }: SideNavProps) {
   const isVertical = orientation === 'vertical';
 
@@ -68,6 +80,7 @@ export default function SideNav({ orientation = 'vertical' }: SideNavProps) {
           <span className="inline-flex items-center">
             {item.label}
             {item.to === '/notifications' ? <NotificationBadge /> : null}
+            {item.to === '/messages' ? <MessageBadge /> : null}
           </span>
         </NavLink>
       ))}
