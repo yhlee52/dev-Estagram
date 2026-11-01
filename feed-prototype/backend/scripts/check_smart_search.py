@@ -83,11 +83,29 @@ def main() -> None:
     assert client.get("/api/posts", params={"scope": "feed"}).status_code == 200
     assert client.get("/api/posts", params={"bookmarked_only": "true", "user_id": "demo-user-ari"}).status_code == 403
     assert client.patch("/api/posts/demo-post-morning-walk", json={"tagged_account_ids": ["demo-account-mika"]}).status_code == 403
-    assert client.post("/api/posts", json={"title": "중복", "tagged_account_ids": ["demo-account-ari", "demo-account-ari"]}).status_code == 422
-    assert client.post("/api/posts", json={"title": "없는 계정", "tagged_account_ids": ["missing"]}).status_code == 422
+    with create_session() as session:
+        session.add(Post(id="legacy-empty-body", account_id="demo-account-mika", title="이전 글", text=""))
+        session.commit()
+    assert client.patch("/api/posts/legacy-empty-body", json={"title": "제목만 변경"}).status_code == 422
+    assert client.patch("/api/posts/legacy-empty-body", json={"text": "본문 추가"}).status_code == 200
+    assert client.delete("/api/posts/legacy-empty-body").status_code == 204
+    assert client.post("/api/posts", json={"title": "본문 없음"}).status_code == 422
+    assert client.post("/api/posts", json={"title": "공백 본문", "text": "  \n  "}).status_code == 422
+    assert client.post("/api/posts", json={"title": "사진만", "text": "", "assets": [{"type": "image", "url": "/assets/example.png"}]}).status_code == 422
+    assert client.post("/api/posts", json={"title": "중복", "text": "태그 확인", "tagged_account_ids": ["demo-account-ari", "demo-account-ari"]}).status_code == 422
+    assert client.post("/api/posts", json={"title": "없는 계정", "text": "계정 확인", "tagged_account_ids": ["missing"]}).status_code == 422
     created = client.post("/api/posts", json={"title": "아리 태그", "text": "@ari.notes와 함께", "tags": ["여행", "사진"], "metadata_json": {"location": "서울숲"}, "tagged_account_ids": ["demo-account-ari"]})
     assert created.status_code == 201, created.text
     post_id = created.json()["post"]["id"]
+    assert created.json()["assets"] == []
+    assert client.get(f"/api/posts/{post_id}").json()["assets"] == []
+    assert post_id in {item["post"]["id"] for item in client.get("/api/feed", params={"user_id": "demo-user-mika", "limit": 100}).json()["items"]}
+    assert client.patch(f"/api/posts/{post_id}", json={"text": " \n "}).status_code == 422
+    assert client.get(f"/api/posts/{post_id}").json()["text"] == "@ari.notes와 함께"
+    added_asset = client.patch(f"/api/posts/{post_id}", json={"assets": [{"type": "image", "url": "/assets/example.png"}]})
+    assert added_asset.status_code == 200 and len(added_asset.json()["assets"]) == 1
+    removed_asset = client.patch(f"/api/posts/{post_id}", json={"assets": []})
+    assert removed_asset.status_code == 200 and removed_asset.json()["assets"] == []
     mixed = client.get("/api/posts", params=[("person", "related:demo-account-ari"), ("tag", "여행"), ("place", "서울숲")])
     assert mixed.status_code == 200 and {item["id"] for item in mixed.json()["items"]} == {post_id}
     both = client.get("/api/posts", params=[("person", "related:demo-account-ari"), ("person", "authored:demo-account-mika"), ("tag", "여행"), ("tag", "사진"), ("place", "서울숲"), ("keyword", "아리")])
@@ -105,7 +123,7 @@ def main() -> None:
     with create_session() as session:
         assert not session.exec(select(PostAccountRef).where(PostAccountRef.post_id == post_id)).all()
     assert client.post("/api/auth/login", json={"login": "ari", "password": "ari"}).status_code == 200
-    self_tag = client.post("/api/posts", json={"title": "직접 작성과 태그", "text": "", "tagged_account_ids": ["demo-account-ari"]})
+    self_tag = client.post("/api/posts", json={"title": "직접 작성과 태그", "text": "직접 작성한 글", "tagged_account_ids": ["demo-account-ari"]})
     assert self_tag.status_code == 201, self_tag.text
     self_tag_id = self_tag.json()["post"]["id"]
     matched_self = next(item for item in client.get("/api/posts", params={"person": "related:demo-account-ari", "limit": 100}).json()["items"] if item["id"] == self_tag_id)

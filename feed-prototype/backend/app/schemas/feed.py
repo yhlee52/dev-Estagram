@@ -286,7 +286,7 @@ class PostAssetCreate(BaseModel):
 
 class PostCreate(BaseModel):
     title: str = Field(max_length=200)
-    text: str = Field(default="", max_length=5000)
+    text: str = Field(max_length=5000)
     tags: list[str] = Field(default_factory=list)
     metadata_json: dict[str, Any] | None = None
     assets: list[PostAssetCreate] = Field(default_factory=list)
@@ -308,6 +308,13 @@ class PostCreate(BaseModel):
         if not value:
             raise ValueError("Title is required.")
 
+        return value
+
+    @field_validator("text")
+    @classmethod
+    def validate_text(cls, value: str) -> str:
+        if not value:
+            raise ValueError("Post text is required.")
         return value
 
 
@@ -333,6 +340,13 @@ class PostUpdate(BaseModel):
         if value is not None and not value:
             raise ValueError("Title cannot be empty.")
 
+        return value
+
+    @field_validator("text")
+    @classmethod
+    def validate_optional_text(cls, value: str | None) -> str | None:
+        if value is not None and not value:
+            raise ValueError("Post text cannot be empty.")
         return value
 
     @field_validator("tags")
