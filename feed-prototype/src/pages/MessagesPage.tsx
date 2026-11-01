@@ -10,7 +10,7 @@ import { useActiveApiUser } from '../auth/apiActiveUser';
 import MessageAvatar from '../components/MessageAvatar';
 import { API_FOLLOWS_CHANGE_EVENT } from '../hooks/useApiFollows';
 import { notifyMessageUnreadChange } from '../hooks/useMessageUnread';
-import { formatDateTime } from '../utils/format';
+import { formatDateTime, formatShortTime } from '../utils/format';
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -27,10 +27,6 @@ function recentText(message: DirectMessage | null): string {
 
 function errorText(error: unknown): string {
   return error instanceof Error ? error.message : '요청을 처리하지 못했습니다. 다시 시도해 주세요.';
-}
-
-function shortTime(value: string): string {
-  return new Intl.DateTimeFormat('ko-KR', { hour: '2-digit', minute: '2-digit' }).format(new Date(value));
 }
 
 export default function MessagesPage() {
@@ -361,7 +357,7 @@ export default function MessagesPage() {
               <span className="min-w-0 flex-1">
                 <span className="flex items-baseline justify-between gap-2">
                   <span className={`truncate text-sm ${room.unread_count > 0 ? 'font-extrabold text-stone-950' : 'font-bold text-stone-800'}`}>{roomTitle(room, activeApiUserId ?? '')}</span>
-                  {room.last_message ? <time dateTime={room.last_message.created_at} className="shrink-0 text-[11px] text-stone-400">{shortTime(room.last_message.created_at)}</time> : null}
+                  {room.last_message ? <time dateTime={room.last_message.display_at ?? room.last_message.created_at} className="shrink-0 text-[11px] text-stone-400">{room.last_message.display_at ? formatDateTime(room.last_message.display_at) : formatShortTime(room.last_message.created_at)}</time> : null}
                 </span>
                 <span className="mt-0.5 flex items-center justify-between gap-2">
                   <span className={`block truncate text-xs ${room.unread_count > 0 ? 'font-semibold text-stone-700' : 'text-stone-500'}`}>{recentText(room.last_message)}</span>
@@ -433,7 +429,7 @@ export default function MessagesPage() {
                             <img src={imageUrl(message.image_url)} alt="대화 이미지" loading="lazy" className="max-h-40 max-w-48 object-contain" />
                           </button>
                         ) : null}
-                        <time dateTime={message.created_at} className="mt-1 block text-[11px] opacity-65">{formatDateTime(message.created_at)}</time>
+                        <time dateTime={message.display_at ?? message.created_at} className="mt-1 block text-[11px] opacity-65">{formatDateTime(message.display_at ?? message.created_at)}</time>
                       </div>
                     </div>
                   );

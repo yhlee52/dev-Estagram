@@ -36,3 +36,4 @@ class DirectMessage(SQLModel, table=True):
     image_path: str | None = None
     image_mime_type: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), index=True)
+    display_at: datetime | None = None

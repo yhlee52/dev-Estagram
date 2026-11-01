@@ -15,6 +15,7 @@ from app.schemas.feed import (
     CommentWithAuthor,
 )
 from app.services.comments import build_comment_with_author, get_comment_authors
+from app.services.historical_time import validated_display_at
 from app.services.post_filters import get_user_account_id
 
 
@@ -89,6 +90,7 @@ def create_comment(
         post_id=post_id,
         author_user_id=current_user.id,
         text=comment_create.text,
+        display_at=validated_display_at(comment_create.display_at, current_user.id),
     )
     session.add(comment)
     session.commit()

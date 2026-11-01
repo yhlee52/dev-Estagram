@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     managed_assets_url_prefix: str = "/assets/managed"
     local_asset_base_url: str = "http://127.0.0.1:8000"
     message_images_dir: Path = BACKEND_DIR.parent / "data" / "message_images"
+    enable_historical_display_at: bool = False
 
     # Session cookie / CORS hardening (v1.0.0). Both default to the localhost
     # dev posture (cookie not secure, frontend dev server origins allowed) and

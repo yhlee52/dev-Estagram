@@ -427,6 +427,7 @@ class CommentRead(BaseModel):
     author_user_id: str
     text: str
     created_at: datetime
+    display_at: datetime | None = None
     updated_at: datetime
 
 
@@ -441,6 +442,7 @@ class CommentListResponse(BaseModel):
 
 class CommentCreate(BaseModel):
     text: str = Field(max_length=2000)
+    display_at: datetime | None = None
 
     @field_validator("text")
     @classmethod
@@ -452,8 +454,16 @@ class CommentCreate(BaseModel):
         return normalized_value
 
 
-class CommentUpdate(CommentCreate):
-    pass
+class CommentUpdate(BaseModel):
+    text: str = Field(max_length=2000)
+
+    @field_validator("text")
+    @classmethod
+    def validate_text(cls, value: str) -> str:
+        normalized_value = value.strip()
+        if not normalized_value:
+            raise ValueError("Comment text is required.")
+        return normalized_value
 
 
 class BookmarkRead(BaseModel):
