@@ -240,6 +240,7 @@ export interface ApiComment {
   author_user_id: string;
   text: string;
   created_at: string;
+  display_at: string | null;
   updated_at: string;
 }
 
@@ -254,6 +255,7 @@ export interface ApiCommentListResponse {
 
 export interface ApiCommentCreatePayload {
   text: string;
+  display_at?: string;
 }
 
 export type ApiCommentUpdatePayload = ApiCommentCreatePayload;

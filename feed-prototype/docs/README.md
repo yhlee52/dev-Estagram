@@ -14,5 +14,6 @@
 | [로드맵](ROADMAP.md) · [UX backlog](UX_BACKLOG.md) | 다음 작업 범위와 UX 항목 |
 | [프로필·한국어·탐색 UX](UX_IMPROVEMENT_PLAN.md) | v2.1.x 화면 동작, API 계약, 검증 |
 | [스마트 홈 검색](SMART_HOME_SEARCH_PLAN.md) | v2.2.x 검색 의미, API·DB 계약, 적용·검증 |
+| [과거 활동 표시 시각](HISTORICAL_DISPLAY_TIME.md) | import 계정의 댓글·메시지에 쓰는 별도 표시 시각 |
 
 과거 버전별 범위·검증 기록은 Git history에서 확인할 수 있습니다.

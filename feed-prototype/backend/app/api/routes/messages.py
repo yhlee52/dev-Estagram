@@ -19,6 +19,7 @@ from app.models.follow import Follow
 from app.models.message import DirectMessage, MessageRoom, MessageRoomMember
 from app.models.user import User
 from app.schemas.feed import AccountRead
+from app.services.historical_time import validated_display_at
 
 
 router = APIRouter(prefix="/api/messages", tags=["messages"])
@@ -27,6 +28,7 @@ MAX_IMAGE_BYTES = 5 * 1024 * 1024
 
 class MessageBody(BaseModel):
     text: str = Field(max_length=2000)
+    display_at: datetime | None = None
 
     @field_validator("text")
     @classmethod
@@ -59,6 +61,7 @@ class MessageRead(BaseModel):
     text: str
     image_url: str | None
     created_at: datetime
+    display_at: datetime | None = None
 
 
 class RoomRead(BaseModel):
@@ -96,7 +99,7 @@ def _message_read(message: DirectMessage) -> MessageRead:
                        sender_user_id=message.sender_user_id,
                        recipient_user_id=message.recipient_user_id,
                        text=message.text, image_url=image_url,
-                       created_at=message.created_at)
+                       created_at=message.created_at, display_at=message.display_at)
 
 
 def _peer_account(session: Session, account_id: str, current_user: User) -> Account:
@@ -328,13 +331,15 @@ def leave_room(room_id: str, session: Session = Depends(get_session),
 
 
 def _add_message(session: Session, room_id: str, user_id: str, text: str,
-                 image_path: str | None = None, image_mime_type: str | None = None) -> DirectMessage:
+                  image_path: str | None = None, image_mime_type: str | None = None,
+                  display_at: datetime | None = None) -> DirectMessage:
     members = _members(session, room_id)
     peer_id = next((member.user_id for member in members if member.user_id != user_id), None)
     message = DirectMessage(id=f"message-{uuid4()}", room_id=room_id,
                             sender_user_id=user_id,
                             recipient_user_id=peer_id if len(members) == 2 else None,
-                            text=text, image_path=image_path, image_mime_type=image_mime_type)
+                             text=text, image_path=image_path, image_mime_type=image_mime_type,
+                             display_at=display_at)
     session.add(message)
     session.commit()
     session.refresh(message)
@@ -345,9 +350,11 @@ def _add_message(session: Session, room_id: str, user_id: str, text: str,
 def send_room_message(room_id: str, body: MessageBody,
                       session: Session = Depends(get_session),
                       current_user: User = Depends(get_current_user)) -> MessageRead:
+    display_at = validated_display_at(body.display_at, current_user.id)
     _lock_room(session, room_id)
     _require_send_allowed(session, room_id, current_user.id)
-    return _message_read(_add_message(session, room_id, current_user.id, body.text))
+    return _message_read(_add_message(
+        session, room_id, current_user.id, body.text, display_at=display_at))
 
 
 def _image_type(data: bytes) -> tuple[str, str] | None:
@@ -438,6 +445,7 @@ def get_thread(account_id: str, limit: int = Query(default=100, ge=1, le=200),
 def send_message(account_id: str, body: MessageBody,
                  session: Session = Depends(get_session),
                  current_user: User = Depends(get_current_user)) -> MessageRead:
+    display_at = validated_display_at(body.display_at, current_user.id)
     peer = _peer_account(session, account_id, current_user)
     if peer.deactivated_at is not None:
         raise HTTPException(status_code=409, detail="Cannot message a deactivated account")
@@ -448,4 +456,5 @@ def send_message(account_id: str, body: MessageBody,
     else:
         _lock_room(session, room.id)
         _require_send_allowed(session, room.id, current_user.id)
-    return _message_read(_add_message(session, room.id, current_user.id, body.text))
+    return _message_read(_add_message(
+        session, room.id, current_user.id, body.text, display_at=display_at))

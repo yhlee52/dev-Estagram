@@ -29,6 +29,16 @@ export function formatDateTime(
   }).format(date);
 }
 
+export function formatShortTime(value: string): string {
+  const date = parseApiTimestamp(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat(UI_LOCALE, {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: UI_TIME_ZONE,
+  }).format(date);
+}
+
 const MINUTE_MS = 60 * 1000;
 const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;

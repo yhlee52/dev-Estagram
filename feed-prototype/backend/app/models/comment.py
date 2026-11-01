@@ -24,4 +24,5 @@ class Comment(SQLModel, table=True):
     author_user_id: str = Field(foreign_key="users.id", index=True)
     text: str
     created_at: datetime = Field(default_factory=utc_now)
+    display_at: datetime | None = None
     updated_at: datetime = Field(default_factory=utc_now)

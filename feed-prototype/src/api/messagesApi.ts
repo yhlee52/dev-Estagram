@@ -10,6 +10,7 @@ export interface DirectMessage {
   text: string;
   image_url: string | null;
   created_at: string;
+  display_at: string | null;
 }
 
 export interface MessageRoom {

@@ -284,9 +284,9 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                       </span>
                       <time
                         className="text-xs text-neutral-400"
-                        dateTime={comment.created_at}
+                        dateTime={comment.display_at ?? comment.created_at}
                       >
-                        {formatDateTime(comment.created_at)}
+                        {formatDateTime(comment.display_at ?? comment.created_at)}
                         {wasEdited ? ' (수정됨)' : ''}
                       </time>
                     </div>
