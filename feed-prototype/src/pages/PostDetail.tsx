@@ -146,6 +146,7 @@ export default function PostDetail() {
   const post = isApiDataSource ? apiPost : mockPost;
   const account = isApiDataSource ? apiAccount : mockAccount;
   const postAssets = post?.assets ?? [];
+  const isTextOnly = postAssets.length === 0 && Boolean(post?.caption?.trim());
   const nonVisualAssets = postAssets.filter((asset) => !isVisualAsset(asset));
   const postTags = post?.tags ?? [];
   const postCreatedAt = post?.createdAt ?? post?.created_at ?? '';
@@ -343,10 +344,12 @@ export default function PostDetail() {
         </div>
 
         {post.caption ? (
-          <MentionText
-            text={post.caption}
-            className="whitespace-pre-wrap text-base leading-7 text-neutral-700"
-          />
+          <div className={isTextOnly ? 'rounded-2xl border border-stone-100 bg-stone-50 px-5 py-5' : ''}>
+            <MentionText
+              text={post.caption}
+              className={`whitespace-pre-wrap break-words text-base leading-7 ${isTextOnly ? 'text-stone-900' : 'text-neutral-700'}`}
+            />
+          </div>
         ) : null}
 
         <div className="rounded-md bg-neutral-50 px-3 py-2">

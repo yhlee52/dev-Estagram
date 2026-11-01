@@ -277,6 +277,11 @@ def update_post(
     if post.account_id != account.id:
         raise HTTPException(status_code=403, detail="Post is not owned by user")
 
+    # Legacy and externally imported posts may have an empty body. Editing one
+    # through the manual API requires supplying a body before it can be saved.
+    if not (post_update.text if post_update.text is not None else post.text).strip():
+        raise HTTPException(status_code=422, detail="Post text is required")
+
     if post_update.title is not None:
         post.title = post_update.title
     if post_update.text is not None:

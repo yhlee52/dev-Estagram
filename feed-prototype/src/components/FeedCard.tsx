@@ -55,6 +55,7 @@ export default function FeedCard({ item }: FeedCardProps) {
   const { account, post } = item;
   const isApiDataSource = isApiMode();
   const postAssets = post.assets ?? [];
+  const isTextOnly = postAssets.length === 0 && Boolean(post.caption?.trim());
   const visualAssets = getSortedVisualAssets(postAssets);
   const nonVisualAssets = postAssets.filter((asset) => !isVisualAsset(asset));
   const postTags = post.tags ?? [];
@@ -188,7 +189,7 @@ export default function FeedCard({ item }: FeedCardProps) {
       tabIndex={0}
       role="link"
       aria-label={`${post.title} 게시글 보기`}
-      className="cursor-pointer overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm transition hover:border-neutral-300 hover:shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+      className={`cursor-pointer overflow-hidden border bg-white shadow-sm transition hover:border-neutral-300 hover:shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 ${isTextOnly ? 'rounded-2xl border-stone-200' : 'rounded-md border-neutral-200'}`}
       onClick={goToPost}
       onKeyDown={handleKeyDown}
     >
@@ -211,7 +212,7 @@ export default function FeedCard({ item }: FeedCardProps) {
         {isApiDataSource ? <BookmarkButton postId={post.id} /> : null}
       </div>
 
-      <div className="space-y-4 px-4 pb-4">
+      <div className={`space-y-4 pb-4 ${isTextOnly ? 'px-5' : 'px-4'}`}>
         {postAssets.length > 0 ? (
           <div className="space-y-2">
             <AssetGallery assets={postAssets} variant="compact" />
@@ -235,15 +236,17 @@ export default function FeedCard({ item }: FeedCardProps) {
             {post.searchMatches?.length ? <p className="text-xs font-semibold text-indigo-700">
               일치 이유: {post.searchMatches.map((match) => `@${match.accountHandle ?? match.accountId} · ${match.reasons.map((reason) => ({ author: '작성', mention: '멘션', tag: '태그' }[reason] ?? reason)).join('·')}`).join(', ')}
             </p> : null}
-            <h2 className="text-base font-bold leading-6 text-neutral-950">
-              {post.title}
-            </h2>
-            {post.caption ? (
-              <MentionText
-                text={post.caption}
-                className="text-sm leading-6 text-neutral-600"
-              />
-            ) : null}
+            {isTextOnly ? (
+              <div className="rounded-2xl border border-stone-100 bg-stone-50 px-4 py-4">
+                <h2 className="text-sm font-semibold text-stone-500">{post.title}</h2>
+                <MentionText text={post.caption ?? ''} className="mt-2 line-clamp-5 whitespace-pre-wrap break-words text-base leading-7 text-stone-900" />
+              </div>
+            ) : (
+              <>
+                <h2 className="text-base font-bold leading-6 text-neutral-950">{post.title}</h2>
+                {post.caption ? <MentionText text={post.caption} className="text-sm leading-6 text-neutral-600" /> : null}
+              </>
+            )}
           </div>
 
           <PinnedMetadataChips metadata={post.metadata} pinnedKeys={pinnedKeys} />

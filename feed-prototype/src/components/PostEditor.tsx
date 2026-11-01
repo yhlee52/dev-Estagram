@@ -208,9 +208,14 @@ export default function PostEditor({
     event.preventDefault();
 
     const trimmedTitle = title.trim();
+    const trimmedText = text.trim();
 
     if (!trimmedTitle) {
       setLocalError('제목을 입력해 주세요.');
+      return;
+    }
+    if (!trimmedText) {
+      setLocalError('본문을 입력해 주세요.');
       return;
     }
     if (personQuery.trim()) {
@@ -270,7 +275,7 @@ export default function PostEditor({
     setLocalError('');
     void onSubmit({
       title: trimmedTitle,
-      text: text.trim(),
+      text: trimmedText,
       tags,
       metadata_json: Object.keys(metadata_json).length ? metadata_json : null,
       assets,
@@ -312,12 +317,15 @@ export default function PostEditor({
           id="post-text"
           className="min-h-36 w-full resize-y rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm leading-6 text-neutral-950 outline-none transition focus:border-neutral-400"
           maxLength={5000}
+          aria-required="true"
+          aria-invalid={Boolean((error || localError) && !text.trim())}
+          placeholder="사진 없이도 공유할 이야기를 적어 주세요."
           value={text}
           onChange={(event) => setText(event.target.value)}
         />
         <p className="text-xs font-medium text-neutral-400">{text.length}/5000</p>
         <p className="text-xs leading-5 text-neutral-400">
-          본문은 비워 둘 수 있습니다. 제목만 필수입니다.
+          본문은 필수입니다. 사진이나 다른 첨부 자료 없이 글만 게시할 수 있습니다.
         </p>
       </div>
 
@@ -366,7 +374,7 @@ export default function PostEditor({
 
       <section className="space-y-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-bold text-neutral-950">첨부 자료</h2>
+          <h2 className="text-sm font-bold text-neutral-950">첨부 자료 (선택)</h2>
           <span className="text-xs font-semibold text-neutral-400">
             {assetDrafts.length}
           </span>
