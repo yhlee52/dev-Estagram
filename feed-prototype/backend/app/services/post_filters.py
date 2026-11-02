@@ -201,15 +201,16 @@ def get_metadata_keys(
 
     Keys are derived from data (``jsonb_object_keys``): we never define or
     enforce a metadata schema. A JSON object yields each key once, so the count
-    is the number of posts that have that key. Posts with NULL ``metadata_json``
-    contribute no rows. Only top-level keys are surfaced (nested keys are not
-    flattened), keeping facets generic.
+    is the number of posts that have that key. SQL NULL and JSON null/scalar
+    metadata contribute no rows. Only top-level keys are surfaced (nested keys
+    are not flattened), keeping facets generic.
     """
     rows = session.execute(
         text(
             "SELECT key, count(*) AS usage_count"
-            " FROM posts, jsonb_object_keys(posts.metadata_json) AS key"
-            " WHERE posts.metadata_json IS NOT NULL"
+            " FROM posts, jsonb_object_keys(CASE"
+            " WHEN jsonb_typeof(posts.metadata_json) = 'object'"
+            " THEN posts.metadata_json ELSE '{}'::jsonb END) AS key"
             " GROUP BY key"
             " ORDER BY usage_count DESC, key ASC"
             " LIMIT :limit"

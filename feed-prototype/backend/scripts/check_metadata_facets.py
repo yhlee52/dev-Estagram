@@ -52,6 +52,8 @@ POSTS = [
     (f"check-facet-post-{SUFFIX}-4", "low"),
 ]
 POST_EXTS = [external_id for external_id, _ in POSTS]
+NULL_POST_EXT = f"check-facet-post-{SUFFIX}-null"
+POST_EXTS.append(NULL_POST_EXT)
 
 
 def payload() -> dict:
@@ -73,7 +75,13 @@ def payload() -> dict:
                 "metadata_json": {KEY: value},
             }
             for external_id, value in POSTS
-        ],
+        ] + [{
+            "external_id": NULL_POST_EXT,
+            "account_external_id": ACCT_EXT,
+            "title": "Facet post without metadata",
+            "text": "regression",
+            "metadata_json": None,
+        }],
     }
 
 
